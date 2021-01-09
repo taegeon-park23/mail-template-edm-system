@@ -9,7 +9,7 @@ import ReactDOM from "react-dom";
 import ReactHtmlParser from "react-html-parser";
 import ResizableRect from "react-resizable-rotatable-draggable";
 import styled from "styled-components";
-import { backImageTemplateStore } from "../../../stores/backImageTemplateStore";
+import { globalStateStore } from "../../../stores/globalStateStore";
 export default function ResizableDiv({
   children,
   parentWidth,
@@ -23,7 +23,7 @@ export default function ResizableDiv({
   setCanModifiableBox,
   id
 }) {
-  const globalStateContext = useContext(backImageTemplateStore);
+  const globalStateContext = useContext(globalStateStore);
   const globalState = globalStateContext.state;
   const { dispatch } = globalStateContext;
 

@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import DomToImage from "dom-to-image";
 import styled from "styled-components";
-import { backImageTemplateStore } from "../../stores/backImageTemplateStore";
+import { globalStateStore } from "../../stores/globalStateStore";
 import { mailTemplateStore } from "../../stores/mailTemplateStore";
 
 //components
@@ -15,7 +15,7 @@ import EmptyRowPlace from "./TemplateMailContents/EmptyRowPlace";
 import RowTable from "./TemplateMailContents/RowTable";
 export default function TemplateMailContents({ tableWidth, tableHeight }) {
   // 백그라운드 이미지, boxShadow 관련 상태 저장 store
-  const globalState = useContext(backImageTemplateStore);
+  const globalState = useContext(globalStateStore);
   const backState = globalState.state;
   const backDispatch = globalState.dispatch;
 
@@ -25,13 +25,8 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
   const mailDispatch = mailGlobalState.dispatch;
 
   const [contents, setContents] = useState(mailState.contents);
-  useEffect(() => {
-    if (mailState.saveContentsStatus === true) {
-      mailDispatch({ TYPE: "UPDATE_CONTENTS", value: { contents: contents } });
-    }
-  });
   const convertToHTML = () => {
-    const resultDoc = document.getElementById("TemplateMailContentsDiv");
+    const resultDoc = document.getElementById("TemplateMailContentsTable");
     const downloadHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Email Design</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     </head><body background="${backState.convertedImage}" style="background-repeat:no-repeat">${resultDoc.innerHTML}</body></html>`;
     const element = document.createElement("a");
@@ -60,7 +55,6 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
     backDispatch({ type: "CONVERT_BOX_SHADOW", value: { boxShadow: true } });
     const resultDoc = document.getElementById("TemplateMailContentsTable");
     resultDoc.style.background = "";
-    console.log(resultDoc);
     setTimeout(() => {
       DomToImage.toPng(resultDoc)
         .then(function (dataUrl) {
@@ -81,29 +75,40 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
   });
 
   const onClickAddContentRow = () => {
-    const tdClass = { align: "center", width: "30", content: `<b>td</b>` };
+    const tdClass = {
+      align: "center",
+      width: "30",
+      height: "200",
+      content: `<b>td</b>`
+    };
     const tdClasses = [tdClass];
-    const newContents = { ...contents };
+    const newContents = { ...mailState.contents };
     const newBody = newContents.body;
     newBody.contentRowTables.push({ tdClasses: tdClasses });
-    setContents(newContents);
+    mailDispatch({ type: "UPDATE_CONTENTS", value: { contents: newContents } });
   };
 
   const onClickDeleteContentRow = (index) => {
-    const newContents = { ...contents };
+    const newContents = { ...mailState.contents };
     const newBody = newContents.body;
-    const tempContentRowTables = newBody.contentRowTables;
+    let tempContentRowTables = newBody.contentRowTables;
     if (index === 0) return;
     if (index === tempContentRowTables.length - 1) {
       tempContentRowTables.pop();
-      setContents(newContents);
+      mailDispatch({
+        type: "UPDATE_CONTENTS",
+        value: { contents: newContents }
+      });
     } else {
       tempContentRowTables = tempContentRowTables
         .slice(0, index)
         .concat(
           tempContentRowTables.slice(index + 1, tempContentRowTables.length)
         );
-      setContents(newContents);
+      mailDispatch({
+        type: "UPDATE_CONTENTS",
+        value: { contents: newContents }
+      });
     }
   };
   const onClickConvertButton = (e) => {
@@ -120,24 +125,20 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
   };
 
   const temporarySaveCallback = useCallback(() => {
-    mailDispatch({ type: "SAVE_ON_CONTENTS" });
+    backDispatch({
+      type: "ADD_POPUP_MESSAGE",
+      value: { popUpMessage: "임시 저장 중" }
+    });
+    mailDispatch({ type: "UPDATE_CONTENTS", value: { contents: contents } });
     setTimeout(() => {
-      mailDispatch({ type: "SAVE_OFF_CONTENTS" });
-    }, 50);
+      backDispatch({
+        type: "ADD_POPUP_MESSAGE",
+        value: { popUpMessage: "임시 저장 완료" }
+      });
+    }, 1500);
   });
   const onClickTemprarySave = () => {
     temporarySaveCallback();
-  };
-
-  const tdHeader = {
-    align: "center",
-    width: "100",
-    content: `<p><b>header</b></p>`
-  };
-  const tdFooter = {
-    align: "center",
-    width: "100",
-    content: `<p><b>footer</b></p>`
   };
   return (
     <div id="TemplateMailContents" className="container-fluid">
@@ -148,7 +149,7 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
             onClickConvertBoxShadow(true);
           }}
         >
-          borderOn
+          {`테두리 ON`}
         </Button>
       ) : (
         <Button
@@ -157,7 +158,7 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
             onClickConvertBoxShadow(false);
           }}
         >
-          borderOff
+          {`테두리 OFF`}
         </Button>
       )}
       <Button
@@ -166,13 +167,13 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
           onClickAddContentRow();
         }}
       >
-        Add-Content-Row
+        Content 추가
       </Button>
       <ConvertButton
         className="btn btn-outline-dark"
         onClick={onClickConvertButton}
       >
-        Convert
+        Background 전환
       </ConvertButton>
       <Button
         className="btn btn-outline-dark"
@@ -180,14 +181,14 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
           onClickTemprarySave();
         }}
       >
-        temporary save
+        임시저장
       </Button>
 
       <ConvertButton
         className="btn btn-outline-dark"
         onClick={onClickConvertHtmlButton}
       >
-        ConvertToHTML
+        HTML 변환
       </ConvertButton>
 
       <TemplateFormWrapper>
@@ -199,37 +200,47 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
               style={{ width: "auto", height: "auto" }}
             />
           </BackImageDiv>
-          <table
-            id="TemplateMailContentsTable"
-            border={0}
-            cellPadding={0}
-            cellSpacing={0}
-            width={tableWidth}
-            // background={`${backState.convertedImage}`}
-            // style={{ background: `no-repeat url("${backState.convertedImage}")` }}
-          >
-            <tbody>
-              {/* header */}
-              <RowTable height={200} tdClasses={contents.header.tdClasses} />
-              <EmptyRowPlace height={30} />
-              {/* content */}
-              {contents.body.contentRowTables.map((contentRowTale, i) => {
-                return (
-                  <Fragment>
-                    <RowTable
-                      rowTableIndex={i}
-                      deleteRowTable={onClickDeleteContentRow}
-                      height={300}
-                      tdClasses={contentRowTale.tdClasses}
-                    />
-                    <EmptyRowPlace height={30} />
-                  </Fragment>
-                );
-              })}
-              {/* footer */}
-              <RowTable height={100} tdClasses={contents.footer.tdClasses} />
-            </tbody>
-          </table>
+          <div id="TemplateMailContentsTable">
+            <table
+              border={0}
+              cellPadding={0}
+              cellSpacing={0}
+              width={tableWidth}
+              // background={`${backState.convertedImage}`}
+            >
+              <tbody>
+                {/* header */}
+                <RowTable
+                  header={true}
+                  height={200}
+                  tdClasses={mailState.contents.header.tdClasses}
+                />
+                <EmptyRowPlace height={30} />
+                {/* content */}
+                {mailState.contents.body.contentRowTables.map(
+                  (contentRowTale, i) => {
+                    return (
+                      <Fragment>
+                        <RowTable
+                          rowTableIndex={i}
+                          deleteRowTable={onClickDeleteContentRow}
+                          height={300}
+                          tdClasses={contentRowTale.tdClasses}
+                        />
+                        <EmptyRowPlace height={30} />
+                      </Fragment>
+                    );
+                  }
+                )}
+                {/* footer */}
+                <RowTable
+                  footer={true}
+                  height={100}
+                  tdClasses={mailState.contents.footer.tdClasses}
+                />
+              </tbody>
+            </table>
+          </div>
         </div>
       </TemplateFormWrapper>
     </div>

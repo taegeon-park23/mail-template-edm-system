@@ -8,11 +8,11 @@ import Modal from "../../components/Modal";
 import ResizableDiv from "./TemplateBackground/ResizableDiv";
 import CreateBoxModal from "./TemplateBackground/CreateBoxModal";
 import AddImageModal from "./TemplateBackground/AddImageModal";
-import { backImageTemplateStore } from "../../stores/backImageTemplateStore";
+import { globalStateStore } from "../../stores/globalStateStore";
 
 export default function TemplateBackground() {
   const TemplateFormTableRef = useRef(null);
-  const globalState = useContext(backImageTemplateStore);
+  const globalState = useContext(globalStateStore);
   const { state, dispatch } = globalState;
 
   useEffect(() => {

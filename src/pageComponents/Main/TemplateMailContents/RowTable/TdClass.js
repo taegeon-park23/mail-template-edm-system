@@ -7,45 +7,65 @@ import React, {
   useCallback
 } from "react";
 import styled from "styled-components";
-
 import Modal from "../../../../components/Modal";
 import CustomEditor from "../../../../components/CustomEditor";
 import ReactHtmlParser from "react-html-parser";
-import { backImageTemplateStore } from "../../../../stores/backImageTemplateStore";
+import { globalStateStore } from "../../../../stores/globalStateStore";
+import { mailTemplateStore } from "../../../../stores/mailTemplateStore";
 export default function TdClass({
+  header,
+  footer,
   rowTableIndex,
   index,
   tdClass,
-  height,
   deleteTd
 }) {
+  const globalState = useContext(globalStateStore);
+  const { state } = globalState;
+  const _mailState = useContext(mailTemplateStore);
+  const mailState = _mailState.state;
+  const mailDispatch = _mailState.dispatch;
+
   const initialModalStatus = false;
-  const initialContent = tdClass.content;
-  const intialTdWidth = tdClass.width;
-  const intialTdHeight = height;
   const [modalStatus, setModalStatus] = useState(initialModalStatus);
   const [menuStatus, setMenuStatus] = useState(false);
-  const [tdWidth, setTdWidth] = useState(intialTdWidth);
-  const [tdHeight, setTdHeight] = useState(intialTdHeight);
-  const [useEditWidth, setUseEditWidth] = useState(true);
-  const [useEditHeight, setUseEditHeight] = useState(true);
-  const [content, setContent] = useState(initialContent);
+  const [tdWidth, setTdWidth] = useState(tdClass.width);
+  const [tdHeight, setTdHeight] = useState(tdClass.height);
+  const [content, setContent] = useState(tdClass.content);
 
   const tdRef = useRef(null);
   useEffect(() => {
-    if (tdRef !== null) {
-      const tdCount = tdRef.current.parentElement.children.length;
-      if (tdCount === 1) {
-        setUseEditWidth(false);
-        setUseEditHeight(true);
-      } else if (tdCount > 1) {
-        setUseEditHeight(false);
-        setUseEditWidth(true);
+    const newContents = { ...mailState.contents };
+    if (header === true) {
+      newContents.header.tdClasses[index] = {
+        ...tdClass,
+        width: tdWidth,
+        height: tdHeight,
+        content: content
+      };
+    } else if (footer === true) {
+      newContents.footer.tdClasses[index] = {
+        ...tdClass,
+        width: tdWidth,
+        height: tdHeight,
+        content: content
+      };
+    } else {
+      if (rowTableIndex !== undefined) {
+        newContents.body.contentRowTables[rowTableIndex].tdClasses[index] = {
+          ...tdClass,
+          width: tdWidth,
+          height: tdHeight,
+          content: content
+        };
       }
     }
-  });
-  const globalState = useContext(backImageTemplateStore);
-  const { state } = globalState;
+    mailDispatch({
+      type: "UPDATE_CONTENTS",
+      value: { contents: newContents }
+    });
+  }, [content, tdWidth, tdHeight]);
+
   const tdShadowStyle = {
     padding: 10,
     boxShadow: "1px 1px 3px gray, -1px -1px 3px gray"
@@ -103,7 +123,7 @@ export default function TdClass({
             >
               <span>✏</span>
             </EditButton>
-            {useEditWidth === true ? (
+            {deleteTd ? (
               <Fragment>
                 <NumberInputDiv>
                   <label>{`W`}</label>
@@ -120,7 +140,7 @@ export default function TdClass({
                 </NumberInputDiv>
               </Fragment>
             ) : null}
-            {useEditHeight === true ? (
+            {!index ? (
               <NumberInputDiv>
                 <label>H</label>
                 <InputNumberSlider
@@ -135,7 +155,7 @@ export default function TdClass({
                 <label>px</label>
               </NumberInputDiv>
             ) : null}
-            {useEditWidth === true ? (
+            {deleteTd ? (
               <EditButton
                 className="btn btn-primary"
                 onClick={() => {

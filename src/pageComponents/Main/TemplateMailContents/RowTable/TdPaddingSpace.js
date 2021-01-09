@@ -1,8 +1,8 @@
 import React, { useContext } from "react";
-import { backImageTemplateStore } from "../../../../stores/backImageTemplateStore";
+import { globalStateStore } from "../../../../stores/globalStateStore";
 
 export default function TdPaddingSpace({ width }) {
-  const globalState = useContext(backImageTemplateStore);
+  const globalState = useContext(globalStateStore);
   const { state } = globalState;
   const tempTdStyle = {
     fontSize: 0,

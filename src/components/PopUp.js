@@ -11,7 +11,7 @@ const PopUp = ({}) => {
         type: "DELETE_POPOUP_MESSAGE",
         value: { popUpMessages: message }
       });
-    }, 1500);
+    }, 1000);
   });
 
   return (
@@ -35,7 +35,7 @@ const PopUpBox = ({ message }) => {
         type: "DELETE_POPOUP_MESSAGE",
         value: { popUpMessage: message }
       });
-    }, 2000);
+    }, 1000);
   });
   const [active, setActive] = useState(false);
   useEffect(() => {
@@ -95,7 +95,7 @@ const PopUpDiv = styled.div`
   ${(props) => {
     if (props.active) {
       return css`
-        animation: ${boxFadeOut} 1.5s 1s linear;
+        animation: ${boxFadeOut} 1s linear;
       `;
     }
   }}

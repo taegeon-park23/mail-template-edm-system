@@ -1,4 +1,5 @@
 import React from "react";
+import { Route, Link } from "react-router-dom";
 import { StateProvider } from "./stores/globalStateStore";
 
 // pages
@@ -18,8 +19,17 @@ class App extends React.Component {
   render() {
     return (
       <div className="Main">
+        <ul>
+          <li>
+            <Link to="/login">Login</Link>
+          </li>
+          <li>
+            <Link to="/main">Main</Link>
+          </li>
+        </ul>
         <StateProvider>
-          <Main />
+          <Route path="/login" component={Login} />
+          <Route path="/main" exact={true} component={Main} />
           <PopUp />
         </StateProvider>
         {/* <Login /> */}

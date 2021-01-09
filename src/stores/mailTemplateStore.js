@@ -6,20 +6,44 @@ const initialState = {
   saveContentsStatus: false,
   contents: {
     header: {
-      tdClasses: [{ align: "center", width: "30", content: `<b>header</b>` }]
+      tdClasses: [
+        {
+          align: "center",
+          width: "30",
+          height: "200",
+          content: `<b>header</b>`
+        }
+      ]
     },
     body: {
       contentRowTables: [
         {
           tdClasses: [
-            { align: "center", width: "30", content: `<b>td1</b>` },
-            { align: "center", width: "30", content: `<b>td2</b>` }
+            {
+              align: "center",
+              width: "30",
+              height: "200",
+              content: `<b>td1</b>`
+            },
+            {
+              align: "center",
+              width: "30",
+              height: "200",
+              content: `<b>td2</b>`
+            }
           ]
         }
       ]
     },
     footer: {
-      tdClasses: [{ align: "center", width: "30", content: `<b>footer</b>` }]
+      tdClasses: [
+        {
+          align: "center",
+          width: "30",
+          height: "200",
+          content: `<b>footer</b>`
+        }
+      ]
     }
   }
 };
@@ -31,7 +55,10 @@ const StateProvider = ({ children }) => {
   const [state, dispatch] = useReducer((state, action) => {
     switch (action.type) {
       case "SAVE_ONOFF_CONTENTS":
-        return { ...state, saveContentsStatus: action.value.saveContentStatus };
+        return {
+          ...state,
+          saveContentsStatus: action.value.saveContentsStatus
+        };
       case "UPDATE_CONTENTS":
         return {
           ...state,

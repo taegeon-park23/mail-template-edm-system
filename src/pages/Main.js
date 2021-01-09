@@ -9,10 +9,10 @@ import MainDropdownBar from "../pageComponents/Main/MainDropDownBar";
 import TemplateBackground from "../pageComponents/Main/TemplateBackground";
 import TemplateMailContents from "../pageComponents/Main/TemplateMailContents";
 
-import { backImageTemplateStore } from "../stores/backImageTemplateStore";
+import { globalStateStore } from "../stores/globalStateStore";
 import "./Main.css";
 export default function Main() {
-  const globalState = useContext(backImageTemplateStore);
+  const globalState = useContext(globalStateStore);
   const { state, dispatch } = globalState;
 
   useEffect(() => {
@@ -21,7 +21,6 @@ export default function Main() {
       "TemplateMailContents"
     );
     //[페이지 전환] TemplateBackground, TemplateMailContents page 전환
-    console.log(state.templateBackground);
     if (state.templateBackground === "backMail") {
       TemplateMailContentsDom.style.display = "none";
       TemplateBackgroundDom.style.display = "block";

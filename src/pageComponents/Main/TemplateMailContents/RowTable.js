@@ -1,20 +1,24 @@
-import React, { Fragment, useContext, useState } from "react";
+import React, { Fragment, useContext, useEffect, useState } from "react";
 import styled from "styled-components";
 //components
 import TdPaddingSpace from "./RowTable/TdPaddingSpace";
 import TdClass from "./RowTable/TdClass";
-import { backImageTemplateStore } from "../../../stores/backImageTemplateStore";
-
+import { globalStateStore } from "../../../stores/globalStateStore";
+import { mailTemplateStore } from "../../../stores/mailTemplateStore";
 const RowTable = ({
-  height,
-  align,
+  header,
+  footer,
   tdClasses,
   rowTableIndex,
   deleteRowTable
 }) => {
-  const globalState = useContext(backImageTemplateStore);
+  const globalState = useContext(globalStateStore);
   const { state } = globalState;
+  const mailGlobalState = useContext(mailTemplateStore);
+  const mailState = mailGlobalState.state;
+  const mailDispatch = mailGlobalState.dispatch;
   const [editableTdClasses, setEditableTdClasses] = useState(tdClasses);
+
   const tempTdStyle = {
     position: "relative"
   };
@@ -22,9 +26,26 @@ const RowTable = ({
 
   const onClickAddTdButton = () => {
     const newTdClasses = [].concat(editableTdClasses);
-    const newTdClass = { align: "center", width: "30", content: `<b>td</b>` };
+    const newTdClass = {
+      align: "center",
+      width: "30",
+      height: "200",
+      content: `<b>td</b>`
+    };
     newTdClasses.push(newTdClass);
     setEditableTdClasses(newTdClasses);
+    const newContents = { ...mailState.contents };
+    if (header === true) {
+      newContents.header.tdClasses = newTdClasses;
+    } else if (footer === true) {
+      newContents.footer.tdClasses = newTdClasses;
+    } else {
+      newContents.body.contentRowTables[rowTableIndex].tdClasses = newTdClasses;
+      mailDispatch({
+        type: "UPDATE_CONTENTS",
+        value: { contents: newContents }
+      });
+    }
   };
 
   const onClickDeleteTdButton = (index) => {
@@ -39,6 +60,18 @@ const RowTable = ({
       .slice(0, index)
       .concat(tempTdClasses.slice(index + 1, tempTdClasses.length));
     setEditableTdClasses(newTdClasses);
+    const newContents = { ...mailState.contents };
+    if (header === true) {
+      newContents.header.tdClasses = newTdClasses;
+    } else if (footer === true) {
+      newContents.footer.tdClasses = newTdClasses;
+    } else {
+      newContents.body.contentRowTables[rowTableIndex].tdClasses = newTdClasses;
+      mailDispatch({
+        type: "UPDATE_CONTENTS",
+        value: { contents: newContents }
+      });
+    }
   };
 
   return (
@@ -75,10 +108,11 @@ const RowTable = ({
                       <Fragment>
                         <TdPaddingSpace width={"5%"} />
                         <TdClass
+                          header={header}
+                          footer={footer}
                           rowTableIndex={rowTableIndex}
                           index={i}
                           tdClass={tdClass}
-                          height={height}
                           deleteTd={onClickDeleteTdButton}
                         />
                       </Fragment>
@@ -86,10 +120,11 @@ const RowTable = ({
                   else if (i === editableTdClasses.length - 2)
                     return (
                       <TdClass
+                        header={header}
+                        footer={footer}
                         rowTableIndex={rowTableIndex}
                         index={i}
                         tdClass={tdClass}
-                        height={height}
                         deleteTd={onClickDeleteTdButton}
                       />
                     );
@@ -97,10 +132,11 @@ const RowTable = ({
                     return (
                       <Fragment>
                         <TdClass
+                          header={header}
+                          footer={footer}
                           rowTableIndex={rowTableIndex}
                           index={i}
                           tdClass={tdClass}
-                          height={height}
                           deleteTd={onClickDeleteTdButton}
                         />
                         <TdPaddingSpace width={"5%"} />
@@ -108,7 +144,13 @@ const RowTable = ({
                     );
                 })
               ) : editableTdClasses.length === 0 ? null : (
-                <TdClass tdClass={tdClasses[0]} height={height} />
+                <TdClass
+                  header={header}
+                  footer={footer}
+                  index={0}
+                  rowTableIndex={rowTableIndex}
+                  tdClass={tdClasses[0]}
+                />
               )}
             </tr>
           </tbody>
