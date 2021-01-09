@@ -8,7 +8,9 @@ const repository = "github";
 const currentProgress = "10%";
 ```
 # 완료 사항
-1.  Mail From Edit 기능 구현
+1. Mail Form Edit 기능 구현
+2. Mail Form 상태 동기화
+3. react-router-dom 도입
 
 # 현재 이슈 사항
 1. 완성된 Eamil Form의 background image가 보이지 않는 현상
@@ -22,6 +24,8 @@ const currentProgress = "10%";
 1. 화면정의서 View 구현
 
 # 남은 구현 사항
-1. 예시 메일 폼 템플릿 1개 이상 구현
-2. React 관련 state, store를 사용하여 Mail Form 수정 사항, 저장, 불러오기 기능 구현
-3. 스프링 서버와 연동
+1. 화면정의서대로, 로그인폼, 아이디 및 비밀번호 찾기, 회원가입, 메인메뉴 구현
+2. 메일 폼 중간저장 기능 도입(우선적으로 loaclStorage를 사용)
+2. 예시 메일 폼 템플릿 1개 이상 구현
+3. React 관련 state, store를 사용하여 Mail Form 수정 사항, 저장, 불러오기 기능 구현
+4. 스프링 서버와 연동
