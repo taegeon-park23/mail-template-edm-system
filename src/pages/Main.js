@@ -1,4 +1,5 @@
 import React, { useContext, useEffect } from "react";
+import { StateProvider } from "../stores/mailTemplateStore";
 // import styled from "styled-components";
 // import ReactHtmlParser from "react-html-parser";
 
@@ -41,7 +42,11 @@ export default function Main() {
         <MainDropdownBar onClickToggle={state.onClickToggle} />
 
         <TemplateBackground />
-        <TemplateMailContents tableWidth={600} />
+
+        {/* 템플릿 중간 저장, 중가 저장 및 불러오기를 위한 StateProvider */}
+        <StateProvider>
+          <TemplateMailContents tableWidth={600} />
+        </StateProvider>
       </div>
       {/* <!-- /#page-content-wrapper --> */}
     </div>
