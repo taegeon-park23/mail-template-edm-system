@@ -14,10 +14,11 @@ const initialState = {
   convertedImage: "#",
   templateBackground: "backImage",
   tableHeight: 1000,
-  boxShadow: true
+  boxShadow: true,
+  popUpMessages: []
 };
-const backImageTemplateStore = createContext(initialState);
-const { Provider } = backImageTemplateStore;
+const globalStateStore = createContext(initialState);
+const { Provider } = globalStateStore;
 
 // Main Reducer
 const StateProvider = ({ children }) => {
@@ -82,6 +83,39 @@ const StateProvider = ({ children }) => {
           ...state,
           boxShadow: action.value.boxShadow
         };
+      case "ADD_POPUP_MESSAGE": {
+        const newPopUpMessages = [].concat(state.popUpMessages);
+        newPopUpMessages.push(action.value.popUpMessage);
+        return {
+          ...state,
+          popUpMessages: newPopUpMessages
+        };
+      }
+      case "DELETE_POPOUP_MESSAGE": {
+        let newPopUpMessages = [].concat(state.popUpMessages);
+        const findIndex = newPopUpMessages.indexOf(
+          `${action.value.popUpMessage}`
+        );
+        console.log(action.value.popUpMessage, "-");
+        console.log(newPopUpMessages[0] == "" + action.value.popUpMessage);
+        if (findIndex !== -1) {
+          if (findIndex === 1) newPopUpMessages = [];
+          else if (findIndex === newPopUpMessages.length - 1)
+            newPopUpMessages.pop();
+          else {
+            newPopUpMessages = newPopUpMessages
+              .slice(0, findIndex)
+              .concat(
+                newPopUpMessages.slice(findIndex + 1, newPopUpMessages.length)
+              );
+          }
+          return {
+            ...state,
+            popUpMessages: newPopUpMessages
+          };
+        }
+        return { ...state };
+      }
       default:
         throw new Error(`Unhandled action type: ${action.type}`);
     }
@@ -90,4 +124,4 @@ const StateProvider = ({ children }) => {
   return <Provider value={{ state, dispatch }}>{children}</Provider>;
 };
 
-export { backImageTemplateStore, StateProvider };
+export { globalStateStore, StateProvider };

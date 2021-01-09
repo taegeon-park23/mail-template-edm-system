@@ -30,17 +30,15 @@ const { Provider } = mailTemplateStore;
 const StateProvider = ({ children }) => {
   const [state, dispatch] = useReducer((state, action) => {
     switch (action.type) {
-      case "SAVE_ON_CONTENTS":
-        return { ...state, saveContentsStatus: true };
-      case "SAVE_OFF_CONTENTS":
-        return { ...state, saveContentsStatus: false };
+      case "SAVE_ONOFF_CONTENTS":
+        return { ...state, saveContentsStatus: action.value.saveContentStatus };
       case "UPDATE_CONTENTS":
         return {
           ...state,
           contents: action.value.contents
         };
       default:
-        throw new Error(`Unhandled action type: ${action.type}`);
+        throw new console.log(`Unhandled action type: ${action.type}`);
     }
   }, initialState);
 
