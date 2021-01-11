@@ -7,7 +7,7 @@ import BoxEditor from "../../components/CustomEditor";
 import Modal from "../../components/Modal";
 import ResizableDiv from "./TemplateBackground/ResizableDiv";
 import CreateBoxModal from "./TemplateBackground/CreateBoxModal";
-import AddImageModal from "./TemplateBackground/AddImageModal";
+import AddImageModal from "../../components/AddImageModal";
 import { globalStateStore } from "../../stores/globalStateStore";
 
 export default function TemplateBackground() {
@@ -220,19 +220,20 @@ export default function TemplateBackground() {
   return (
     <div id="TemplateBackground" className="container-fluid">
       {/* 박스 생성 모달 버튼 */}
-      <ModalButton
-        className="btn btn-outline-dark"
-        onClick={onClickModalButton}
-      >
-        Modal
-      </ModalButton>
-      <ResultButton
-        className="btn btn-outline-dark"
-        onClick={onClickConvertButton}
-      >
-        Convert
-      </ResultButton>
-
+      <MenuDiv>
+        <ModalButton
+          className="btn btn-outline-dark"
+          onClick={onClickModalButton}
+        >
+          Modal
+        </ModalButton>
+        <ResultButton
+          className="btn btn-outline-dark"
+          onClick={onClickConvertButton}
+        >
+          Convert
+        </ResultButton>
+      </MenuDiv>
       {/* 박스 생성 모달 */}
       {state.modalStatus === true ? (
         <Modal
@@ -297,6 +298,19 @@ export default function TemplateBackground() {
     </div>
   );
 }
+const MenuDiv = styled.div`
+  margin-bottom: 40px;
+  padding: 5px;
+  font-size: 1em;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+
+  button {
+    margin-right: 5px;
+  }
+`;
+
 const TemplateFormWrapper = styled.div`
   display: flex;
   justify-content: center;

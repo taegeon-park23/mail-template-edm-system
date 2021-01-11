@@ -1,10 +1,17 @@
 import React, { useEffect, useState } from "react";
 
-export default function AddImageModal({ synkEditorToResult }) {
+export default function AddImageModal({ synkEditorToResult, onlySrc }) {
   const [imageSrc, setImageSrc] = useState("#");
+  const [link, setLink] = useState("#");
   useEffect(() => {
-    synkEditorToResult(`<p></p><img src='${imageSrc}'/><p></p>`);
-  }, [imageSrc]);
+    if (onlySrc === true) {
+      synkEditorToResult({ src: `${imageSrc}`, link: link });
+    } else {
+      synkEditorToResult(
+        `<p style="margin:0"></p><img src='${imageSrc}'/><p style="margin:0"></p>`
+      );
+    }
+  }, [imageSrc, link]);
 
   const onPasteOnCard = (e) => {
     // debugger;
@@ -68,6 +75,23 @@ export default function AddImageModal({ synkEditorToResult }) {
         <h5 className="card-title">Image drop down</h5>
         <p className="card-text">Drop down or paste image in this area.</p>
         <p className="card-text"></p>
+
+        {onlySrc === true ? (
+          <p>
+            <label for="link">link</label>
+            <input
+              type="text"
+              class="form-control"
+              id="link"
+              aria-describedby="iink"
+              placeholder="link"
+              value={link}
+              onChange={(e) => {
+                setLink(e.target.value);
+              }}
+            />
+          </p>
+        ) : null}
       </div>
     </div>
   );

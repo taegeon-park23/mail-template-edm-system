@@ -25,10 +25,37 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
   const mailDispatch = mailGlobalState.dispatch;
 
   const [contents, setContents] = useState(mailState.contents);
+  const [bgcolor, setBgcolor] = useState(mailState.bgcolor);
   const convertToHTML = () => {
     const resultDoc = document.getElementById("TemplateMailContentsTable");
     const downloadHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Email Design</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    </head><body background="${backState.convertedImage}" style="background-repeat:no-repeat">${resultDoc.innerHTML}</body></html>`;
+    <!--[if (mso 16)]>
+    <style type="text/css">
+    a {text-decoration: none;}
+    </style>
+    <![endif]-->
+    <!--[if gte mso 9]><style>sup { font-size: 100% !important; }</style><![endif]-->
+    <!--[if gte mso 9]>
+      <v:rect xmlns_v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;">
+        <v:fill type="tile" src="${backState.convertedImage}" color="#7bceeb" />
+        <v:textbox style="mso-fit-shape-to-text:true" inset="0,0,0,0">
+      <![endif]-->
+    <!--[if gte mso 9]>
+<xml>
+    <o:OfficeDocumentSettings>
+    <o:AllowPNG></o:AllowPNG>
+    <o:PixelsPerInch>96</o:PixelsPerInch>
+    </o:OfficeDocumentSettings>
+</xml>
+<![endif]-->
+    </head><body background="${backState.convertedImage}" style="background-repeat:no-repeat">
+    <!--[if gte mso 9]>
+               <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
+				<v:fill type="tile" color="#fff1e6"></v:fill>
+			</v:background>
+		<![endif]-->
+    ${resultDoc.innerHTML}
+    </body></html>`;
     const element = document.createElement("a");
     element.setAttribute(
       "href",
@@ -84,33 +111,21 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
     const tdClasses = [tdClass];
     const newContents = { ...mailState.contents };
     const newBody = newContents.body;
-    newBody.contentRowTables.push({ tdClasses: tdClasses });
-    mailDispatch({ type: "UPDATE_CONTENTS", value: { contents: newContents } });
+    const newContentRowTables = newBody.contentRowTables;
+    const tempContentRowTable = newContentRowTables.pop();
+    newContentRowTables.push({
+      tdClasses: tdClasses
+    });
+    newContentRowTables.push({
+      tdClasses: tempContentRowTable.tdClasses
+    });
+    setContents(newContents);
+    mailDispatch({
+      type: "UPDATE_CONTENTS",
+      value: { version: mailState.version + 1, contents: newContents }
+    });
   };
 
-  const onClickDeleteContentRow = (index) => {
-    const newContents = { ...mailState.contents };
-    const newBody = newContents.body;
-    let tempContentRowTables = newBody.contentRowTables;
-    if (index === 0) return;
-    if (index === tempContentRowTables.length - 1) {
-      tempContentRowTables.pop();
-      mailDispatch({
-        type: "UPDATE_CONTENTS",
-        value: { contents: newContents }
-      });
-    } else {
-      tempContentRowTables = tempContentRowTables
-        .slice(0, index)
-        .concat(
-          tempContentRowTables.slice(index + 1, tempContentRowTables.length)
-        );
-      mailDispatch({
-        type: "UPDATE_CONTENTS",
-        value: { contents: newContents }
-      });
-    }
-  };
   const onClickConvertButton = (e) => {
     convertToBackUseCallback();
   };
@@ -142,55 +157,72 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
   };
   return (
     <div id="TemplateMailContents" className="container-fluid">
-      {backState.boxShadow === false ? (
+      <MenuDiv>
+        {backState.boxShadow === false ? (
+          <Button
+            className="btn btn-outline-dark"
+            onClick={() => {
+              onClickConvertBoxShadow(true);
+            }}
+          >
+            {`테두리 ON`}
+          </Button>
+        ) : (
+          <Button
+            className="btn btn-outline-dark"
+            onClick={() => {
+              onClickConvertBoxShadow(false);
+            }}
+          >
+            {`테두리 OFF`}
+          </Button>
+        )}
         <Button
           className="btn btn-outline-dark"
           onClick={() => {
-            onClickConvertBoxShadow(true);
+            onClickAddContentRow();
           }}
         >
-          {`테두리 ON`}
+          Content 추가
         </Button>
-      ) : (
+        <ConvertButton
+          className="btn btn-outline-dark"
+          onClick={onClickConvertButton}
+        >
+          Background 전환
+        </ConvertButton>
         <Button
           className="btn btn-outline-dark"
           onClick={() => {
-            onClickConvertBoxShadow(false);
+            onClickTemprarySave();
           }}
         >
-          {`테두리 OFF`}
+          임시저장
         </Button>
-      )}
-      <Button
-        className="btn btn-outline-dark"
-        onClick={() => {
-          onClickAddContentRow();
-        }}
-      >
-        Content 추가
-      </Button>
-      <ConvertButton
-        className="btn btn-outline-dark"
-        onClick={onClickConvertButton}
-      >
-        Background 전환
-      </ConvertButton>
-      <Button
-        className="btn btn-outline-dark"
-        onClick={() => {
-          onClickTemprarySave();
-        }}
-      >
-        임시저장
-      </Button>
 
-      <ConvertButton
-        className="btn btn-outline-dark"
-        onClick={onClickConvertHtmlButton}
-      >
-        HTML 변환
-      </ConvertButton>
-
+        <ConvertButton
+          className="btn btn-outline-dark"
+          onClick={onClickConvertHtmlButton}
+        >
+          HTML 변환
+        </ConvertButton>
+      </MenuDiv>
+      <ColorPickerDiv className="input-group mb-3">
+        <div className="input-group-prepend">
+          <span className="input-group-text" id="basic-addon1">
+            배경색
+          </span>
+          <div id="cp4" class="input-group" title="Using color option">
+            <ColorPickerInput
+              type="color"
+              class="form-control input-lg"
+              onChange={(e) => {
+                setBgcolor(e.target.value);
+              }}
+            />
+          </div>
+        </div>
+      </ColorPickerDiv>
       <TemplateFormWrapper>
         <div id="TemplateMailContentsDiv">
           <BackImageDiv>
@@ -206,38 +238,34 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
               cellPadding={0}
               cellSpacing={0}
               width={tableWidth}
-              // background={`${backState.convertedImage}`}
             >
               <tbody>
-                {/* header */}
-                <RowTable
-                  header={true}
-                  height={200}
-                  tdClasses={mailState.contents.header.tdClasses}
-                />
-                <EmptyRowPlace height={30} />
-                {/* content */}
-                {mailState.contents.body.contentRowTables.map(
-                  (contentRowTale, i) => {
-                    return (
-                      <Fragment>
-                        <RowTable
-                          rowTableIndex={i}
-                          deleteRowTable={onClickDeleteContentRow}
-                          height={300}
-                          tdClasses={contentRowTale.tdClasses}
-                        />
-                        <EmptyRowPlace height={30} />
-                      </Fragment>
-                    );
-                  }
-                )}
-                {/* footer */}
-                <RowTable
-                  footer={true}
-                  height={100}
-                  tdClasses={mailState.contents.footer.tdClasses}
-                />
+                <tr>
+                  <td
+                    bgcolor={bgcolor}
+                    style={{
+                      // backgroundColor: "#1a1a1a",
+                      backgroundImage: `${backState.convertedImage}`,
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                      backgroundColor: `${bgcolor}`
+                    }}
+                    background={`${backState.convertedImage}`}
+                  >
+                    {mailState.contents.body.contentRowTables.map(
+                      (contentRowTale, i) => {
+                        return (
+                          <RowTable
+                            key={`${mailState.version}-${i}`}
+                            rowTableIndex={i}
+                            height={300}
+                            tdClasses={contentRowTale.tdClasses}
+                          />
+                        );
+                      }
+                    )}
+                  </td>
+                </tr>
               </tbody>
             </table>
           </div>
@@ -247,6 +275,25 @@ export default function TemplateMailContents({ tableWidth, tableHeight }) {
   );
 }
 
+const MenuDiv = styled.div`
+  margin-bottom: 40px;
+  padding: 5px;
+  font-size: 1em;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+
+  button {
+    margin-right: 5px;
+  }
+`;
+const ColorPickerDiv = styled.div`
+  width: 20px;
+`;
+const ColorPickerInput = styled.input`
+  width: 30px;
+  height: 100%;
+`;
 const Button = styled.button``;
 const ConvertButton = styled.button``;
 const TemplateFormWrapper = styled.div`

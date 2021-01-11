@@ -19,17 +19,9 @@ class App extends React.Component {
   render() {
     return (
       <div className="Main">
-        <ul>
-          <li>
-            <Link to="/login">Login</Link>
-          </li>
-          <li>
-            <Link to="/main">Main</Link>
-          </li>
-        </ul>
         <StateProvider>
           <Route path="/login" component={Login} />
-          <Route path="/main" exact={true} component={Main} />
+          <Route path="/" exact={true} component={Main} />
           <PopUp />
         </StateProvider>
         {/* <Login /> */}

@@ -1,17 +1,10 @@
 import React, { Fragment, useContext, useEffect, useState } from "react";
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 //components
-import TdPaddingSpace from "./RowTable/TdPaddingSpace";
 import TdClass from "./RowTable/TdClass";
 import { globalStateStore } from "../../../stores/globalStateStore";
 import { mailTemplateStore } from "../../../stores/mailTemplateStore";
-const RowTable = ({
-  header,
-  footer,
-  tdClasses,
-  rowTableIndex,
-  deleteRowTable
-}) => {
+const RowTable = ({ tdClasses, rowTableIndex, deleteRowTable }) => {
   const globalState = useContext(globalStateStore);
   const { state } = globalState;
   const mailGlobalState = useContext(mailTemplateStore);
@@ -28,24 +21,18 @@ const RowTable = ({
     const newTdClasses = [].concat(editableTdClasses);
     const newTdClass = {
       align: "center",
-      width: "30",
-      height: "200",
+      width: "200",
+      height: `${tdClasses[0].height}`,
       content: `<b>td</b>`
     };
     newTdClasses.push(newTdClass);
     setEditableTdClasses(newTdClasses);
     const newContents = { ...mailState.contents };
-    if (header === true) {
-      newContents.header.tdClasses = newTdClasses;
-    } else if (footer === true) {
-      newContents.footer.tdClasses = newTdClasses;
-    } else {
-      newContents.body.contentRowTables[rowTableIndex].tdClasses = newTdClasses;
-      mailDispatch({
-        type: "UPDATE_CONTENTS",
-        value: { contents: newContents }
-      });
-    }
+    newContents.body.contentRowTables[rowTableIndex].tdClasses = newTdClasses;
+    mailDispatch({
+      type: "UPDATE_CONTENTS",
+      value: { contents: newContents }
+    });
   };
 
   const onClickDeleteTdButton = (index) => {
@@ -61,118 +48,74 @@ const RowTable = ({
       .concat(tempTdClasses.slice(index + 1, tempTdClasses.length));
     setEditableTdClasses(newTdClasses);
     const newContents = { ...mailState.contents };
-    if (header === true) {
-      newContents.header.tdClasses = newTdClasses;
-    } else if (footer === true) {
-      newContents.footer.tdClasses = newTdClasses;
-    } else {
-      newContents.body.contentRowTables[rowTableIndex].tdClasses = newTdClasses;
-      mailDispatch({
-        type: "UPDATE_CONTENTS",
-        value: { contents: newContents }
-      });
-    }
+    newContents.body.contentRowTables[rowTableIndex].tdClasses = newTdClasses;
+    mailDispatch({
+      type: "UPDATE_CONTENTS",
+      value: { contents: newContents }
+    });
   };
 
   return (
-    <tr>
-      <td align="center" style={tdStyle}>
-        {state.boxShadow === true ? (
-          <Menus>
+    <Fragment>
+      {state.boxShadow === true ? (
+        <MenusWrapper>
+          <Menus height={tdClasses[0].height}>
             <EditButton className="btn btn-dark" onClick={onClickAddTdButton}>
               <span role="img" aria-label="img">
                 ➕
               </span>
             </EditButton>
-            {typeof rowTableIndex === "number" && rowTableIndex !== 0 ? (
-              <EditButton
-                className="btn btn-dark"
-                onClick={() => {
-                  deleteRowTable(rowTableIndex);
-                }}
-              >
-                <span role="img" aria-label="img">
-                  ➖
-                </span>
-              </EditButton>
-            ) : null}
           </Menus>
-        ) : null}
-        <table width={"100%"} border={0} cellPadding={0} cellSpacing={0}>
-          <tbody>
-            <tr>
-              {editableTdClasses.length !== 1 ? (
-                editableTdClasses.map((tdClass, i) => {
-                  if (i === editableTdClasses.length - 1)
-                    return (
-                      <Fragment>
-                        <TdPaddingSpace width={"5%"} />
-                        <TdClass
-                          header={header}
-                          footer={footer}
-                          rowTableIndex={rowTableIndex}
-                          index={i}
-                          tdClass={tdClass}
-                          deleteTd={onClickDeleteTdButton}
-                        />
-                      </Fragment>
-                    );
-                  else if (i === editableTdClasses.length - 2)
-                    return (
-                      <TdClass
-                        header={header}
-                        footer={footer}
-                        rowTableIndex={rowTableIndex}
-                        index={i}
-                        tdClass={tdClass}
-                        deleteTd={onClickDeleteTdButton}
-                      />
-                    );
-                  else
-                    return (
-                      <Fragment>
-                        <TdClass
-                          header={header}
-                          footer={footer}
-                          rowTableIndex={rowTableIndex}
-                          index={i}
-                          tdClass={tdClass}
-                          deleteTd={onClickDeleteTdButton}
-                        />
-                        <TdPaddingSpace width={"5%"} />
-                      </Fragment>
-                    );
-                })
-              ) : editableTdClasses.length === 0 ? null : (
-                <TdClass
-                  header={header}
-                  footer={footer}
-                  index={0}
-                  rowTableIndex={rowTableIndex}
-                  tdClass={tdClasses[0]}
-                />
-              )}
-            </tr>
-          </tbody>
-        </table>
-      </td>
-    </tr>
+        </MenusWrapper>
+      ) : null}
+      <table width={"100%"} border={0} cellPadding={0} cellSpacing={0}>
+        <tbody>
+          <tr>
+            {editableTdClasses.map((tdClass, i) => {
+              return (
+                <Fragment>
+                  <TdClass
+                    rowTableIndex={rowTableIndex}
+                    index={i}
+                    tdClass={tdClass}
+                    deleteTd={onClickDeleteTdButton}
+                  />
+                </Fragment>
+              );
+            })}
+          </tr>
+        </tbody>
+      </table>
+    </Fragment>
   );
 };
+const MenusWrapper = styled.div`
+  position: relative;
+  /* top: 0px; */
+  /* left: -40px; */
+`;
 const Menus = styled.div`
   position: absolute;
   background: none;
   display: flex;
-  flex-direction: column;
-  top: 0px;
-  left: -40px;
+  ${(props) => {
+    if (props.height < 24)
+      return css`
+        left: -30px;
+      `;
+    else
+      return css`
+        right: -30px;
+      `;
+  }}
+  z-index: 500px;
 `;
 const EditButton = styled.button`
   position: relative;
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
   padding: 0px;
-  font-weight: 800;
-  margin: 5px;
+  margin: 3px;
+  font-size: 10px;
 `;
 export default RowTable;

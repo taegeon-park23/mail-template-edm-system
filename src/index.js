@@ -8,6 +8,7 @@ import App from "./App";
 import "./include/bootstrap";
 // Importing the Bootstrap CSS
 import "./include/css/bootstrap.min.css";
+import "./assets/css/sb-admin-2.css";
 
 ReactDOM.render(
   <BrowserRouter>

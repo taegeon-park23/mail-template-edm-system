@@ -1,4 +1,5 @@
 import React, { useContext, useEffect } from "react";
+import styled from "styled-components";
 import { StateProvider } from "../stores/mailTemplateStore";
 // import styled from "styled-components";
 // import ReactHtmlParser from "react-html-parser";
@@ -10,10 +11,14 @@ import TemplateBackground from "../pageComponents/Main/TemplateBackground";
 import TemplateMailContents from "../pageComponents/Main/TemplateMailContents";
 
 import { globalStateStore } from "../stores/globalStateStore";
-import "./Main.css";
+
+import { mailTemplateStore } from "../stores/mailTemplateStore";
 export default function Main() {
   const globalState = useContext(globalStateStore);
   const { state, dispatch } = globalState;
+  const mailStateStore = useContext(mailTemplateStore);
+  const mailState = mailStateStore.state;
+  const mailDispatch = mailStateStore.dispatch;
 
   useEffect(() => {
     const TemplateBackgroundDom = document.getElementById("TemplateBackground");
@@ -31,23 +36,30 @@ export default function Main() {
   });
 
   return (
-    <div className="d-flex" id="wrapper">
+    <MainDiv id="wrapper">
       {/* <!-- Sidebar --> */}
       <MainSidebar scale={state.toggle} />
       {/* <!-- Page Content --> */}
-      <div id="page-content-wrapper">
+      <MainContentDiv>
         {/* dropdown 메뉴 */}
 
         <MainDropdownBar onClickToggle={state.onClickToggle} />
-
         <TemplateBackground />
-
         {/* 템플릿 중간 저장, 중가 저장 및 불러오기를 위한 StateProvider */}
         <StateProvider>
-          <TemplateMailContents tableWidth={600} />
+          <TemplateMailContents />
         </StateProvider>
-      </div>
+      </MainContentDiv>
       {/* <!-- /#page-content-wrapper --> */}
-    </div>
+    </MainDiv>
   );
 }
+
+const MainDiv = styled.div`
+  display: flex;
+`;
+
+const MainContentDiv = styled.div`
+  min-width: 760px;
+  width: 100vw;
+`;
