@@ -1,19 +1,3 @@
-<<<<<<< HEAD
-<<<<<<< Codesandbox
-<<<<<<< Codesandbox
-=======
-
-# mail-template-system
-
-> > > > > > > GitHub
-> > > > > > > EDM(Electronic Direct Mail) system
-
-<<<<<<< Codesandbox
-
-# mail-template-edm-system
-
-# Created with CodeSandbox
-
 # mail-template-system
 
 EDM(Electronic Direct Mail) system
