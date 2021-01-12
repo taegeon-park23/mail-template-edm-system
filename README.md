@@ -2,8 +2,6 @@
 
 EDM(Electronic Direct Mail) system
 
-> > > > > > > GitHub
-
 # 대용량 + 영업메일 + 메일 폼 템플릿 + 메일 폼 수정 기능
 
 ````js
@@ -27,6 +25,8 @@ const currentProgress = "10%";
 6. Main에서 Sidebar 구현, TopBar 구현
 7. mail html template 구현 방식 변경
 8. 로그인 폼 구현
+9. SendMail View 구현 (미리보기구현)
+10. MailTemplate 버그픽스
 
 # 현재 이슈 사항
 1. 현재 이메일을 보낼 SMTP 서버 미선정
