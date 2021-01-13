@@ -32,7 +32,7 @@ export default function TemplateBackground() {
     if (state.currentEditingBoxHandler && state.editorModalStatus === true)
       state.currentEditingBoxHandler({
         ...state.currentBoxesState,
-        content: state.html
+        content: state.html,
       });
   });
 
@@ -50,8 +50,8 @@ export default function TemplateBackground() {
             editorModalStatus: true,
             currentEditingBoxHandler: updateHtmlHandler,
             currentBoxesState: boxesState,
-            html: boxesState.content
-          }
+            html: boxesState.content,
+          },
         });
       }
     } else {
@@ -61,8 +61,8 @@ export default function TemplateBackground() {
         value: {
           editorModalStatus: false,
           currentEditingBoxHandler: null,
-          currentBoxesState: null
-        }
+          currentBoxesState: null,
+        },
       });
     }
   };
@@ -76,38 +76,11 @@ export default function TemplateBackground() {
   const onClickModalButton = (e) => {
     dispatch({
       type: "ON_OFF_MODAL_BUTTON",
-      value: { modalStatus: !state.modalStatus }
+      value: { modalStatus: !state.modalStatus },
     });
   };
 
-  // Background Image 수정 화면과 Mail From 화면 전환 callBack
-  const convertToMailCallback = useCallback(() => {
-    dispatch({
-      type: "ON_OFF_ALL_MODIFIABLE_BOXES_STATE",
-      value: { modifiableBoxesState: false }
-    });
-    const resultDoc = document.getElementById("templateFomrTable");
-    resultDoc.style.background = "";
-    DomToImage.toPng(resultDoc)
-      .then(function (dataUrl) {
-        dispatch({
-          type: "CONVERTING_IMAGE",
-          value: {
-            convertedImage: dataUrl,
-            modifiableBoxesState: false,
-            templateBackground: "backImage"
-          }
-        });
-      })
-      .catch(function (err) {
-        alert("oops ", err);
-      });
-  });
-
-  const onClickConvertButton = (e) => {
-    convertToMailCallback();
-  };
-
+  
   // Box에 image 추가 모달 on&off
   const onClickAddImageModalOn = (updateHtmlHandler, boxesState) => {
     if (state.addImageModalStatus === false) {
@@ -117,23 +90,23 @@ export default function TemplateBackground() {
           value: {
             addImageModalStatus: true,
             currentEditingBoxHandler: updateHtmlHandler,
-            currentBoxesState: boxesState
-          }
+            currentBoxesState: boxesState,
+          },
         });
       }
     } else {
       // 박스를 닫을 때
       state.currentEditingBoxHandler({
         ...state.currentBoxesState,
-        content: state.html
+        content: state.html,
       });
       dispatch({
         type: "OFF_ADD_IMAGE_MODAL",
         value: {
           addImageModalStatus: false,
           currentEditingBoxHandler: null,
-          currentBoxesState: null
-        }
+          currentBoxesState: null,
+        },
       });
     }
   };
@@ -164,8 +137,8 @@ export default function TemplateBackground() {
       value: {
         boxes: newBoxes,
         boxKeyIndex: state.boxKeyIndex + 1,
-        modalStatus: false
-      }
+        modalStatus: false,
+      },
     });
   };
 
@@ -219,20 +192,25 @@ export default function TemplateBackground() {
 
   return (
     <div id="TemplateBackground" className="container-fluid">
+      <p
+        className="text-center d-flex justify-content-center rounded-pill"
+        style={{ height: "30px" }}
+      >
+        <h5>템플릿의 배경화면을 꾸미세요</h5>
+      </p>
+      <h6 className="d-flex justify-content-center">
+        <strong className="text-primary">
+          메일 시스템에 따라 배경화면이 보이지 않을 수 있습니다.
+        </strong>
+      </h6>
       {/* 박스 생성 모달 버튼 */}
-      <MenuDiv>
+      <MenuDiv className="shadow-sm p-3 mb-5 bg-white rounded">
         <ModalButton
           className="btn btn-outline-dark"
           onClick={onClickModalButton}
         >
           Modal
         </ModalButton>
-        <ResultButton
-          className="btn btn-outline-dark"
-          onClick={onClickConvertButton}
-        >
-          Convert
-        </ResultButton>
       </MenuDiv>
       {/* 박스 생성 모달 */}
       {state.modalStatus === true ? (
@@ -319,7 +297,6 @@ const TemplateForm = styled.div`
   /* border: 1px solid black; */
 `;
 const ModalButton = styled.button``;
-const ResultButton = styled.button``;
 const BackMailDiv = styled.div`
   position: absolute;
   width: ${(props) => props.width}px;

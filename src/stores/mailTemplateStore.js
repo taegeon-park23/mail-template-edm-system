@@ -13,7 +13,7 @@ const initialContents = {
             width: "600",
             height: "10",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           }
         ]
       },
@@ -25,7 +25,7 @@ const initialContents = {
             width: "10",
             height: "200",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           },
           {
             align: "center",
@@ -41,7 +41,7 @@ const initialContents = {
             width: "10",
             height: "200",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           }
         ]
       },
@@ -53,7 +53,7 @@ const initialContents = {
             width: "600",
             height: "10",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           }
         ]
       },
@@ -65,7 +65,7 @@ const initialContents = {
             width: "10",
             height: "200",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           },
           {
             align: "center",
@@ -81,7 +81,7 @@ const initialContents = {
             width: "10",
             height: "200",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           }
         ]
       },
@@ -93,7 +93,7 @@ const initialContents = {
             width: "600",
             height: "10",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           }
         ]
       },
@@ -105,7 +105,7 @@ const initialContents = {
             width: "10",
             height: "150",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           },
           {
             align: "center",
@@ -121,7 +121,7 @@ const initialContents = {
             width: "10",
             height: "150",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           },
           {
             align: "center",
@@ -137,7 +137,7 @@ const initialContents = {
             width: "10",
             height: "150",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           }
         ]
       },
@@ -149,7 +149,7 @@ const initialContents = {
             width: "600",
             height: "10",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           }
         ]
       },
@@ -161,7 +161,7 @@ const initialContents = {
             width: "10",
             height: "100",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           },
           {
             align: "center",
@@ -177,7 +177,7 @@ const initialContents = {
             width: "10",
             height: "100",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           }
         ]
       },
@@ -189,13 +189,14 @@ const initialContents = {
             width: "600",
             height: "10",
             borderRadius: "0",
-            content: `<p></p>`
+            content: `<p style="padding:0px; margin:0px"></p>`
           }
         ]
       }
     ]
   }
 };
+
 const initialState = {
   // intialContents
   bgcolor: "white",
@@ -211,6 +212,11 @@ const { Provider } = mailTemplateStore;
 const StateProvider = ({ children }) => {
   const [state, dispatch] = useReducer((state, action) => {
     switch (action.type) {
+      case "DOWNLOAD_MAIL_STATE": 
+      return {
+          ...action.value.mailState,
+          version: state.version+1
+        }
       case "SAVE_ONOFF_CONTENTS":
         return {
           ...state,

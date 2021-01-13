@@ -2,7 +2,7 @@ import React, { useContext, useEffect } from "react";
 import { Route, Link, Switch } from "react-router-dom";
 import styled from "styled-components";
 
-import { StateProvider } from "../stores/mailTemplateStore";
+import { StateProvider,mailTemplateStore } from "../stores/mailTemplateStore";
 import MainSidebar from "../pageComponents/Main/MainSidebar";
 import MainDropdownBar from "../pageComponents/Main/MainDropDownBar";
 
@@ -16,6 +16,7 @@ import ManageAddressbook from "./ManageAddressbook";
 import TemplateStorage from "./TemplateStorage";
 import SendItems from "./SendItems";
 import Notification from "./Notification";
+import QuestionAndAnser from "./QuestionAndAnswer";
 export default function Main() {
   return (
     <MainDiv id="wrapper">
@@ -36,6 +37,7 @@ export default function Main() {
               <Route path="/templatestorage" component={TemplateStorage}/>
               <Route path="/senditems" component={SendItems}/>
               <Route path="/notification" component={Notification}/>
+              <Route path="/questionandanswer" component={QuestionAndAnser}/>
               <Route
                 // path 를 따로 정의하지 않으면 모든 상황에 렌더링됨
                 render={({ location }) => (

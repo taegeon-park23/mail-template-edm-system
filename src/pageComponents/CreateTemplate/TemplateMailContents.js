@@ -3,15 +3,13 @@ import React, {
   useContext,
   Fragment,
   useCallback,
-  useEffect
+  useEffect,
 } from "react";
-import DomToImage from "dom-to-image";
 import styled from "styled-components";
 import { globalStateStore } from "../../stores/globalStateStore";
 import { mailTemplateStore } from "../../stores/mailTemplateStore";
 
 //components
-import EmptyRowPlace from "./TemplateMailContents/EmptyRowPlace";
 import RowTable from "./TemplateMailContents/RowTable";
 export default function TemplateMailContents({ tableWidth, result }) {
   // 백그라운드 이미지, boxShadow 관련 상태 저장 store
@@ -25,11 +23,12 @@ export default function TemplateMailContents({ tableWidth, result }) {
   const mailDispatch = mailGlobalState.dispatch;
 
   // const [result, setResult] = useState(result);
+
   const [contents, setContents] = useState(mailState.contents);
   const [bgcolor, setBgcolor] = useState(mailState.bgcolor);
-  useEffect(()=>{
-    mailDispatch({type:"UPDATE_BGCOLOR", value:{bgcolor:bgcolor}});
-  },[bgcolor])
+  useEffect(() => {
+    mailDispatch({ type: "UPDATE_BGCOLOR", value: { bgcolor: bgcolor } });
+  }, [bgcolor]);
   // useEffect(() => {
   //   if (result === true)
   //     backDispatch({
@@ -89,35 +88,12 @@ export default function TemplateMailContents({ tableWidth, result }) {
     converToHTMLCallback();
   };
 
-  const convertToBackUseCallback = useCallback(() => {
-    backDispatch({ type: "CONVERT_BOX_SHADOW", value: { boxShadow: true } });
-    const resultDoc = document.getElementById("TemplateMailContentsTable");
-    resultDoc.style.background = "";
-    setTimeout(() => {
-      DomToImage.toPng(resultDoc)
-        .then(function (dataUrl) {
-          backDispatch({
-            type: "CONVERTING_IMAGE",
-            value: {
-              convertedImage: dataUrl,
-              modifiableBoxesState: true,
-              templateBackground: "backMail",
-              tableHeight: resultDoc.offsetHeight
-            }
-          });
-        })
-        .catch(function (err) {
-          alert("oops ", err);
-        });
-    });
-  });
-
   const onClickAddContentRow = () => {
     const tdClass = {
       align: "center",
       width: "30",
       height: "200",
-      content: `<b>td</b>`
+      content: `<b>td</b>`,
     };
     const tdClasses = [tdClass];
     const newContents = { ...mailState.contents };
@@ -125,44 +101,63 @@ export default function TemplateMailContents({ tableWidth, result }) {
     const newContentRowTables = newBody.contentRowTables;
     const tempContentRowTable = newContentRowTables.pop();
     newContentRowTables.push({
-      tdClasses: tdClasses
+      tdClasses: tdClasses,
     });
     newContentRowTables.push({
-      tdClasses: tempContentRowTable.tdClasses
+      tdClasses: tempContentRowTable.tdClasses,
     });
     setContents(newContents);
     mailDispatch({
       type: "UPDATE_CONTENTS",
-      value: { version: mailState.version + 1, contents: newContents }
+      value: { version: mailState.version + 1, contents: newContents },
     });
-  };
-
-  const onClickConvertButton = (e) => {
-    convertToBackUseCallback();
   };
 
   const onClickConvertBoxShadow = (status) => {
     backDispatch({
       type: "CONVERT_BOX_SHADOW",
       value: {
-        boxShadow: status
-      }
+        boxShadow: status,
+      },
     });
   };
+
+  const temporaryDownloadCallback = useCallback(() => {
+    if (localStorage.length > 0) {
+      backDispatch({
+        type: "ADD_POPUP_MESSAGE",
+        value: { popUpMessage: "임시 저장된 템플릿을 불러오고 있습니다." },
+      });
+      mailDispatch({
+        type: "DOWNLOAD_MAIL_STATE",
+        value: { mailState: JSON.parse(localStorage.getItem("tempMailState")) },
+      });
+    } else {
+      alert("불러올게 없습니다.");
+    }
+  });
 
   const temporarySaveCallback = useCallback(() => {
     backDispatch({
       type: "ADD_POPUP_MESSAGE",
-      value: { popUpMessage: "임시 저장 중" }
+      value: { popUpMessage: "임시 저장 중" },
     });
-    mailDispatch({type:"SAVE_ONOFF_CONTENTS", value:{saveContentsStatus: true}});
+    localStorage.removeItem("tempMailState");
+    localStorage.setItem("tempMailState", JSON.stringify(mailState));
+    mailDispatch({
+      type: "SAVE_ONOFF_CONTENTS",
+      value: { saveContentsStatus: true },
+    });
     setTimeout(() => {
-      mailDispatch({type:"SAVE_ONOFF_CONTENTS", value:{saveContentsStatus: false}});
+      mailDispatch({
+        type: "SAVE_ONOFF_CONTENTS",
+        value: { saveContentsStatus: false },
+      });
     }, 1000);
     setTimeout(() => {
       backDispatch({
         type: "ADD_POPUP_MESSAGE",
-        value: { popUpMessage: "임시 저장 완료" }
+        value: { popUpMessage: "임시 저장 완료" },
       });
     }, 1500);
   });
@@ -171,11 +166,26 @@ export default function TemplateMailContents({ tableWidth, result }) {
     temporarySaveCallback();
   };
 
+  const onClickTempraryDownload = () => {
+    temporaryDownloadCallback();
+  }
   return (
     <div id="TemplateMailContents" className="container-fluid">
       {result !== true ? (
         <Fragment>
-          <MenuDiv>
+          <p
+            className="text-center d-flex justify-content-center rounded-pill"
+            style={{ height: "30px" }}
+          >
+            <h5>템플릿을 수정하세요</h5>
+          </p>
+          <h6 className="d-flex justify-content-center">
+            <strong className="text-primary">
+              메일 시스템에 따라 화면이 달라질 수 있습니다.
+            </strong>
+          </h6>
+
+          <MenuDiv className="shadow-sm p-3 mb-3 bg-white rounded">
             {backState.boxShadow === false ? (
               <Button
                 className="btn btn-outline-dark"
@@ -203,12 +213,6 @@ export default function TemplateMailContents({ tableWidth, result }) {
             >
               Content 추가
             </Button>
-            <ConvertButton
-              className="btn btn-outline-dark"
-              onClick={onClickConvertButton}
-            >
-              Background 전환
-            </ConvertButton>
             <Button
               className="btn btn-outline-dark"
               onClick={() => {
@@ -216,6 +220,14 @@ export default function TemplateMailContents({ tableWidth, result }) {
               }}
             >
               임시저장
+            </Button>
+            <Button
+              className="btn btn-outline-dark"
+              onClick={() => {
+                onClickTempraryDownload();
+              }}
+            >
+              임시저장 불러오기
             </Button>
 
             <ConvertButton
@@ -225,15 +237,15 @@ export default function TemplateMailContents({ tableWidth, result }) {
               HTML 변환
             </ConvertButton>
           </MenuDiv>
-          <ColorPickerDiv className="input-group mb-3">
+          <ColorPickerDiv className="input-group mb-1">
             <div className="input-group-prepend">
               <span className="input-group-text" id="basic-addon1">
                 배경색
               </span>
-              <div id="cp4" class="input-group" title="Using color option">
+              <div id="cp4" className="input-group" title="Using color option">
                 <ColorPickerInput
                   type="color"
-                  class="form-control input-lg"
+                  className="form-control input-lg"
                   onChange={(e) => {
                     setBgcolor(e.target.value);
                   }}
@@ -269,7 +281,7 @@ export default function TemplateMailContents({ tableWidth, result }) {
                       backgroundImage: `${backState.convertedImage}`,
                       backgroundRepeat: "no-repeat",
                       backgroundPosition: "center",
-                      backgroundColor: `${bgcolor}`
+                      backgroundColor: `${bgcolor}`,
                     }}
                     background={`${backState.convertedImage}`}
                   >
@@ -305,11 +317,11 @@ const MenuDiv = styled.div`
   justify-content: center;
 
   button {
-    margin-right: 5px;
+    margin-right: 10px;
   }
 `;
 const ColorPickerDiv = styled.div`
-  width: 20px;
+  width: 50px;
 `;
 const ColorPickerInput = styled.input`
   width: 30px;

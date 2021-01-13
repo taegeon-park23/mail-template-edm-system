@@ -128,7 +128,10 @@ export default function TdClass({
             <AddImageModal
               onlySrc={true}
               synkEditorToResult={(image) => {
-                const newContent = `<a href="${image.link}"}>
+                const newContent = `
+               
+                <a href="${image.link}"}>
+                <p style="padding:0px; margin:0px"></p>
                 <img
                     src="${image.src}"
                     alt="image"
@@ -141,6 +144,7 @@ export default function TdClass({
                       background-color: none;
                     '
                   />
+                  <p style="padding:0px; margin:0px"></p>
                 </a>`;
                 setContent(newContent);
               }}
@@ -225,7 +229,7 @@ export default function TdClass({
               className="btn btn-primary"
               onClick={() => {
                 setTdBgcolor("");
-                setContent(`<p></p>`);
+                setContent(`<p style="margin:0px;"></p>`);
               }}
             >
               <span>여백전환</span>
@@ -307,7 +311,7 @@ export default function TdClass({
             </ColorPickerDiv>
           </Menus>
         ) : null}
-          <ContentWrapperP>{ReactHtmlParser(content)}</ContentWrapperP>
+          {ReactHtmlParser(content)}
         
       </td>
     </Fragment>
