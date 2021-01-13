@@ -63,25 +63,26 @@ export default function AddImageModal({ synkEditorToResult, onlySrc }) {
       onDrop={onDropOnCard}
     >
       <p></p>
-      <img
-        id="image place" //ref
-        className="card-img mx-auto"
-        src={imageSrc}
-        alt="#"
-        style={{ width: 300, height: 300 }}
-      />
-      <p></p>
-      <div className="card-img-overlay">
-        <h5 className="card-title">Image drop down</h5>
-        <p className="card-text">Drop down or paste image in this area.</p>
-        <p className="card-text"></p>
+      <figure className="figure">
+        <div className="d-flex justify-content-center align-items-center">
+          <img
+            id="image place" //ref
+            className="figure-img img-fluid rounded"
+            src={imageSrc}
+            alt="#"
+            style={{ width: 300, height: 300 }}
+          />
+        </div>
 
+        <figcaption class="figure-caption">
+          이미지를 끌어오거나 붙여넣기 하세요
+        </figcaption>
         {onlySrc === true ? (
           <p>
-            <label for="link">link</label>
+            <label for="link">이미지 링크</label>
             <input
               type="text"
-              class="form-control"
+              className="form-control"
               id="link"
               aria-describedby="iink"
               placeholder="link"
@@ -92,7 +93,8 @@ export default function AddImageModal({ synkEditorToResult, onlySrc }) {
             />
           </p>
         ) : null}
-      </div>
+      </figure>
+      <p></p>
     </div>
   );
 }

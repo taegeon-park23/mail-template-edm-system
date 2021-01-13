@@ -47,7 +47,7 @@ class MainSidebar extends React.Component {
 
         {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
-          <Link className="nav-link" to="/">
+          <Link className="nav-link" to="/draft">
             <span>&nbsp;임시보관함</span>
           </Link>
         </li>
@@ -57,7 +57,7 @@ class MainSidebar extends React.Component {
           </Link>
         </li>
         <li className="nav-item">
-          <Link className="nav-link" to="/">
+          <Link className="nav-link" to="/templatestorage">
             <span>&nbsp;템플릿 보관</span>
           </Link>
         </li>
@@ -68,12 +68,12 @@ class MainSidebar extends React.Component {
         <div className="sidebar-heading">주소록 관리</div>
         {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
-          <Link className="nav-link" to="/">
+          <Link className="nav-link" to="/managegroup">
             <span>&nbsp;그룹관리</span>
           </Link>
         </li>
         <li className="nav-item">
-          <Link className="nav-link" to="/">
+          <Link className="nav-link" to="/manageaddressbook">
             {/* <i>☎</i> */}
             <span>&nbsp;전체주소록관리</span>
           </Link>
@@ -86,7 +86,7 @@ class MainSidebar extends React.Component {
         <div className="sidebar-heading">Status</div>
         {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
-          <Link className="nav-link" to="/">
+          <Link className="nav-link" to="/senditems">
             <span>&nbsp;발송이력</span>
           </Link>
         </li>
@@ -97,7 +97,7 @@ class MainSidebar extends React.Component {
         <div className="sidebar-heading">시스템 관리</div>
         {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
-          <Link className="nav-link" to="/">
+          <Link className="nav-link" to="/notification">
             <span>&nbsp;공지사항</span>
           </Link>
         </li>

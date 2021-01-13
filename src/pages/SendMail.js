@@ -25,7 +25,7 @@ export default function SendMail({}) {
         <v:fill type="tile" src="${backState.convertedImage}" color="#7bceeb" />
         <v:textbox style="mso-fit-shape-to-text:true" inset="0,0,0,0">
       <![endif]--><!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG></o:AllowPNG><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
-    </head><body background="${backState.convertedImage}" style="background-repeat:no-repeat"><!--[if gte mso 9]><v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t"><v:fill type="tile" color="#fff1e6"></v:fill></v:background><![endif]-->
+    </head><body style="background-repeat:no-repeat"><!--[if gte mso 9]><v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t"><v:fill type="tile" color="#fff1e6"></v:fill></v:background><![endif]-->
     <table border="0" cellspadding="0" cesllspacing="0"><tbody><tr><td style="width: ${mailState.tableWidth}px">${mailResultDoc ? mailResultDoc.innerHTML : ""}</td></tr></tobdy></table>
      ${resultDoc? resultDoc.innerHTML : ""}
     </body></html>`;
@@ -78,7 +78,7 @@ export default function SendMail({}) {
             <button class="btn btn-primary rounded mr-3">임시저장</button>
           </div>
           <p
-            class="text-center d-flext justify-content-center"
+            class="text-center d-flext justify-content-center rounded-pill"
             style={{ height: "30px" }}
           >
             템플릿을 선택하여 메일을 보내세요
