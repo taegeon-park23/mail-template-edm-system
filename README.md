@@ -28,10 +28,11 @@ const currentProgress = "10%";
 9. SendMail View 구현 (미리보기구현)
 10. MailTemplate 버그픽스
 11. 화면정의서 뷰 구현
+12. 메일 폼 임시 저장, 임시 불러오기 기능 도입(우선적으로 loaclStorage를 사용, 1개의 템플릿만 저장 가능)
 ```js
-   const complete = [SendMail, Draft, CreateTamplate, TemplateStorage, ManageGroup, ManageAddressbook, SendItems, Notification];
+   const complete = [SendMail, Draft, CreateTamplate, TemplateStorage, ManageGroup, ManageAddressbook, SendItems, Notification, QuestionAndAnswer];
    
-   const todo = [QuestionAndAnswer, SignIn,FindAuthInfo]
+   const todo = [SignIn,FindAuthInfo]
 ```
 
 # 현재 이슈 사항
@@ -43,8 +44,9 @@ const currentProgress = "10%";
 1. 화면정의서 View 구현
 
 # 남은 구현 사항
-1. 메일 폼 중간저장 기능 도입(우선적으로 loaclStorage를 사용)
-2. 예시 메일 폼 템플릿 1개 이상 구현
-3. React 관련 state, store를 사용하여 Mail Form 수정 사항, 저장, 불러오기 기능 구현
-4. 스프링 서버와 연동
+1. 예시 메일 폼 템플릿 1개 이상 구현
+2. 테이블 설계 및 구현
+3. DB 서버와의 연동
+4. 메일 보내기 시범
+5. 스프링서버와 연동하여 여러 콘텐츠 페이징 기능 및, CRUD 구현
 
