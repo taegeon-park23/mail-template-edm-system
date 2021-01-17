@@ -443,7 +443,6 @@ const CloseButton = styled.button`
   color: #52616a;
   padding: 3px;
 `;
-
 const EditButton = styled.button`
   box-shadow: 1px 1px 3px gray;
   background-color: #eaeaea;

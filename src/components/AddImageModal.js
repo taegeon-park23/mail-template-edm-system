@@ -57,7 +57,6 @@ export default function AddImageModal({ synkEditorToResult, onlySrc, image }) {
       // console.log(blob);
       reader.readAsDataURL(blob);
     }
-
   };
 
   return (

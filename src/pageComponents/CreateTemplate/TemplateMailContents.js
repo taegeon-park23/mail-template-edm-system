@@ -334,7 +334,6 @@ const ColorPickerInput = styled.input`
   width: 30px;
   height: 100%;
 `;
-
 const Button = styled.button``;
 const ConvertButton = styled.button``;
 const TemplateFormWrapper = styled.div`
