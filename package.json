@@ -116,7 +116,6 @@
     "not dead",
     "not ie <= 11",
     "not op_mini all"
-<<<<<<< HEAD
   ],
   "jest": {
     "roots": [
@@ -174,7 +173,4 @@
   "eslintConfig": {
     "extends": "react-app"
   }
-=======
-  ]
->>>>>>> 9bb23c77564572251020d0fc0c3b0e0a5bcdb774
 }
