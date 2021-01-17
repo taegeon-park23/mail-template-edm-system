@@ -19,7 +19,7 @@ console.log(button);
     <AddButtonMoal className="bg-dark" style={{width: "300px"}}>
         <div className="d-flex justify-content-center align-items-center">
           <div className="d-flex justify-content-center align-items-center border rounded" style={{border: "dashed", width:200, height: 200, fontWeight: 700}}>
-           {ReactHtmlParser(`<p style="width: ${buttonConfig.width}px; line-height: ${buttonConfig.height}px; background-color: ${buttonConfig.bgcolor}; border-radius: ${buttonConfig.borderRadius}px; text-align:center;">
+           {ReactHtmlParser(`<p style="width: ${buttonConfig.width}px; line-height: ${buttonConfig.height}px; background-color: ${buttonConfig.bgcolor}; border-radius: ${buttonConfig.borderRadius}px; text-align:center; margin:0px; padding: 0px;">
             <font color="${buttonConfig.color}">${buttonConfig.content}</font>
             </p>`)}
         </div>
@@ -28,7 +28,7 @@ console.log(button);
                 ()=>{
                     const newButtonConfig = {
                         ...buttonConfig,
-                        result : `<table background="none" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td align="center" style="width: ${tdWidth}px; height:${tdHeight}px; "><a style="text-decoration:none" href="${buttonConfig.link}"><p style="width: ${buttonConfig.width}px; line-height: ${buttonConfig.height}px; background-color: ${buttonConfig.bgcolor}; border-radius: ${buttonConfig.borderRadius}px; text-align:center; font-weight:700;">
+                        result : `<table background="none" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td align="center" style="width: ${tdWidth}px; height:${tdHeight}px; "><a style="text-decoration:none" href="${buttonConfig.link}"><p style="width: ${buttonConfig.width}px; line-height: ${buttonConfig.height}px; background-color: ${buttonConfig.bgcolor}; border-radius: ${buttonConfig.borderRadius}px; text-align:center; font-weight:700; margin:0px; padding: 0px;">
                         <font color="${buttonConfig.color}">${buttonConfig.content}</font>
                         </p></a></td></tr></tbody></table>`
                     };
