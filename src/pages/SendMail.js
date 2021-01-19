@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from "react";
 import styled from "styled-components";
+import axios from "axios";
 
 import MailEditor from "../pageComponents/SendMail/MailEditor";
 import {globalStateStore} from "../stores/globalStateStore";
@@ -13,12 +14,30 @@ export default function SendMail({}) {
   const mailStateSotre = useContext(mailTemplateStore);
   const mailState = mailStateSotre.state;
   const [showTemplate, setShowTemplate] = useState(false);
+
+  // state
+  const [sender, setSender] = useState("");
+  const [receiver, setReciver] = useState("");
+  const [references, setRefrences] = useState("");
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const [html, setHtml] = useState(null);
+  // const [attachment, setAttachement] = useState(null);
+
   useEffect(()=>{
-    backDispatch({type:"CONVERT_BOX_SHADOW", value:{boxShadow: false}})
+    backDispatch({type:"CONVERT_BOX_SHADOW", value:{boxShadow: false}});
+
   },[showTemplate]);
+
   const convertToHTML = () => {
     const mailResultDoc = document.getElementById("mailResult");
     const resultDoc = document.getElementById("TemplateMailContentsTable");
+    
+    if(resultDoc===undefined) {
+      alert("템플릿을 설정해주세요");
+      return;
+    }
+    
     const downloadHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Email Design</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <!--[if (mso 16)]><style type="text/css">a {text-decoration: none;}</style><![endif]--><!--[if gte mso 9]><style>sup { font-size: 100% !important; }</style><![endif]--><!--[if gte mso 9]>
       <v:rect xmlns_v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;">
@@ -34,6 +53,8 @@ export default function SendMail({}) {
       type: 'text/html',
       endings: 'native'
     });
+    blob.name = "htmlTemplate.html";
+    blob.lastModifiedData = new Date();
     const url = URL.createObjectURL(blob);
     const dom = document.getElementById("uploadHtmlFile");
     const element = document.createElement("a");
@@ -43,18 +64,19 @@ export default function SendMail({}) {
       );
     element.setAttribute("target", "_blank");
     element.click();
-    console.log(url);
     element.style.display = "none";
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-    const formData = new FormData(dom);
-    formData.append("uploadHTMLFile", blob, "target.html");
-    for (var value of formData.values()) {
-
-      console.log(value);
     
-    }
+    // const formData = new FormData(dom);
+    blob.name = "htmlTemplate.html";
+    blob.lastModifiedData = new Date();
+    setHtml(blob);
+    setContent(mailResultDoc.innerHTML);
+    console.log(blob);
+    // formData.append("uploadHTMLFile", blob, "target.html");
+    // for (var value of formData.values()) {console.log(value);}
     // dom.value = url;
     // const element = document.createElement("a");
     // element.setAttribute(
@@ -65,6 +87,66 @@ export default function SendMail({}) {
 
   };
 
+  const sendMail = async () => {
+    
+    const mailResultDoc = document.getElementById("mailResult");
+    const resultDoc = document.getElementById("TemplateMailContentsTable");
+    const blob = null;
+    console.log(resultDoc);
+    if(resultDoc!==null) {
+      const downloadHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Email Design</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <!--[if (mso 16)]><style type="text/css">a {text-decoration: none;}</style><![endif]--><!--[if gte mso 9]><style>sup { font-size: 100% !important; }</style><![endif]--><!--[if gte mso 9]>
+      <v:rect xmlns_v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;">
+        <v:fill type="tile" src="${backState.convertedImage}" color="#7bceeb" />
+        <v:textbox style="mso-fit-shape-to-text:true" inset="0,0,0,0">
+      <![endif]--><!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG></o:AllowPNG><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+    </head><body style="background-repeat:no-repeat"><!--[if gte mso 9]><v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t"><v:fill type="tile" color="#fff1e6"></v:fill></v:background><![endif]-->
+    <table border="0" cellspadding="0" cesllspacing="0"><tbody><tr><td style="width: ${mailState.tableWidth}px">${mailResultDoc ? mailResultDoc.innerHTML : ""}</td></tr></tobdy></table>
+     ${resultDoc? resultDoc.innerHTML : ""}
+    </body></html>`;
+    blob =new Blob([downloadHtml], {
+      type: 'text/html',
+      endings: 'native'
+    });
+    blob.name = "htmlTemplate.html";
+    blob.lastModifiedData = new Date();
+    } else {
+      alert("템플릿을 설정해주세요");
+      return;
+    }
+    
+   try {
+     const instance = axios.create({
+       url : 'http://localhost:8080/mail/',
+       method : 'post',
+       baseURL : "http://localhost:8080/",
+       //withCredentials: true,
+       headers: {'Content-Type': 'application/json'},
+       //"Access-Control-Allow-Origin": "*",
+   //"Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS"},
+       data: {address: receiver, title: title, message: content, htmlTemplate: html},
+      //  timeout: 3000,
+       //auth: {username: "", password: ""},
+       responseType: 'json',
+       onUploadProgress : (progressEvent) => {},
+       onDownloadProgress : (progressEvent) => {},
+     });
+     const formData = new FormData();
+     formData.append("address", receiver);
+     formData.append("title", title);
+     formData.append("message", mailResultDoc.innerHTML);
+     formData.append("htmlTemplate", blob, "htmlTemplate.html");
+    //  console.log(html);
+     const response = await instance.post('http://localhost:8080/mail', formData
+     ,{headers:{ "Content-Type":'multipart/form-data'}}
+     );
+     console.log(response);
+     alert("good");
+   } catch(err) {
+     console.log(err);
+     alert("bad");
+   }
+  };
   return (
     <SendMailDiv class="container bootdey">
       <div class="email-app">
@@ -73,7 +155,9 @@ export default function SendMail({}) {
             <p class=" mr-auto">
               <h3>메일 보내기</h3>
             </p>
-            <button class="btn btn-primary rounded mr-3">보내기</button>
+            <button class="btn btn-primary rounded mr-3" onClick={()=>{
+                sendMail();
+            }}>보내기</button>
             <button class="btn btn-primary rounded mr-3" onClick={convertToHTML}>미리보기</button>
             <button class="btn btn-primary rounded mr-3">임시저장</button>
           </div>
@@ -100,6 +184,8 @@ export default function SendMail({}) {
                 placeholder="To"
                 aria-label="receiver"
                 aria-describedby="basic-addon2"
+                value={receiver}
+                onChange={(e)=>{setReciver(e.target.value)}}
               />
               <InputSideButton className="btn btn-primary ml-2">
                 주소록
@@ -116,6 +202,8 @@ export default function SendMail({}) {
                 placeholder="Ref"
                 aria-label="ref"
                 aria-describedby="basic-addon2"
+                value={references}
+                onChange={(e)=>{setRefrences(e.target.value)}}
               />
               <InputSideButton className="btn btn-primary ml-2">
                 주소록
@@ -153,6 +241,8 @@ export default function SendMail({}) {
                     class="form-control"
                     id="bcc"
                     placeholder="Title"
+                    value={title}
+                    onChange={e=>{setTitle(e.target.value)}}
                   />
                 </span>
               </div>
