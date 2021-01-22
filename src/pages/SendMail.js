@@ -21,14 +21,13 @@ export default function SendMail({}) {
   const [references, setRefrences] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [html, setHtml] = useState(null);
-  // const [attachment, setAttachement] = useState(null);
 
   useEffect(()=>{
     backDispatch({type:"CONVERT_BOX_SHADOW", value:{boxShadow: false}});
 
   },[showTemplate]);
 
+  // 미리보기
   const convertToHTML = () => {
     const mailResultDoc = document.getElementById("mailResult");
     const resultDoc = document.getElementById("TemplateMailContentsTable");
@@ -68,23 +67,6 @@ export default function SendMail({}) {
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-    
-    // const formData = new FormData(dom);
-    blob.name = "htmlTemplate.html";
-    blob.lastModifiedData = new Date();
-    setHtml(blob);
-    setContent(mailResultDoc.innerHTML);
-    console.log(blob);
-    // formData.append("uploadHTMLFile", blob, "target.html");
-    // for (var value of formData.values()) {console.log(value);}
-    // dom.value = url;
-    // const element = document.createElement("a");
-    // element.setAttribute(
-    //   "href",
-    //   "data:text/html;charset=utf-8," + encodeURIComponent(downloadHtml)
-    // );
-    // element.setAttribute("download", "mail");
-
   };
 
   const sendMail = async () => {
@@ -92,7 +74,8 @@ export default function SendMail({}) {
     const mailResultDoc = document.getElementById("mailResult");
     const resultDoc = document.getElementById("TemplateMailContentsTable");
     const blob = null;
-    console.log(resultDoc);
+    
+    // 템플릿이 존재할 때, HTML 파일 생성
     if(resultDoc!==null) {
       const downloadHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Email Design</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <!--[if (mso 16)]><style type="text/css">a {text-decoration: none;}</style><![endif]--><!--[if gte mso 9]><style>sup { font-size: 100% !important; }</style><![endif]--><!--[if gte mso 9]>
@@ -115,38 +98,38 @@ export default function SendMail({}) {
       return;
     }
     
+    // sendMail API *********************************************************************************
    try {
      const instance = axios.create({
-       url : 'http://localhost:8080/mail/',
+       url : 'http://localhost:8080/user/mail',
        method : 'post',
        baseURL : "http://localhost:8080/",
-       //withCredentials: true,
        headers: {'Content-Type': 'application/json'},
-       //"Access-Control-Allow-Origin": "*",
-   //"Access-Control-Allow-Methods": "GET,PUT,POST,DELETE,PATCH,OPTIONS"},
-       data: {address: receiver, title: title, message: content, htmlTemplate: html},
-      //  timeout: 3000,
-       //auth: {username: "", password: ""},
        responseType: 'json',
        onUploadProgress : (progressEvent) => {},
        onDownloadProgress : (progressEvent) => {},
      });
+
      const formData = new FormData();
      formData.append("address", receiver);
      formData.append("title", title);
      formData.append("message", mailResultDoc.innerHTML);
      formData.append("htmlTemplate", blob, "htmlTemplate.html");
-    //  console.log(html);
-     const response = await instance.post('http://localhost:8080/mail', formData
-     ,{headers:{ "Content-Type":'multipart/form-data'}}
+     const response = await instance.post('http://localhost:8080/user/mail', formData
+     ,{headers:{ "Content-Type":'multipart/form-data', 'x-auth-token':globalState.jwtToken}}
      );
-     console.log(response);
-     alert("good");
+
+     alert(JSON.stringify(response));
    } catch(err) {
-     console.log(err);
-     alert("bad");
+      if(err.response.status === 403) {
+        alert("인증되지 않은 접근입니다.");
+        globalState.dispatch({type:"UPDATE_JWT_TOKEN", value:{jwtToken: null}});
+      } else {
+        alert("서버와의 접근이 불안정합니다.")
+      }
    }
   };
+
   return (
     <SendMailDiv class="container bootdey">
       <div class="email-app">
@@ -172,7 +155,6 @@ export default function SendMail({}) {
               e.preventDefault();
             }}
           >
-            <input type="file" hidden/>
             <div className="input-group mb-3">
               <label for="bcc" class="col-2 col-sm-1 col-form-label">
                 받는 사람
@@ -275,6 +257,8 @@ export default function SendMail({}) {
   );
 }
 
+
+// StlyeDiv *********************************************************************************
 const InputSideButton = styled.button`
   height: 38px;
 `;

@@ -1,7 +1,77 @@
-import React from 'react'
-import styled from "styled-components";
-import { tables } from "./sample.json";
-export default function TemplateStorage({}) {
+import React, {useEffect, useState, useContext} from 'react'
+import axios from "axios";
+import { globalStateStore } from "../stores/globalStateStore";
+ 
+export default function TemplateStorage({history}) {
+    const globalState = useContext(globalStateStore);
+    const { state } = globalState;
+    const [updateCount, setUpdateCount] = useState(0);
+    const [templates, setTemplates] = useState([]);
+    
+    const setCheckAll = (e) => {
+      const flag = e.currentTarget.checked? true: false;
+      const inputArr = document.querySelectorAll("input[type=checkbox]");
+      inputArr.forEach((input)=>{input.checked = flag})
+    }
+
+    const getCheckedTplNoArr = () => {
+       const inputArr = document.querySelectorAll("input[type=checkbox]");
+       const checkedInputValues = [] ;
+       inputArr.forEach(input=>{
+         if(input.checked===true && input.value !== "on")
+          checkedInputValues.push(input.value);
+       });
+       return checkedInputValues;  
+    }
+
+    const selectMailTemplateAll = async () => {
+      const url = "http://localhost:8080/user/selectMailTemplateAll";
+      try {
+        const response =
+        await axios.post(url, 
+            {}, {headers: {
+              "Content-Type": "application/json",
+              "x-auth-token": state.jwtToken
+            }});
+          if(response.data.status === "OK") {
+              if(response.data.data === null) {
+                alert("조회되는 템플릿이 없습니다."); return;
+              }
+              setTemplates(response.data.data);
+          } 
+        } catch(err) {
+          if(err.response.status === 403) {
+            alert("인증되지 않은 접근입니다.");
+            globalState.dispatch({type:"UPDATE_JWT_TOKEN", value:{jwtToken: null}});
+          } else {
+            alert("서버와의 접근이 불안정합니다.")
+          }
+        }
+    }
+    useEffect(()=>{
+      selectMailTemplateAll();
+    },[updateCount])
+
+    const deleteMailTemplate = async () => {
+      const url = "http://localhost:8080/user/deleteMailTemplate";
+      try {
+        const response =
+        await axios.post(url, 
+            {"tplNos":getCheckedTplNoArr()}, {headers: {
+              "Content-Type": "application/json",
+              "x-auth-token": state.jwtToken
+            }}
+        );
+        if(response.data.status === "OK") {
+          alert("삭제가 완료되었습니다.");
+          setUpdateCount(++updateCount);
+        } else if(response.data.status === 403) {
+          alert("세션이 끊겼습니다.");
+          globalState.dispatch({type:"UPDATE_JWT_TOKEN", value:{jwtToken: null}});
+        }
+        } catch(err) {
+        }
+    }
     return(
         <div className="container bootdey">
       <main>
@@ -27,7 +97,9 @@ export default function TemplateStorage({}) {
         </div>
         <div className="container-fluid d-flex justify-content-left">
           <button className="btn btn-primary rounded  mx-3 mb-3">생성</button>
-          <button className="btn btn-primary rounded  mr-3 mb-3">삭제</button>
+          <button className="btn btn-primary rounded  mr-3 mb-3"
+            onClick={()=>{deleteMailTemplate()}}
+          >삭제</button>
         </div>
         <table
           id="example"
@@ -37,38 +109,35 @@ export default function TemplateStorage({}) {
           <thead>
             <tr>
               <th scope="col">
-                <input type="checkbox" />
+                <input type="checkbox" onClick={(e)=>{setCheckAll(e)}}/>
               </th>
               <th scope="col">index</th>
               <th scope="col">템플릿 제목</th>
-              <th scope="col">첨부 파일</th>
               <th scope="col">템플릿 설명</th>
               <th scope="col">저장 일시</th>
             </tr>
           </thead>
           <tbody>
-            {tables.map((td, i) => (
-              <tr key={i}>
+            {templates.map((tpl, i) => (
+              <tr key={i} onClick={(e)=>{history.push(`/createTemplate:${tpl.tplNo}`)}}>
                 <td scope="row">
-                  <input type="checkbox" />
+                  <input type="checkbox" value={tpl.tplNo}/>
                 </td>
                 <td>{i}</td>
-                <td>{td.email}</td>
-                <td>{td.attachments}</td>
-                <td>{td.title}</td>
-                <td>{td.saveDate}</td>
+                <td>{tpl.tplSub}</td>
+                <td>{tpl.tplDesc}</td>
+                <td>{tpl.editDate ? tpl.editDate : tpl.regDate}</td>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr>
             <th>
-                <input type="checkbox" />
+                <input type="checkbox"  onClick={(e)=>{setCheckAll(e)}}/>
               </th>
               <th>index</th>
-              <th>그룹명</th>
-              <th>수</th>
-              <th>그룹 설명</th>
+              <th>템플릿 제목</th>
+              <th>템플릿 설명</th>
               <th>저장 일시</th>
             </tr>
           </tfoot>

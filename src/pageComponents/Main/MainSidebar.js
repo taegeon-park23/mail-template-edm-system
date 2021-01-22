@@ -1,12 +1,7 @@
 import React from "react";
-import styled from "styled-components";
 import { Link } from "react-router-dom";
 
 class MainSidebar extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   renderClassName = (scale) => {
     if (scale === null) return "";
     if (scale === true) return "sidebar-scale-up";
@@ -52,7 +47,7 @@ class MainSidebar extends React.Component {
           </Link>
         </li>
         <li className="nav-item">
-          <Link className="nav-link" to="/createtemplate">
+          <Link className="nav-link" to="/createtemplate:0">
             <span>&nbsp;템플릿 생성</span>
           </Link>
         </li>

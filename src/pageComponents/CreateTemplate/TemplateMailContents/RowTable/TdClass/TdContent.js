@@ -79,13 +79,14 @@ export default function TdContent({width, height, content, borderRadius, image})
     return(
         <TdContentDiv width={width} height={height} ref={articleRef} onClick={(e)=>{
             if(image) {e.preventDefault(); e.stopPropagation();}
-        }}>
+        }}
+        style={{width:`${width}px`, height:`${height}px`}}>
         {ReactHtmlParser(content)}
         </TdContentDiv>
     )
 }
 
-const TdContentDiv = styled.div `
+const TdContentDiv = styled.span `
    position: relative;
     p {margin: 0px; margin-bottom: 0px;}
     ul, ol,li {

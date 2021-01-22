@@ -14,6 +14,7 @@ import TdContent from "./TdClass/TdContent";
 import { globalStateStore } from "../../../../stores/globalStateStore";
 import { mailTemplateStore } from "../../../../stores/mailTemplateStore";
 import AddButtonModal from "./TdClass/AddButtonModal";
+import {storageRef} from "../../../../components/Firebase";
 export default function TdClass({
   rowIndex,
   colIndex,
@@ -248,7 +249,27 @@ export default function TdClass({
               onlySrc={true}
               image={image}
               synkEditorToResult={(image) => {
-                const newContent = `<a href="${image.link}"}><img src="${image.src}" alt="image" style=' width: 100% height: 100%; border-radius: ${tdBorderRadius}px; background-color: none'/></a>`
+                
+                const templateId = "id";
+                const templateImageName = "sample.png";
+                const tmpSrc = `https://firebasestorage.googleapis.com/v0/b/bizdem-c4931.appspot.com/o/images%2Fid%2Fsample.png?alt=media`;
+                const newContent = `<a href="${image.link}"}><img src="${tmpSrc}" alt="image" style=' width: 100% height: 100%; border-radius: ${tdBorderRadius}px; background-color: none'/></a>`
+                let dataURLtoFile = (dataurl, fileName) => {
+                  let arr = dataurl.split(","),
+                  mime = arr[0].match(/:(.*?);/)[1],
+                  bstr = atob(arr[1]), 
+                  n = bstr.length, 
+                  u8arr = new Uint8Array(n);
+                  while(n--){
+                    u8arr[n] = bstr.charCodeAt(n);
+                  }
+                  return new File([u8arr], fileName, {type:mime});
+                }
+                const imageFile = 
+                  dataURLtoFile(`${image.src}`, "sample.png");
+                storageRef.child('images/id/sample.png').put(imageFile).then(
+                  function(snapshot) {alert('Uploaded a blob or file')}
+                );
                 setImage(image);
                 setContent(newContent);
               }}

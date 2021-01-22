@@ -16,7 +16,8 @@ const initialState = {
   tableWidth: 600,
   tableHeight: 1000,
   boxShadow: true,
-  popUpMessages: []
+  popUpMessages: [],
+  jwtToken: null
 };
 const globalStateStore = createContext(initialState);
 const { Provider } = globalStateStore;
@@ -122,6 +123,11 @@ const StateProvider = ({ children }) => {
         ...state,
         tableWidth: action.value.tableWidth,
         tableHeight: action.value.tableHeight
+      }
+      case "UPDATE_JWT_TOKEN" :
+      return {
+          ...state,
+          jwtToken: action.value.jwtToken
       }
       default:
         throw new Error(`Unhandled action type: ${action.type}`);

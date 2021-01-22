@@ -158,6 +158,26 @@ module.exports = function(webpackEnv) {
       // initialization, it doesn't blow up the WebpackDevServer client, and
       // changing JS code would still trigger a refresh.
     ].filter(Boolean),
+    devServer: {
+      historyApiFallback: true,
+      port: 8000,
+      publicPath: '/dist/',
+      proxy: {
+        '/api/' : {
+          target: 'http://localhost:8080',
+          changeOrigin: true,
+        }
+      }
+    },
+    module: {
+      rules: [
+          {
+          test: /\.js|jsx$/,
+          loader: "babel-loader",
+          exclude: /node_modules/
+          }
+        ]
+    },
     output: {
       // The build folder.
       path: isEnvProduction ? paths.appBuild : undefined,
@@ -695,5 +715,7 @@ module.exports = function(webpackEnv) {
     // Turn off performance processing because we utilize
     // our own hints via the FileSizeReporter
     performance: false,
+
+    
   };
 };

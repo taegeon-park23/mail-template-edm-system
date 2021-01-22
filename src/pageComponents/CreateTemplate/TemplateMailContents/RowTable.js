@@ -1,6 +1,6 @@
 import React, { Fragment, useContext, useRef, useState } from "react";
 import styled, { css } from "styled-components";
-import ReactDOM from "react-dom";
+
 //components
 import { ReactComponent as scrollImageSVG } from "../../../assets/icons/scroll.svg";
 import TdClass from "./RowTable/TdClass";
@@ -17,11 +17,6 @@ const RowTable = ({ tdClasses, rowTableIndex, deleteRowTable }) => {
   const [draggableStatus, setDraggbleStatus] = useState(false);
   const TableRowRef = useRef(null);
 
-  const tempTdStyle = {
-    position: "relative",
-  };
-  const tdStyle = state.boxShadow === true ? { ...tempTdStyle } : {};
-
   const onClickAddTdButton = () => {
     const newTdClasses = [].concat(editableTdClasses);
     const newTdClass = {
@@ -30,6 +25,7 @@ const RowTable = ({ tdClasses, rowTableIndex, deleteRowTable }) => {
       height: `10`,
       content: `<b></b>`,
     };
+
     newTdClasses.push(newTdClass);
     setEditableTdClasses(newTdClasses);
     const newContents = { ...mailState.contents };
@@ -93,14 +89,14 @@ const RowTable = ({ tdClasses, rowTableIndex, deleteRowTable }) => {
           onDragEnter = {
             (e) => {
               e.preventDefault();
-              const movingRowIndex = e.dataTransfer.getData("movingRowIndex");
+              // const movingRowIndex = e.dataTransfer.getData("movingRowIndex");
                 e.currentTarget.style.border="3px dashed #20c997";
             }
           }
           onDragLeave = {
             (e) => {
               e.preventDefault();
-              const movingRowIndex = e.dataTransfer.getData("movingRowIndex");
+              // const movingRowIndex = e.dataTransfer.getData("movingRowIndex");
                 e.currentTarget.style.border="none";
             }
           }
@@ -185,7 +181,7 @@ const Menus = styled.div`
   display: flex;
   z-index: 500px;
   ${(props) => {
-    if (props.rowTableIndex % 2 == 0)
+    if (props.rowTableIndex % 2 === 0)
       return css`
         top: -10px;
         right: -60px;

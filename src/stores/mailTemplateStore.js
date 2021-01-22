@@ -216,7 +216,6 @@ const StateProvider = ({ children }) => {
       console.log(action.value.mailState);
       return {
           ...action.value.mailState,
-          bgcolor : action.value.mailState.bgcolor,
           version: state.version+1
         }
       case "SAVE_ONOFF_CONTENTS":

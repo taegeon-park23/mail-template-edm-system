@@ -5,6 +5,8 @@ import styled from "styled-components";
 import { StateProvider,mailTemplateStore } from "../stores/mailTemplateStore";
 import MainSidebar from "../pageComponents/Main/MainSidebar";
 import MainDropdownBar from "../pageComponents/Main/MainDropDownBar";
+import {globalStateStore} from "../stores/globalStateStore";
+
 
 
 //pages
@@ -17,7 +19,14 @@ import TemplateStorage from "./TemplateStorage";
 import SendItems from "./SendItems";
 import Notification from "./Notification";
 import QuestionAndAnser from "./QuestionAndAnswer";
-export default function Main() {
+export default function Main({history}) {
+  const _globalStateStore = useContext(globalStateStore);
+  const globalState = _globalStateStore.state;
+
+  useEffect(()=> {
+    if(globalState.jwtToken === null) history.push("/login");
+  },[globalState.jwtToken])
+
   return (
     <MainDiv id="wrapper">
       {/* <!-- Sidebar --> */}
@@ -29,7 +38,7 @@ export default function Main() {
         <div class="container-fluid">
           <StateProvider>
             <Switch>
-              <Route path="/createtemplate" component={CreateTemplate} />
+              <Route path="/createtemplate:number" component={CreateTemplate} />
               <Route path="/sendmail" component={SendMail} />
               <Route path="/draft" component={Draft}/>
               <Route path="/managegroup" component={ManageGroup}/>

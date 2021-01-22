@@ -1,14 +1,87 @@
-import React, { useEffect, useContext, useCallback } from "react";
+import React, { useEffect, useContext, useCallback, useState } from "react";
 import styled from "styled-components";
-
 import DomToImage from "dom-to-image";
+import axios from "axios";
 import TemplateBackground from "../pageComponents/CreateTemplate/TemplateBackground";
 import TemplateMailContents from "../pageComponents/CreateTemplate/TemplateMailContents";
 import { globalStateStore } from "../stores/globalStateStore";
+import { mailTemplateStore} from "../stores/mailTemplateStore";
 
-export default function CreateTemplate({}) {
+export default function CreateTemplate({history, match}) {
   const globalState = useContext(globalStateStore);
+  const mailStateStore = useContext(mailTemplateStore);
+  const mailState = mailStateStore.state;
+  const mailDispatch = mailStateStore.dispatch;
   const { state, dispatch } = globalState;
+  const [tplNo, setTplNo] = useState(match.params.number === ":0" ? null : match.params.number[1]);
+  const [title, setTitle] = useState("title");
+  const [desc, setDesc] = useState("desc");
+  const [tplImagesDir, setTplImagesDir] = useState("images");
+  useEffect(()=>{
+      if(tplNo !== null) {
+        mailTemplateSelectOne();
+      }
+  }, [tplNo])
+
+  // 템플릿 불러오기 API ******************************************************************
+  const mailTemplateSelectOne = async () => {
+    const url = "http://localhost:8080/user/selectMailTemplate";
+    try {
+      const response =
+      await axios.post(url, 
+          {"tplNo": tplNo}, {headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": state.jwtToken
+          }});
+        if(response.data.status === "OK") {
+            if(response.data.data === null) {
+              alert("조회되는 템플릿이 없습니다."); return;
+            }
+            const tpl = response.data.data;
+            setTplNo(tpl.tplNo);
+            setTitle(tpl.tplSub);
+            setDesc(tpl.tplDesc);
+            setTplImagesDir(tpl.tplImagesDir);
+            mailDispatch({type:"DOWNLOAD_MAIL_STATE", value:{mailState: JSON.parse(tpl.tplContent)}});
+        } 
+      } catch(err) {
+        if(err.response.status === 403) {
+          alert("인증되지 않은 접근입니다.");
+          globalState.dispatch({type:"UPDATE_JWT_TOKEN", value:{jwtToken: null}});
+        } else {
+          alert("서버와의 접근이 불안정합니다.")
+        }
+      } 
+  }
+
+
+  const saveTemplateInsert =async (e) => {
+        const url = "http://localhost:8080/user/save";
+        try {
+        const response = await axios.post(url,{
+          "tplNo": tplNo,
+          "tplSub": title,
+          "tplDesc": desc,
+          "tplContent": JSON.stringify(mailState),
+          "tplImagesDir": tplImagesDir ? tplImagesDir : "images",
+          "useStatus": 0
+        }, {headers: {
+          "Content-Type": "application/json",
+          "x-auth-token": state.jwtToken
+        }});
+        if(response.data.status === "OK") {
+          alert(response.data.message);
+          if(response.data.data !== "update") {
+            history.push(`/createtemplate:${response.data.data}`);
+            setTplNo(response.data.data);
+          }
+        } else {
+          alert(response.message);
+        }
+        } catch(err) {
+          alert("서버와의 연결이 불안정합니다.");
+        }
+  }
 
   const convertToBackUseCallback = useCallback(() => {
     dispatch({ type: "CONVERT_BOX_SHADOW", value: { boxShadow: true } });
@@ -88,11 +161,51 @@ export default function CreateTemplate({}) {
             <h3>템플릿 생성</h3><sup>{state.templateBackground === "backImage" ?"메일템플릿":"배경화면"}</sup>
           </p>
         </div>
-      
+        
+        <form method="post" action="upload" enctype="multipart/form-data" id="uploadHtmlFile"
+            onSubmit={(e) => {
+              e.preventDefault();
+            }}
+          >
+            <div className="input-group mb-3">
+              <label for="bcc" class="col-2 col-sm-1 col-form-label">
+                제목
+              </label>
+              <div className="input-group-prepend"></div>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="title"
+                aria-label="title"
+                aria-describedby="basic-addon2"
+                value={title}
+                onChange={(e)=>{setTitle(e.target.value)}}
+              />
+            </div>
+            <div className="input-group mb-3">
+              <label for="bcc" class="col-2 col-sm-1 col-form-label">
+                설명
+              </label>
+              <div className="input-group-prepend"></div>
+              <input
+                type="text"
+                className="form-control"
+                placeholder="desc"
+                aria-label="desc"
+                aria-describedby="basic-addon2"
+                value={desc}
+                onChange={(e)=>{setDesc(e.target.value)}}
+              />
+            </div>
+          </form>
         <div className="w-100 d-flex flex-row-reverse">
         {state.templateBackground ==="backImage" ?
          <button className="btn btn-primary" onClick={onClickConvertToBackButton}>배경화면</button> :
          <button className="btn btn-primary" onClick={onClickConvertToMailTemplateButton}>메일템플릿</button>}
+        <button className="btn btn-primary mr-3" onClick={(e)=>{
+          saveTemplateInsert();
+          // mailTemplateSelectOne();
+        }}>저장</button>
       </div>
       <hr/>
       <TemplateBackground />

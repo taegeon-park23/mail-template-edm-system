@@ -2,7 +2,7 @@
   "name": "react",
   "version": "1.0.0",
   "description": "React example starter project",
-  "proxy": "http://localhost:8080/",
+  "proxy": "http://localhost:8080",
   "keywords": [
     "react",
     "starter"
@@ -42,8 +42,8 @@
     "axios": "^0.21.1",
     "babel-eslint": "10.1.0",
     "babel-jest": "^24.9.0",
-    "babel-loader": "8.1.0",
     "babel-plugin-named-asset-import": "^0.3.6",
+    "babel-preset-env": "^1.7.0",
     "babel-preset-react-app": "^9.1.2",
     "camelcase": "^5.3.1",
     "case-sensitive-paths-webpack-plugin": "2.3.0",
@@ -97,9 +97,6 @@
     "tether": "1.4.7",
     "ts-pnp": "1.1.6",
     "url-loader": "2.3.0",
-    "webpack": "4.42.0",
-    "webpack-cli": "4.3.1",
-    "webpack-dev-server": "3.11.0",
     "webpack-manifest-plugin": "2.2.0",
     "workbox-webpack-plugin": "4.3.1"
   },
