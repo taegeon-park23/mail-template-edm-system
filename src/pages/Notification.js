@@ -1,10 +1,49 @@
-import React, {useState} from 'react'
+import axios from 'axios';
+import React, {useEffect, useState, useContext} from 'react'
 import styled from "styled-components";
 import Modal from "../components/Modal";
 import NotificationDetailModal from "../pageComponents/Notification/NotificationDetailModal";
+import { StateProvider } from '../stores/globalStateStore';
 import { tables } from "./sample.json";
+import { globalStateStore } from "../stores/globalStateStore";
+
+
 export default function Notification({}) {
     const [modalStatus, setModalStatus] = useState(false);
+    const globalState = useContext(globalStateStore);
+    const [notices, setNotices] = useState([]);
+    const [updateCount, setUpdateCount] = useState(0);
+    const { state } = globalState;
+
+
+    //call all notice list
+    const selectNoticeAll = async () => {
+      const url = "http://localhost:8080/notice/selectNoticeAll";
+      try {
+        const response = await axios.post(url, {}, {headers: {
+          "Content-Type" : "application/json",
+          "x-auth-token" : state.jwtToken 
+        }});
+
+        if (response.data.status === 'OK') {
+          setNotices(response.data.data);
+        }
+      } catch(err) {
+        if(err.response.status === 403) {
+          alert("인증되지 않은 접근입니다.");
+          globalState.dispatch({type:"UPDATE_JWT_TOKEN", value:{jwtToken: null}});
+        } else {
+          alert("서버와의 접근이 불안정합니다.")
+        }
+      }
+
+    }
+
+    useEffect(()=>{
+      selectNoticeAll();
+    },[updateCount])
+  
+
     return(
         <div className="container bootdey">
         {modalStatus === true ?<Modal
@@ -63,12 +102,12 @@ export default function Notification({}) {
             </tr>
           </thead>
           <tbody>
-            {tables.map((td, i) => (
+            {notices.map((notice, i) => (
               <tr key={i} onClick={()=>{setModalStatus(true)}}>
                 <td>{i}</td>
-                <td>{td.title}</td>
-                <td>{td.attachment}</td>
-                <td>{td.saveDate}</td>
+                <td>{notice.noticeTitle}</td>
+                <td>{notice.noticeAttachment}</td>
+                <td>{notice.regDate}</td>
               </tr>
             ))}
           </tbody>
