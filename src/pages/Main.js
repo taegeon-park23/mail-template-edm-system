@@ -24,8 +24,9 @@ export default function Main({history}) {
   const globalState = _globalStateStore.state;
 
   useEffect(()=> {
-    if(globalState.jwtToken === null) history.push("/login");
-  },[globalState.jwtToken])
+    console.log(localStorage.getItem('jwtToken'));
+    if(!localStorage.getItem('jwtToken')) history.push("/login");
+  })
 
   return (
     <MainDiv id="wrapper">

@@ -203,7 +203,8 @@ const initialState = {
   version: 0,
   tableWidth: 600,
   contents: initialContents,
-  saveContentsStatus: false
+  saveContentsStatus: false,
+  number: 0
 };
 const mailTemplateStore = createContext(initialState);
 const { Provider } = mailTemplateStore;
@@ -233,6 +234,11 @@ const StateProvider = ({ children }) => {
         return {
           ...state,
           bgcolor: action.value.bgcolor
+        }
+      case "UPDATE_NUMBER":
+        return {
+          ...state,
+          number: action.value.number
         }
       default:
         throw new console.log(`Unhandled action type: ${action.type}`);

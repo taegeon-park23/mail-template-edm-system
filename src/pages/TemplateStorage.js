@@ -8,10 +8,14 @@ export default function TemplateStorage({history}) {
     const [updateCount, setUpdateCount] = useState(0);
     const [templates, setTemplates] = useState([]);
     
-    const setCheckAll = (e) => {
-      const flag = e.currentTarget.checked? true: false;
+    const setCheckAll = (e = null, flag = false) => {
+      let checkFlag = false;
+      if(flag) 
+        checkFlag = flag;
+      else if(e!==null)
+        checkFlag = e.currentTarget.checked? true: false; 
       const inputArr = document.querySelectorAll("input[type=checkbox]");
-      inputArr.forEach((input)=>{input.checked = flag})
+      inputArr.forEach((input)=>{input.checked = checkFlag})
     }
 
     const getCheckedTplNoArr = () => {
@@ -25,27 +29,26 @@ export default function TemplateStorage({history}) {
     }
 
     const selectMailTemplateAll = async () => {
-      const url = "http://localhost:8080/user/selectMailTemplateAll";
+      const url = "/user/selectMailTemplateAll";
       try {
         const response =
         await axios.post(url, 
             {}, {headers: {
               "Content-Type": "application/json",
-              "x-auth-token": state.jwtToken
+              "x-auth-token": localStorage.getItem('jwtToken')
             }});
+  
           if(response.data.status === "OK") {
               if(response.data.data === null) {
                 alert("조회되는 템플릿이 없습니다."); return;
               }
               setTemplates(response.data.data);
-          } 
-        } catch(err) {
-          if(err.response.status === 403) {
-            alert("인증되지 않은 접근입니다.");
-            globalState.dispatch({type:"UPDATE_JWT_TOKEN", value:{jwtToken: null}});
-          } else {
-            alert("서버와의 접근이 불안정합니다.")
+          } else if(response.data.status === "NOT_FOUND"){
+              alert("인증되지 않은 접근입니다.");
+              localStorage.removeItem('jwtToken');
           }
+        } catch(err) {
+          alert("서버와의 접근이 불안정합니다.");
         }
     }
     useEffect(()=>{
@@ -53,23 +56,27 @@ export default function TemplateStorage({history}) {
     },[updateCount])
 
     const deleteMailTemplate = async () => {
-      const url = "http://localhost:8080/user/deleteMailTemplate";
+      const url = "/user/deleteMailTemplate";
       try {
         const response =
         await axios.post(url, 
-            {"tplNos":getCheckedTplNoArr()}, {headers: {
+            {"tplNos":getCheckedTplNoArr()}, 
+            { headers: {
               "Content-Type": "application/json",
-              "x-auth-token": state.jwtToken
+              "x-auth-token": localStorage.getItem('jwtToken')
             }}
         );
-        if(response.data.status === "OK") {
-          alert("삭제가 완료되었습니다.");
-          setUpdateCount(++updateCount);
-        } else if(response.data.status === 403) {
-          alert("세션이 끊겼습니다.");
-          globalState.dispatch({type:"UPDATE_JWT_TOKEN", value:{jwtToken: null}});
-        }
+            if(response.data.status === "OK") {
+              alert(response.data.message);
+              history.push("/templatestorage");
+              setCheckAll(null, false);
+            } else if(response.data.status === "NOT_FOUND"){
+              alert("인증되지 않은 접근입니다.");
+              localStorage.removeItem('jwtToken');
+            }
+
         } catch(err) {
+          alert("서버와의 접근이 불안정합니다.")
         }
     }
     return(
@@ -96,7 +103,9 @@ export default function TemplateStorage({history}) {
 
         </div>
         <div className="container-fluid d-flex justify-content-left">
-          <button className="btn btn-primary rounded  mx-3 mb-3">생성</button>
+          <button className="btn btn-primary rounded  mx-3 mb-3"
+            onClick={()=>{history.push('/createtemplate:0')}}
+          >생성</button>
           <button className="btn btn-primary rounded  mr-3 mb-3"
             onClick={()=>{deleteMailTemplate()}}
           >삭제</button>
@@ -119,14 +128,14 @@ export default function TemplateStorage({history}) {
           </thead>
           <tbody>
             {templates.map((tpl, i) => (
-              <tr key={i} onClick={(e)=>{history.push(`/createTemplate:${tpl.tplNo}`)}}>
+              <tr key={i}>
                 <td scope="row">
                   <input type="checkbox" value={tpl.tplNo}/>
                 </td>
-                <td>{i}</td>
-                <td>{tpl.tplSub}</td>
-                <td>{tpl.tplDesc}</td>
-                <td>{tpl.editDate ? tpl.editDate : tpl.regDate}</td>
+                <td onClick={(e)=>{history.push(`/createTemplate:${tpl.tplNo}`)}} >{i}</td>
+                <td onClick={(e)=>{history.push(`/createTemplate:${tpl.tplNo}`)}} >{tpl.tplSub}</td>
+                <td onClick={(e)=>{history.push(`/createTemplate:${tpl.tplNo}`)}} >{tpl.tplDesc}</td>
+                <td onClick={(e)=>{history.push(`/createTemplate:${tpl.tplNo}`)}} >{tpl.editDate ? tpl.editDate : tpl.regDate}</td>
               </tr>
             ))}
           </tbody>

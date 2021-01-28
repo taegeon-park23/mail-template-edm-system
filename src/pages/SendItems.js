@@ -1,7 +1,40 @@
-import React from 'react'
+import React, {useEffect, useState} from 'react';
+import axios from "axios";
 import styled from "styled-components";
-import { tables } from "./sample.json";
+
 export default function SendItems({}) {
+
+  const [updateCount, setUpdateCount] = useState(0);
+  const [sendItemList, setSendItemList] = useState([]);
+
+  useEffect(()=>{
+    selectSendRecordAll();
+  },[updateCount])
+
+  const selectSendRecordAll = async () => {
+    const url = "/user/selectSendRecordAll";
+    try {
+      const response =
+      await axios.post(url, 
+          {}, {headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem('jwtToken')
+          }});
+
+        if(response.data.status === "OK") {
+            if(response.data.data === null) {
+              alert("조회되는 템플릿이 없습니다."); return;
+            }
+            setSendItemList(response.data.data);
+        } else if(response.data.status === "NOT_FOUND"){
+            alert("인증되지 않은 접근입니다.");
+            localStorage.removeItem('jwtToken');
+        }
+      } catch(err) {
+        alert("서버와의 접근이 불안정합니다.");
+      }
+  }
+
     return(
         <div className="container bootdey">
       <main>
@@ -16,6 +49,7 @@ export default function SendItems({}) {
               <label className="mr-3">발송 일자</label>
               <input
                 type="date"
+                title="tooltip on top"
                 className="mr-3 form-control bg-light border-1"
                 aria-label="Search"
                 aria-describedby="basic-addon2"
@@ -48,28 +82,32 @@ export default function SendItems({}) {
         >
           <thead>
             <tr>
-              <th scope="col">index</th>
-              <th scope="col">제목</th>
-              <th scope="col">수신자</th>
-              <th scope="col">발송 일시</th>
+              <ThIndex scope="col">index</ThIndex>
+              <ThTitle scope="col">제목</ThTitle>
+              <ThReceiver scope="col">수신자</ThReceiver>
+              <ThDate scope="col">발송 일시</ThDate>
             </tr>
           </thead>
           <tbody>
-            {tables.map((td, i) => (
+            {sendItemList.map((sendItem, i) => (
               <tr key={i}>
-                <td>{i}</td>
-                <td>{td.title}</td>
-                <td>{td.email}</td>
-                <td>{td.saveDate}</td>
+                <TdIndex value={sendItem.sendRecNo}>{i}</TdIndex>
+                <TdTitle>{sendItem.sendRecTitle}</TdTitle>
+                <TdReceiver>{JSON.parse(sendItem.sendRecReceiver).map(
+                  (addr)=>{
+                    return addr.addrNm ? `${addr.addrNm} ` : `${addr.addrEmail} `
+                  }
+                )}</TdReceiver>
+                <TdDate>{sendItem.regDate}</TdDate>
               </tr>
             ))}
           </tbody>
           <tfoot>
             <tr>
-              <th>index</th>
-              <th>제목</th>
-              <th>수신자</th>
-              <th>발송 일시</th>
+              <ThIndex scope="col">index</ThIndex>
+              <ThTitle scope="col">제목</ThTitle>
+              <ThReceiver scope="col">수신자</ThReceiver>
+              <ThDate scope="col">발송 일시</ThDate>
             </tr>
           </tfoot>
         </table>
@@ -80,3 +118,71 @@ export default function SendItems({}) {
     </div>
     )
 }
+
+const ThIndex = styled.th`
+    width: 5%;
+    max-width: 5%;
+    min-width: 5%;
+    display:inline-block;
+    text-align: center;
+`;
+
+const ThTitle = styled.th`
+  width: 50%;
+  max-width: 50%;
+  min-width: 50%;
+  display:inline-block;
+  text-align: center;
+`;
+
+const ThReceiver = styled.th`
+  width: 25%;
+  max-width: 25%;
+  min-width: 25%;
+  display:inline-block;
+  text-align: center;
+`;
+
+const ThDate = styled.th`
+  width: 20%;
+  max-width: 20%;
+  min-width: 20%;
+  display:inline-block;
+  text-align: center;
+`;
+
+const TdIndex = styled.td`
+  width: 5%;
+  max-width:5%;
+  min-width: 5%;
+  display:inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+`;
+
+const TdTitle = styled.td`
+  width: 50%;
+  max-width:50%;
+  min-width:50%;
+  display:inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+`;
+
+const TdReceiver = styled.td`
+  width: 25%;
+  max-width:25%;
+  min-width:25%;
+  display:inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+`;
+
+const TdDate = styled.td`
+  width: 20%;
+  max-width:20%;
+  min-width:20%;
+  display:inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+`;

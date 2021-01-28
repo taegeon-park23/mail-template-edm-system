@@ -101,7 +101,7 @@ const MainDropdownBar = ({}) => {
               aria-expanded="false"
               onClick={(e)=>{
                   e.preventDefault();
-                  glbalDispatch({type:"UPDATE_JWT_TOKEN", value:{jwtToken: null}})
+                  localStorage.removeItem('jwtToken');
               }}
             >
               <span class="mr-2 d-none d-lg-inline text-gray-600 small">

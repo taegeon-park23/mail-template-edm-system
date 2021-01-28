@@ -69,6 +69,7 @@ const Login = ({history}) => {
                   alert("비밀번호를 다시한번 확인해 주세요");
                 }
                 else {
+                  localStorage.setItem('jwtToken', response.data);
                   globalDispatch({type:"UPDATE_JWT_TOKEN", value:{jwtToken: response.data}});
                   history.push("/");
                 }

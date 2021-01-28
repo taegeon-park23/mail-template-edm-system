@@ -1,11 +1,54 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+import Modal from "../components/Modal";
+import axios from "axios";
+import ManageGroupDetailModal from "../pageComponents/ManageGroup/ManageGroupDetailModal";
 import styled from "styled-components";
-import { tables } from "./sample.json";
 
 export default function ManageGroup({}) {
-  useEffect(() => {});
+  const [modalStatus, setModalStatus] = useState(false);
+  const [id, setId] = useState(0);
+  const [groups, setGroups] = useState([]);
+  const [updateCount, setUpdateCount] = useState(0);
+  useEffect(() => {
+    selectAddressGroupAll();
+  },[updateCount]);
+
+  const selectAddressGroupAll = async () => {
+    const url = "/user/selectAddressGroupAll";
+    try {
+      const response =
+      await axios.post(url, 
+          {}, {headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem('jwtToken')
+          }});
+
+        if(response.data.status === "OK") {
+            if(response.data.data === null) {
+              alert("조회되는 그룹이 없습니다."); return;
+            }
+            setGroups(response.data.data);
+        } else if(response.data.status === "NOT_FOUND"){
+            alert("인증되지 않은 접근입니다.");
+            localStorage.removeItem('jwtToken');
+        }
+      } catch(err) {
+        alert("서버와의 접근이 불안정합니다.");
+      }
+  }
+
+  const onClickDetailUseCallback = useCallback((no)=>{
+      setModalStatus(true);
+      setId(no)
+  });
+
   return (
     <div className="container bootdey">
+      {modalStatus === true ?<Modal
+            visible={modalStatus}
+            onClose={()=>{setModalStatus(false)}}
+            children={<ManageGroupDetailModal id={id} onClose={()=>{setModalStatus(false)}} onChangeId={()=>{}}/>}
+        />:null}
       <main>
         <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
           <p class=" mr-auto">
@@ -28,7 +71,9 @@ export default function ManageGroup({}) {
 
         </div>
         <div className="container-fluid d-flex justify-content-left">
-          <button className="btn btn-primary rounded  mx-3 mb-3">생성</button>
+          <button className="btn btn-primary rounded  mx-3 mb-3"
+            onClick={()=>{onClickDetailUseCallback(0)}}
+          >생성</button>
           <button className="btn btn-primary rounded  mr-3 mb-3">삭제</button>
         </div>
         <table
@@ -49,16 +94,16 @@ export default function ManageGroup({}) {
             </tr>
           </thead>
           <tbody>
-            {tables.map((td, i) => (
+            {groups.map((group, i) => (
               <tr key={i}>
                 <td scope="row">
-                  <input type="checkbox" />
+                  <input type="checkbox" value={group.groupNo}/>
                 </td>
-                <td>{i}</td>
-                <td>{td.email}</td>
-                <td>{td.attachments}</td>
-                <td>{td.title}</td>
-                <td>{td.saveDate}</td>
+                <td onClick={()=>{onClickDetailUseCallback(group.groupNo)}}>{i}</td>
+                <td onClick={()=>{onClickDetailUseCallback(group.groupNo)}}>{group.groupNm}</td>
+                <td onClick={()=>{onClickDetailUseCallback(group.groupNo)}}>{group.groupOwner}</td>
+                <td onClick={()=>{onClickDetailUseCallback(group.groupNo)}}>{group.groupDesc}</td>
+                <td onClick={()=>{onClickDetailUseCallback(group.groupNo)}}>{!group.editDate ? group.regDate : group.editDate}</td>
               </tr>
             ))}
           </tbody>

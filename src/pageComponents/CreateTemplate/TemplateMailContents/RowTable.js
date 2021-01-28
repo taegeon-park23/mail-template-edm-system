@@ -89,8 +89,13 @@ const RowTable = ({ tdClasses, rowTableIndex, deleteRowTable }) => {
           onDragEnter = {
             (e) => {
               e.preventDefault();
-              // const movingRowIndex = e.dataTransfer.getData("movingRowIndex");
-                e.currentTarget.style.border="3px dashed #20c997";
+                const movingRowIndex = e.dataTransfer.getData("movingRowIndex");
+                if(movingRowIndex) {
+                  e.currentTarget.style.border="3px dashed #20c997";
+                  setTimeout(()=>{
+                    e.currentTarget.style.border="none";
+                  }, 1000);
+                }
             }
           }
           onDragLeave = {

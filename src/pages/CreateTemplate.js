@@ -7,16 +7,19 @@ import TemplateMailContents from "../pageComponents/CreateTemplate/TemplateMailC
 import { globalStateStore } from "../stores/globalStateStore";
 import { mailTemplateStore} from "../stores/mailTemplateStore";
 
-export default function CreateTemplate({history, match}) {
+const TemplateActionsContext = React.createContext({id:"good"});
+function CreateTemplate({history, match}) {
   const globalState = useContext(globalStateStore);
   const mailStateStore = useContext(mailTemplateStore);
   const mailState = mailStateStore.state;
   const mailDispatch = mailStateStore.dispatch;
+
   const { state, dispatch } = globalState;
-  const [tplNo, setTplNo] = useState(match.params.number === ":0" ? null : match.params.number[1]);
+  const [tplNo, setTplNo] = useState(match.params.number === ":0" ? null : match.params.number.slice(1, match.params.number.length));
   const [title, setTitle] = useState("title");
   const [desc, setDesc] = useState("desc");
   const [tplImagesDir, setTplImagesDir] = useState("images");
+ 
   useEffect(()=>{
       if(tplNo !== null) {
         mailTemplateSelectOne();
@@ -25,13 +28,13 @@ export default function CreateTemplate({history, match}) {
 
   // 템플릿 불러오기 API ******************************************************************
   const mailTemplateSelectOne = async () => {
-    const url = "http://localhost:8080/user/selectMailTemplate";
+    const url = "/user/selectMailTemplate";
     try {
       const response =
       await axios.post(url, 
           {"tplNo": tplNo}, {headers: {
             "Content-Type": "application/json",
-            "x-auth-token": state.jwtToken
+            "x-auth-token": localStorage.getItem('jwtToken')
           }});
         if(response.data.status === "OK") {
             if(response.data.data === null) {
@@ -42,21 +45,20 @@ export default function CreateTemplate({history, match}) {
             setTitle(tpl.tplSub);
             setDesc(tpl.tplDesc);
             setTplImagesDir(tpl.tplImagesDir);
-            mailDispatch({type:"DOWNLOAD_MAIL_STATE", value:{mailState: JSON.parse(tpl.tplContent)}});
-        } 
-      } catch(err) {
-        if(err.response.status === 403) {
+            const tmpMailState = {...JSON.parse(tpl.tplContent), number: tpl.tplNo};
+            mailDispatch({type:"DOWNLOAD_MAIL_STATE", value:{mailState: tmpMailState}});
+        } else if(response.data.status === "NOT_FOUND"){
           alert("인증되지 않은 접근입니다.");
-          globalState.dispatch({type:"UPDATE_JWT_TOKEN", value:{jwtToken: null}});
-        } else {
-          alert("서버와의 접근이 불안정합니다.")
+          localStorage.removeItem('jwtToken')
         }
+      } catch(err) {
+          alert("서버와의 접근이 불안정합니다.")
       } 
   }
 
 
-  const saveTemplateInsert =async (e) => {
-        const url = "http://localhost:8080/user/save";
+  const saveTemplateInsert = async (e) => {
+        const url = "/user/save";
         try {
         const response = await axios.post(url,{
           "tplNo": tplNo,
@@ -67,17 +69,20 @@ export default function CreateTemplate({history, match}) {
           "useStatus": 0
         }, {headers: {
           "Content-Type": "application/json",
-          "x-auth-token": state.jwtToken
+          "x-auth-token": localStorage.getItem('jwtToken')
         }});
-        if(response.data.status === "OK") {
-          alert(response.data.message);
-          if(response.data.data !== "update") {
-            history.push(`/createtemplate:${response.data.data}`);
-            setTplNo(response.data.data);
+          if(response.data.status === "OK") {
+            alert(response.data.message);
+            if(response.data.data !== "update") {
+              history.push(`/createtemplate:${response.data.data}`);
+              setTplNo(response.data.data);
+            }
+          } else if(response.data.status === "NOT_FOUND"){
+            alert("인증되지 않은 접근입니다.");
+            localStorage.removeItem('jwtToken');
+          }else {
+            alert(response.message);
           }
-        } else {
-          alert(response.message);
-        }
         } catch(err) {
           alert("서버와의 연결이 불안정합니다.");
         }
@@ -209,7 +214,9 @@ export default function CreateTemplate({history, match}) {
       </div>
       <hr/>
       <TemplateBackground />
-      <TemplateMailContents />
+      <TemplateActionsContext.Provider value={{saveTemplateInsert, history}}>
+          <TemplateMailContents />
+      </TemplateActionsContext.Provider>
       <EmptyDiv><hr/></EmptyDiv>
     </CreateTemplateDiv>
   );
@@ -220,3 +227,6 @@ const EmptyDiv = styled.div`
   width: 100%;
   height: 100px;
 `;
+
+CreateTemplate.TemplateActionsContext = TemplateActionsContext;
+export default CreateTemplate;

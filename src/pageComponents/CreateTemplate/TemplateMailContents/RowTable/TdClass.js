@@ -8,6 +8,7 @@ import React, {
 } from "react";
 import styled from "styled-components";
 import Modal from "../../../../components/Modal";
+import ReactDOM from "react-dom";
 import AddImageModal from "../../../../components/AddImageModal";
 import CustomEditor from "../../../../components/CustomEditor";
 import TdContent from "./TdClass/TdContent";
@@ -15,13 +16,14 @@ import { globalStateStore } from "../../../../stores/globalStateStore";
 import { mailTemplateStore } from "../../../../stores/mailTemplateStore";
 import AddButtonModal from "./TdClass/AddButtonModal";
 import {storageRef} from "../../../../components/Firebase";
+import CreateTemplate from "../../../../pages/CreateTemplate";
 export default function TdClass({
   rowIndex,
   colIndex,
   rowTableIndex,
   index,
   tdClass,
-  deleteTd,
+  deleteTd
 }) {
 
   // ================================== stores ===============================================
@@ -31,7 +33,8 @@ export default function TdClass({
   const _mailState = useContext(mailTemplateStore);
   const mailState = _mailState.state;
   const mailDispatch = _mailState.dispatch;
-
+  const {saveTemplateInsert, history} = useContext(CreateTemplate.TemplateActionsContext);
+  
     // ==================================  initialTdHeight =============================================== 
     // 분할된 박스이면 다른 height를 적용
   const initialTdHeight =
@@ -60,6 +63,7 @@ export default function TdClass({
   const tdRef = useRef(null);
 
   useEffect(() => {
+    
     const templateMailContentsTableDoc = document.getElementById(
       "TemplateMailContentsTable"
     );
@@ -131,17 +135,10 @@ export default function TdClass({
   const tdStyle =
     menuStatus === true || menuToggleStatus === true
       ? { ...tempTdStyle, position: "relative" }
-      : { ...tempTdStyle, position: "block" };
-
-  
-  const openEditorCallback = useCallback((html) => {
-    setImage(null);
-    setContent(html);
-  });
+      : { ...tempTdStyle, position: "block" }
 
   return (
     <Fragment>
-      
       <td
         ref={tdRef}
         bgcolor={tdBgcolor}
@@ -216,7 +213,22 @@ export default function TdClass({
               className="btn btn-primary"
               onClick={() => {
                 setTdBgcolor("");
-                setImage(null);
+                  const imgs = ReactDOM.findDOMNode(tdRef.current).querySelectorAll('img');
+                  if(imgs) {
+                  imgs.forEach(img => { 
+                      var desertRef = storageRef.child(`images/${mailState.number}/${img.alt}`);
+                      desertRef.delete().then(function() {
+                       alert("이미지가 삭제되었습니다.");
+                      }).catch(function(error) {
+                        alert("이미지를 삭제할 수 없습니다.");
+                      });
+                    });
+                    setTimeout(()=>{
+                      saveTemplateInsert();
+                      history.go(0);
+                    }, 1000)
+                  }
+                  setImage(null);
                 setButton(null);
                 setContent(`<p style="margin:0px;"></p>`);
               }}
@@ -248,12 +260,22 @@ export default function TdClass({
             <AddImageModal
               onlySrc={true}
               image={image}
-              synkEditorToResult={(image) => {
+              synkEditorToResult={(image) =>{
+
+              if(mailState.number === 0) {
+                alert("이미지를 업로드하기 위해서는 먼저 저장해주세요"); return;
+              }
+                const templateId = mailState.number;
+                let templateImageName = "";
+                if(colIndex !== undefined) {
+                  templateImageName = `${rowTableIndex}:${colIndex}-${rowIndex}.png`;
+                } else {
+                  templateImageName = `${rowTableIndex}:${index}.png`;
+                }
+
+                const tmpSrc = `https://firebasestorage.googleapis.com/v0/b/bizdem-c4931.appspot.com/o/images%2F${templateId}%2F${templateImageName}?alt=media`;
+                const newContent = `<a href="${image.link}"}><img src="${tmpSrc}" alt='${templateImageName}' style=' width: 100% height: 100%; border-radius: ${tdBorderRadius}px; background-color: none'/></a>`
                 
-                const templateId = "id";
-                const templateImageName = "sample.png";
-                const tmpSrc = `https://firebasestorage.googleapis.com/v0/b/bizdem-c4931.appspot.com/o/images%2Fid%2Fsample.png?alt=media`;
-                const newContent = `<a href="${image.link}"}><img src="${tmpSrc}" alt="image" style=' width: 100% height: 100%; border-radius: ${tdBorderRadius}px; background-color: none'/></a>`
                 let dataURLtoFile = (dataurl, fileName) => {
                   let arr = dataurl.split(","),
                   mime = arr[0].match(/:(.*?);/)[1],
@@ -263,15 +285,20 @@ export default function TdClass({
                   while(n--){
                     u8arr[n] = bstr.charCodeAt(n);
                   }
+
                   return new File([u8arr], fileName, {type:mime});
                 }
+
                 const imageFile = 
-                  dataURLtoFile(`${image.src}`, "sample.png");
-                storageRef.child('images/id/sample.png').put(imageFile).then(
-                  function(snapshot) {alert('Uploaded a blob or file')}
-                );
-                setImage(image);
-                setContent(newContent);
+                dataURLtoFile(`${image.src}`, templateImageName);
+                storageRef.child(`images/${templateId}/${templateImageName}`).put(imageFile)
+                  .then(()=>{
+                    setImage(image);})
+                  .then(()=>{setContent(newContent);})
+                  .then(()=>{setTimeout(()=>{
+                      saveTemplateInsert();
+                      history.go(0);
+                  }, 1000)});
               }}
             />
             ) : null}
