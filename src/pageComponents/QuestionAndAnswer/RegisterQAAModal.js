@@ -3,7 +3,7 @@ import React, {useEffect, useState, useContext} from 'react'
 import styled from "styled-components";
 import { globalStateStore } from "../../stores/globalStateStore";
 
-export default function QAADetailModal({id, onClose, onChangeId}) {
+export default function QAADetailModal({id, onClose, setUpdateCountQa}) {
 
     const globalState = useContext(globalStateStore);
     const { state } = globalState;
@@ -13,7 +13,7 @@ export default function QAADetailModal({id, onClose, onChangeId}) {
     const [qaTitle, setQaTitle] = useState();
     const [qaContent, setQaContent] = useState();
     const [qaAttach, setQaAttach] = useState();
-    const [qaGroup, setQaGroup] = useState('1');
+    const [qaGroup, setQaGroup] = useState('템플릿 관련');
     const [qaReplyContent, setQaReplyContent] = useState();
     const [useStatus, setUseStatus] = useState();
     const [regDate, setRegDate] = useState();
@@ -23,6 +23,7 @@ export default function QAADetailModal({id, onClose, onChangeId}) {
 
 
     useEffect(()=>{
+
     }, [updateCount])
 
 
@@ -46,15 +47,17 @@ export default function QAADetailModal({id, onClose, onChangeId}) {
                 
             }, {headers : {
                 "Content-Type" : "application/json",
-                "x-auth-token" : state.jwtToken
+                "x-auth-token" : localStorage.getItem('jwtToken')
             }});
 
             if (response.data.status === "OK") {
                 alert(response.data.message);
                 setUpdateCount(updateCount+1);
+                setUpdateCountQa();
+                onClose();
                 
-                
-            } else {
+            } else if(response.data.status == "NOT_FOUND") {
+                localStorage.removeItem('jwtToken');
                 alert(response.message);
 
             }
@@ -62,6 +65,7 @@ export default function QAADetailModal({id, onClose, onChangeId}) {
         } catch(err) {
             console.log(err);
             alert("서버와의 연결이 불안정합니다.");
+
         }
     }
 
@@ -81,10 +85,10 @@ export default function QAADetailModal({id, onClose, onChangeId}) {
                         <RightTd><select 
                                     onChange={(e)=>{setQaGroup(e.target.value)}}
                                     value={qaGroup} defaultValue="1">
-                                <option value="1" selected>시스템문의1</option>
-                                <option value="2" selected>시스템문의2</option>
-                                <option value="3" selected>시스템문의3</option>
-                                <option value="4" selected>시스템문의4</option>
+                                <option value="템플릿 관련" selected>템플릿 관련</option>
+                                <option value="시스템 문의" selected>시스템 문의</option>
+                                <option value="회원 정보" selected>회원 정보</option>
+                                <option value="기타" selected>기타</option>
                             </select>
                             
                             </RightTd>

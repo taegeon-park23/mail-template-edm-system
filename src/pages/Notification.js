@@ -22,7 +22,7 @@ export default function Notification({}) {
       try {
         const response = await axios.post(url, {}, {headers: {
           "Content-Type" : "application/json",
-          "x-auth-token" : state.jwtToken 
+          "x-auth-token" : localStorage.getItem('jwtToken')
         }});
 
         if (response.data.status === 'OK') {

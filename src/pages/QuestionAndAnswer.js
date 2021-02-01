@@ -31,7 +31,8 @@ export default function QuestionAndAnser({}) {
     try {
       const response = await axios.post(url, {}, {headers: {
         "Content-Type" : "application/json",
-        "x-auth-token" : state.jwtToken 
+        "x-auth-token" : localStorage.getItem('jwtToken')
+
       }});
 
       if (response.data.status === 'OK') {
@@ -86,7 +87,10 @@ export default function QuestionAndAnser({}) {
               onClose={() => {
                 setRegisterModalStatus(false);
               }}
-              onChangeId={() => {}}
+              setUpdateCountQa={() => {
+                setUpdateCount(updateCount+1);
+              }}
+
             />
           }
         />
@@ -156,10 +160,10 @@ export default function QuestionAndAnser({}) {
                 }}
               >
                 <td>{i}</td>
-                <td>템플릿 관련</td>
+                <td>{list.qaGroup}</td>
                 <td>{list.qaTitle}</td>
-                <td>답변완료</td>
-                <td>홍길동</td>
+                <td>{list.qaReplyContent}</td>
+                <td>{list.regId}</td>
                 <td>{list.regDate}</td>
               </tr>
             ))}
