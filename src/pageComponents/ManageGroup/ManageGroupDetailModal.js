@@ -1,7 +1,8 @@
 import React, {useState, useEffect} from 'react';
 import axios from "axios";
+import dateFormat from "../../dateFormat";
 import styled from "styled-components";
-export default function ManageGroupDetailModal({id, onClose, onChangeId}) {
+export default function ManageGroupDetailModal({id, onClose, setUpdateCountGroup}) {
     
     const [groupNo, setGroupNo] = useState(id);
     const [groupNm, setGroupNm] = useState("");
@@ -58,9 +59,11 @@ export default function ManageGroupDetailModal({id, onClose, onChangeId}) {
                 if(response.data.data === null) {
                   alert("조회되는 그룹이 없습니다."); return;
                 }
+                alert(response.data.message);
                 const editDate = response.data.data;
                 setGroupDate(editDate);
                 setUpdateCount(updateCount+1);
+                setUpdateCountGroup();
             } else if(response.data.status === "NOT_FOUND"){
                 alert("인증되지 않은 접근입니다.");
                 localStorage.removeItem('jwtToken');
@@ -86,10 +89,12 @@ export default function ManageGroupDetailModal({id, onClose, onChangeId}) {
                 if(response.data.data === null) {
                   alert("조회되는 그룹이 없습니다."); return;
                 }
+                alert(response.data.message);
                 const group = response.data.data;
                 setGroupDate(group.regDate);
                 setGroupNo(group.groupNo);
                 setUpdateCount(updateCount+1);
+                setUpdateCountGroup();
             } else if(response.data.status === "NOT_FOUND"){
                 alert("인증되지 않은 접근입니다.");
                 localStorage.removeItem('jwtToken');
@@ -133,7 +138,7 @@ export default function ManageGroupDetailModal({id, onClose, onChangeId}) {
                     </tr>
                     <tr>
                         <LeftTd>저장 일시</LeftTd>
-                        <RightTd>{groupDate}</RightTd>
+                        <RightTd>{dateFormat(new Date(groupDate))}</RightTd>
                     </tr>
                 </tbody>
             </table>

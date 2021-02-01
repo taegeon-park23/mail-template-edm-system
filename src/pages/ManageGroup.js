@@ -1,54 +1,207 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, Fragment } from "react";
 import Modal from "../components/Modal";
 import axios from "axios";
 import ManageGroupDetailModal from "../pageComponents/ManageGroup/ManageGroupDetailModal";
+import dateFormat from "../dateFormat";
 import styled from "styled-components";
 
-export default function ManageGroup({}) {
+export default function ManageGroup({ history, match }) {
+  
+  // match
+  const { search } = match.params;
+  const _search = `${search}`.split(":");
+  const _searchInput = _search[0] ? _search[0] : "";
+  const _searchIndex = _search[1] ? _search[1] : "";
+  
+  // state
   const [modalStatus, setModalStatus] = useState(false);
   const [id, setId] = useState(0);
   const [groups, setGroups] = useState([]);
   const [updateCount, setUpdateCount] = useState(0);
+  const [searchInput, setSearchInput] = useState(_searchInput);
+  const [pageCount, setPageCount] = useState(groups.length>0?groups[0].pageCount:10);
+
   useEffect(() => {
-    selectAddressGroupAll();
-  },[updateCount]);
+    selectAddressGroupAll({ groupNm: _searchInput, pageStart: _searchIndex });
+  }, [search, updateCount]);
 
-  const selectAddressGroupAll = async () => {
-    const url = "/user/selectAddressGroupAll";
-    try {
-      const response =
-      await axios.post(url, 
-          {}, {headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem('jwtToken')
-          }});
-
-        if(response.data.status === "OK") {
-            if(response.data.data === null) {
-              alert("조회되는 그룹이 없습니다."); return;
-            }
-            setGroups(response.data.data);
-        } else if(response.data.status === "NOT_FOUND"){
-            alert("인증되지 않은 접근입니다.");
-            localStorage.removeItem('jwtToken');
-        }
-      } catch(err) {
-        alert("서버와의 접근이 불안정합니다.");
-      }
+  const setCheckAll = (e = null, flag = false) => {
+    let checkFlag = false;
+    if(flag) 
+      checkFlag = flag;
+    else if(e!==null)
+      checkFlag = e.currentTarget.checked? true: false; 
+    const inputArr = document.querySelectorAll("input[type=checkbox]");
+    inputArr.forEach((input)=>{input.checked = checkFlag})
   }
 
-  const onClickDetailUseCallback = useCallback((no)=>{
-      setModalStatus(true);
-      setId(no)
+  const getCheckedGroupNoArr = () => {
+     const inputArr = document.querySelectorAll("input[type=checkbox]");
+     const checkedInputValues = [] ;
+     inputArr.forEach(input=>{
+       if(input.checked===true && input.value !== "on")
+        checkedInputValues.push(input.value);
+     });
+     return checkedInputValues;  
+  }
+
+  const selectAddressGroupAll = async (addressGroup = {}) => {
+    const url = "/user/selectAddressGroupAll";
+    try {
+      const response = await axios.post(
+        url,
+        { ...addressGroup },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      );
+
+      if (response.data.status === "OK") {
+        if (response.data.data === null) {
+          alert("조회되는 그룹이 없습니다.");
+          return;
+        }
+        setGroups(response.data.data);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  const deleteAddressGroup = async () => {
+    const url = "/user/deleteAddressGroup";
+    try {
+      const response = await axios.post(
+        url,
+        {"addressGroupNos":getCheckedGroupNoArr()},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      );
+
+      if (response.data.status === "OK") {
+        alert(response.data.message);
+        history.push(`/managegroup/${_searchInput}:0`);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  const onClickDetailUseCallback = useCallback((no) => {
+    setModalStatus(true);
+    setId(no);
   });
 
+  const getPageAnchors = (recordCount, pageCount) => {
+    let pages = recordCount / pageCount;
+    pages = pages < 1 ? 1 : Math.round(pages);
+    const pageAnchors = [];
+    const parsedIndex = parseInt(_searchIndex);
+
+    if (_searchIndex !== "0")
+      pageAnchors.push(
+        <a
+          className="btn btn-primary btn-sm mr-1"
+          onClick={(e) => {
+            e.preventDefault();
+            history.push(`/managegroup/${_searchInput}:${parsedIndex - 1}`);
+            setUpdateCount(updateCount + 1);
+          }}
+        >
+          {"<"}
+        </a>
+      );
+    const currentIdxClassName = "btn btn-primary btn-sm mr-1";
+    const otherIdxClassName = "btn btn-secondary btn-sm mr-1";
+    const anc = (i) => {
+      return <a
+        key={i}
+        className={i == _searchIndex ? currentIdxClassName : otherIdxClassName}
+        onClick={(e) => {
+          e.preventDefault();
+          history.push(`/managegroup/${_searchInput}:${i}`);
+        }}
+      >
+        {i + 1}
+      </a>
+    };
+
+    for (let i = 0; i < pages; i++) {
+      if((parsedIndex===0 && i<5) || (parsedIndex===1 && i<5)) {
+        pageAnchors.push(anc(i));
+      } else if (i <= parsedIndex + 2 && i >= parsedIndex - 2) {
+        pageAnchors.push(anc(i));
+      } else if((parsedIndex===pages-1 && i+5>=parsedIndex) || (parsedIndex===pages-2 && i+3>=parsedIndex)) {
+        pageAnchors.push(anc(i));
+      }
+    }
+
+    if (_searchIndex !== `${pages - 1}`)
+        pageAnchors.push(
+        <a
+          className="btn btn-primary btn-sm mr-1"
+          onClick={(e) => {
+            e.preventDefault();
+            history.push(`/managegroup/${_searchInput}:${parsedIndex + 1}`);
+          }}
+        >
+          {">"}
+        </a>
+      );
+    return pageAnchors;
+  };
+
+  const getEmptySpace = (length, tdCount) => {
+      const emptyTds = [];
+      const emptyTrs = [];
+      for(let j=0; j<tdCount; j++) {
+        emptyTds.push(
+          <td>&nbsp;</td>
+        )
+      }
+      for(let j=0; j<length; j++) {
+        emptyTrs.push(<tr>
+            {emptyTds}
+        </tr>)
+      }
+      return emptyTrs;
+  }
+
   return (
-    <div className="container bootdey">
-      {modalStatus === true ?<Modal
-            visible={modalStatus}
-            onClose={()=>{setModalStatus(false)}}
-            children={<ManageGroupDetailModal id={id} onClose={()=>{setModalStatus(false)}} onChangeId={()=>{}}/>}
-        />:null}
+    <div className="container-fluid">
+      {modalStatus === true ? (
+        <Modal
+          visible={modalStatus}
+          onClose={() => {
+            setModalStatus(false);
+          }}
+          children={
+            <ManageGroupDetailModal
+              id={id}
+              onClose={() => {
+                setModalStatus(false);
+              }}
+              setUpdateCountGroup={() => {
+                setUpdateCount(updateCount + 1);
+              }}
+            />
+          }
+        />
+      ) : null}
+
       <main>
         <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
           <p class=" mr-auto">
@@ -61,20 +214,39 @@ export default function ManageGroup({}) {
               <input
                 type="text"
                 class="form-control bg-light border-0 small"
-                placeholder="Search for..."
+                placeholder="그룹명/그룹설명"
                 aria-label="Search"
                 aria-describedby="basic-addon2"
+                value={searchInput}
+                onChange={(e) => {
+                  setSearchInput(e.target.value);
+                }}
               />
-                <button className="btn btn-primary mr-3" type="button">🔍</button>
+              <button
+                className="btn btn-primary mr-3"
+                type="button"
+                onClick={() => {
+                  history.push(`/managegroup/${searchInput}:0`);
+                  setUpdateCount(updateCount + 1);
+                }}
+              >
+                🔍
+              </button>
             </div>
           </form>
-
         </div>
         <div className="container-fluid d-flex justify-content-left">
-          <button className="btn btn-primary rounded  mx-3 mb-3"
-            onClick={()=>{onClickDetailUseCallback(0)}}
-          >생성</button>
-          <button className="btn btn-primary rounded  mr-3 mb-3">삭제</button>
+          <button
+            className="btn btn-primary rounded  mx-3 mb-3"
+            onClick={() => {
+              onClickDetailUseCallback(0);
+            }}
+          >
+            생성
+          </button>
+          <button className="btn btn-primary rounded  mr-3 mb-3"
+            onClick={()=>{deleteAddressGroup()}}
+          >삭제</button>
         </div>
         <table
           id="example"
@@ -84,7 +256,7 @@ export default function ManageGroup({}) {
           <thead>
             <tr>
               <th scope="col">
-                <input type="checkbox" />
+                <input type="checkbox" onClick={(e)=>{setCheckAll(e)}}/>
               </th>
               <th scope="col">index</th>
               <th scope="col">그룹명</th>
@@ -97,31 +269,60 @@ export default function ManageGroup({}) {
             {groups.map((group, i) => (
               <tr key={i}>
                 <td scope="row">
-                  <input type="checkbox" value={group.groupNo}/>
+                  <input type="checkbox" value={group.groupNo} />
                 </td>
-                <td onClick={()=>{onClickDetailUseCallback(group.groupNo)}}>{i}</td>
-                <td onClick={()=>{onClickDetailUseCallback(group.groupNo)}}>{group.groupNm}</td>
-                <td onClick={()=>{onClickDetailUseCallback(group.groupNo)}}>{group.groupOwner}</td>
-                <td onClick={()=>{onClickDetailUseCallback(group.groupNo)}}>{group.groupDesc}</td>
-                <td onClick={()=>{onClickDetailUseCallback(group.groupNo)}}>{!group.editDate ? group.regDate : group.editDate}</td>
+                <td
+                  onClick={() => {
+                    onClickDetailUseCallback(group.groupNo);
+                  }}
+                >
+                  {i + 1 === 10
+                    ? `${parseInt(_searchIndex) + 1}${0}`
+                    : `${_searchIndex}${i + 1}`}
+                </td>
+                <td
+                  onClick={() => {
+                    onClickDetailUseCallback(group.groupNo);
+                  }}
+                >
+                  {group.groupNm}
+                </td>
+                <td
+                  onClick={() => {
+                    onClickDetailUseCallback(group.groupNo);
+                  }}
+                >
+                  {group.addrCount}
+                </td>
+                <td
+                  onClick={() => {
+                    onClickDetailUseCallback(group.groupNo);
+                  }}
+                >
+                  {group.groupDesc}
+                </td>
+                <td
+                  onClick={() => {
+                    onClickDetailUseCallback(group.groupNo);
+                  }}
+                >
+                  {!group.editDate
+                    ? dateFormat(new Date(group.regDate))
+                    : dateFormat(new Date(group.editDate))}
+                </td>
               </tr>
             ))}
+            {
+              groups.length < pageCount ? getEmptySpace(pageCount-groups.length, 6)
+              : null
+            }
           </tbody>
-          <tfoot>
-            <tr>
-            <th>
-                <input type="checkbox" />
-              </th>
-              <th>index</th>
-              <th>그룹명</th>
-              <th>수</th>
-              <th>그룹 설명</th>
-              <th>저장 일시</th>
-            </tr>
-          </tfoot>
         </table>
+
         <div className="w-100 d-flex flex-row-reverse shadow-sm px-0 mb-5 bg-white rounded">
-           <p className="p-2 bd-highlight">페이지 이동 <input type="number"></input> 1-5 of 6 &lt; &gt;</p>
+          <span>{groups.length > 0
+              ? getPageAnchors(groups[0].recordCount, groups[0].pageCount)
+              : null}</span>
         </div>
       </main>
     </div>
