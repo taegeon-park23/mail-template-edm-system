@@ -10,6 +10,7 @@ import AddressboookList from "../pageComponents/SendMail/AddressbookList";
 import ReactDOM from "react-dom";
 import GroupAndAddressbookList from "../pageComponents/SendMail/GroupAndAddressbookList";
 import Modal from "../components/Modal";
+import MailTemplateList from "../pageComponents/SendMail/MailTemplateList";
 
 export default function SendMail({}) {
   const globalState = useContext(globalStateStore);
@@ -17,6 +18,7 @@ export default function SendMail({}) {
   const backDispatch = globalState.dispatch;
   const mailStateSotre = useContext(mailTemplateStore);
   const mailState = mailStateSotre.state;
+  const mailDispatch = mailStateSotre.dispatch;
   const [showTemplate, setShowTemplate] = useState(false);
 
   // ref
@@ -25,6 +27,7 @@ export default function SendMail({}) {
   // state
   const [modalStatus, setModalStatus] = useState(false);
   const [refModalStatus, setRefModalStatus] = useState(false);
+  const [tplModalStatus, setTplModalStatus] = useState(false);
   const [receiver, setReciver] = useState("");
   const [references, setRefrences] = useState("");
   const [title, setTitle] = useState("");
@@ -33,6 +36,8 @@ export default function SendMail({}) {
   const [inputRefLeft, setInputRefLeft] = useState(0);
   const [receiverList, setReceiverList] = useState([]);
   const [refList, setRefList] = useState([]);
+  const [sendRecTplNo, setSendRecTplNo] = useState(0);
+  const [tpl, setTpl] = useState(null);
 
   useEffect(() => {
     if (showTemplate)
@@ -45,7 +50,11 @@ export default function SendMail({}) {
     if(inputRefRef !== null) {
       setCurrentPosition(inputReceiverRef, setInputReciverLeft);
     }
-  }, [showTemplate, receiver]);
+
+    if(sendRecTplNo !== 0) {
+      mailTemplateSelectOne({"tplNo": sendRecTplNo});
+    }
+  }, [showTemplate, receiver, sendRecTplNo]);
 
   // get caretPosition
   const setCurrentPosition = (inputRef, setPositionLeft) => {
@@ -76,6 +85,33 @@ export default function SendMail({}) {
         .concat(newReceiverList.slice(i + 1, newReceiverList.length));
     }
     setRefList(newReceiverList);
+  }
+
+  // 템플릿 불러오기 API ******************************************************************
+  const mailTemplateSelectOne = async (tplInfo={}) => {
+    const url = "/user/selectMailTemplate";
+    try {
+      const response =
+      await axios.post(url, 
+          {...tplInfo}, {headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem('jwtToken')
+          }});
+        if(response.data.status === "OK") {
+            if(response.data.data === null) {
+              alert("조회되는 템플릿이 없습니다."); return;
+            }
+            const tpl = response.data.data;
+            setTpl(tpl);
+            const tmpMailState = {...JSON.parse(tpl.tplContent), number: tpl.tplNo};
+            mailDispatch({type:"DOWNLOAD_MAIL_STATE", value:{mailState: tmpMailState}});
+        } else if(response.data.status === "NOT_FOUND"){
+          alert("인증되지 않은 접근입니다.");
+          localStorage.removeItem('jwtToken')
+        }
+      } catch(err) {
+          alert("서버와의 접근이 불안정합니다.")
+      } 
   }
 
   // 미리보기
@@ -170,6 +206,7 @@ export default function SendMail({}) {
       formData.append("ccs", JSON.stringify(refList));
       formData.append("title", title);
       formData.append("message", mailResultDoc.innerHTML);
+      formData.append("tplNo", sendRecTplNo);
       formData.append("htmlTemplate", blob, "htmlTemplate.html");
       const response = await instance.post("/user/mail", formData, {
         headers: {
@@ -226,6 +263,25 @@ export default function SendMail({}) {
               }}
               receiverList={refList}
               setReceiverList={setRefList}
+            />
+          }
+        />
+      ) : null}
+
+        {tplModalStatus === true ? (
+        <Modal
+          visible={tplModalStatus}
+          onClose={() => {
+            setTplModalStatus(false);
+          }}
+          children={
+            <MailTemplateList
+              onClose={() => {
+                setTplModalStatus(false);
+              }}
+              setSendRecTplNo={(no)=>{
+                setSendRecTplNo(no);
+              }}
             />
           }
         />
@@ -391,11 +447,16 @@ export default function SendMail({}) {
                 placeholder="@"
                 aria-label="mailTemplate"
                 aria-describedby="basic-addon2"
+                value={
+                  tpl ? `${tpl.tplNo}:${tpl.tplSub}` : "@"
+                }
+                readOnly={true}
               />
               <InputSideButton
                 className="btn btn-primary ml-2"
                 onClick={() => {
-                  setShowTemplate(!showTemplate);
+                  setShowTemplate(true);
+                  setTplModalStatus(true);
                 }}
               >
                 템플릿

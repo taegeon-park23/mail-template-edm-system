@@ -5,7 +5,7 @@ import { tables } from "./sample.json";
 export default function Draft({}) {
   useEffect(() => {});
   return (
-    <div className="container bootdey">
+    <div className="container-fluid">
       <main>
         <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
           <p class=" mr-auto">

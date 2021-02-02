@@ -63,7 +63,7 @@ class MainSidebar extends React.Component {
         <div className="sidebar-heading">주소록 관리</div>
         {/* Nav Item - Pages Collapse Menu */}
         <li className="nav-item">
-          <Link className="nav-link" to="/managegroup">
+          <Link className="nav-link" to="/managegroup/:0">
             <span>&nbsp;그룹관리</span>
           </Link>
         </li>

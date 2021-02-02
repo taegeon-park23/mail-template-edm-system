@@ -19,12 +19,12 @@ import TemplateStorage from "./TemplateStorage";
 import SendItems from "./SendItems";
 import Notification from "./Notification";
 import QuestionAndAnser from "./QuestionAndAnswer";
+import SendItemDetail from "./SendItemDetail";
 export default function Main({history}) {
   const _globalStateStore = useContext(globalStateStore);
   const globalState = _globalStateStore.state;
 
   useEffect(()=> {
-    console.log(localStorage.getItem('jwtToken'));
     if(!localStorage.getItem('jwtToken')) history.push("/login");
   })
 
@@ -42,12 +42,13 @@ export default function Main({history}) {
               <Route path="/createtemplate:number" component={CreateTemplate} />
               <Route path="/sendmail" component={SendMail} />
               <Route path="/draft" component={Draft}/>
-              <Route path="/managegroup" component={ManageGroup}/>
+              <Route path="/managegroup/:search" component={ManageGroup}/>
               <Route path="/manageaddressbook" component={ManageAddressbook}/>
               <Route path="/templatestorage" component={TemplateStorage}/>
               <Route path="/senditems" component={SendItems}/>
               <Route path="/notification" component={Notification}/>
               <Route path="/questionandanswer" component={QuestionAndAnser}/>
+              <Route path="/senditemdetail/:number" component={SendItemDetail}/>
               <Route
                 // path 를 따로 정의하지 않으면 모든 상황에 렌더링됨
                 render={({ location }) => (

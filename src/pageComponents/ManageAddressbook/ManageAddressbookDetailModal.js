@@ -1,7 +1,8 @@
 import React, {useState, useEffect, useRef} from 'react';
 import axios from "axios";
+import dateFormat from "../../dateFormat";
 import styled from "styled-components";
-export default function ManageAddressbookDetailModal({id, onClose, onChangeId}) {
+export default function ManageAddressbookDetailModal({id, onClose, setUpdateCountAddressbook}) {
     
     //ref
     const selectRef = useRef(null);
@@ -97,6 +98,7 @@ export default function ManageAddressbookDetailModal({id, onClose, onChangeId}) 
                 const editDate = response.data.data;
                 setAddrDate(editDate);
                 setUpdateCount(updateCount+1);
+                setUpdateCountAddressbook();
             } else if(response.data.status === "NOT_FOUND"){
                 alert("인증되지 않은 접근입니다.");
                 localStorage.removeItem('jwtToken');
@@ -129,6 +131,7 @@ export default function ManageAddressbookDetailModal({id, onClose, onChangeId}) 
                 setAddrDate(addressbook.regDate);
                 setAddrNo(addressbook.addrNo);
                 setUpdateCount(updateCount+1);
+                setUpdateCountAddressbook();
             } else if(response.data.status === "NOT_FOUND"){
                 alert("인증되지 않은 접근입니다.");
                 localStorage.removeItem('jwtToken');
@@ -181,7 +184,7 @@ export default function ManageAddressbookDetailModal({id, onClose, onChangeId}) 
                     </tr>
                     <tr>
                         <LeftTd>저장 일시</LeftTd>
-                        <RightTd>{addrDate}</RightTd>
+                        <RightTd>{dateFormat(new Date(addrDate))}</RightTd>
                     </tr>
                 </tbody>
             </table>
