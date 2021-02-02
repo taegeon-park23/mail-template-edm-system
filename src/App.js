@@ -7,6 +7,7 @@ import { StateProvider} from "./stores/globalStateStore";
 import Login from "./pages/Login";
 import Main from "./pages/Main";
 import PopUp from "./components/PopUp";
+import MailResponse from "./pages/MailResponse";
 // import Test from "./components/page/Test";
 
 import "./styles.css";
@@ -18,6 +19,8 @@ const App = () => {
       <div className="Main">
         <StateProvider>
         <Switch>
+        
+          <Route path="/mailresponse/:number" component={MailResponse} />
           <Route path="/login" component={Login} />
           <Route path="/" eaxact={true} component={Main} />
           <PopUp />

@@ -3,6 +3,8 @@ import styled from "styled-components";
 import dateFomrat from "../dateFormat";
 import ReactHtmlParser from "react-html-parser";
 import axios from "axios";
+import Modal from "../components/Modal";
+import MailResponseList from "../pageComponents/SendItemDetail/MailResponseList";
 
 export default function SendItemDetail({ match }) {
     const { number } = match.params;
@@ -14,6 +16,7 @@ export default function SendItemDetail({ match }) {
   const [date, setDate] = useState("");
   const [tplNo, setTplNo] = useState("");
   const [tplTitle, setTplTitle] = useState("");
+  const [modalStatus, setModalStatus] = useState(false);
   const [fileList, setFileList] = useState([]);
 
   useEffect(() => {
@@ -71,6 +74,24 @@ export default function SendItemDetail({ match }) {
   return (
     <SendMailDiv className="container-fluid">
       <div className="email-app">
+      
+      {modalStatus === true ? (
+        <Modal
+          visible={modalStatus}
+          onClose={() => {
+            setModalStatus(false);
+          }}
+          children={
+            <MailResponseList
+              onClose={() => {
+                setModalStatus(false);
+              }}
+              sendRecNo={number}
+            />
+          }
+        />
+      ) : null}
+
         <main>
           <div className=" mt-3">
             <p className=" mr-auto">
@@ -137,7 +158,11 @@ export default function SendItemDetail({ match }) {
               </div>
 
               <div className="form-row mb-3">
-                <div className="col">
+                <div className="col"
+                  onClick={()=>{
+                    setModalStatus(true);
+                  }}
+                >
                   <span>
                     <label>메일 템플릿</label>
                     <input

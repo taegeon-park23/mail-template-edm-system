@@ -1,8 +1,8 @@
 import React, { useState } from "react";
-import styled from "styled-components";
 import Modal from "../components/Modal";
 import QAADetailModal from "../pageComponents/QuestionAndAnswer/QAADetailModal";
 import RegisterQAAModal from "../pageComponents/QuestionAndAnswer/RegisterQAAModal";
+
 import { tables } from "./sample.json";
 export default function QuestionAndAnser({}) {
   const [detailModalStatus, setDetailModalStatus] = useState(false);
@@ -49,7 +49,14 @@ export default function QuestionAndAnser({}) {
           </p>
         </div>
         <div className="w-100 mb-2 d-flex flex-row-reverse">
-          <button className="btn btn-primary" onClick={()=>{setRegisterModalStatus(true)}}>Q&A 등록</button>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setRegisterModalStatus(true);
+            }}
+          >
+            Q&A 등록
+          </button>
         </div>
         <div className="container-fluid input-group shadow-sm py-10 mb-5 bg-white rounded">
           <form className="ml-5 mx-5 my-10">
@@ -76,7 +83,9 @@ export default function QuestionAndAnser({}) {
                 aria-describedby="basic-addon2"
               />
               <button className="btn btn-primary mr-3" type="button">
-                🔍
+                <span role="img" aria-label="search">
+                  🔍
+                </span>
               </button>
             </div>
           </form>

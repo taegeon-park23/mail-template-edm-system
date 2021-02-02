@@ -353,7 +353,7 @@ export default function ManageGroup({ history, location }) {
                       );
                     }}
                   >
-                    🔍
+                    <span role="img" aria-label="search">🔍</span>
                   </button>
                 </Fragment>
               ) : (
@@ -376,7 +376,7 @@ export default function ManageGroup({ history, location }) {
                       );
                     }}
                   >
-                    🔍
+                      <span role="img" aria-label="search">🔍</span>
                   </button>
                 </Fragment>
               )}
@@ -427,7 +427,7 @@ export default function ManageGroup({ history, location }) {
           <tbody>
             {addressbooks.map((addressbook, i) => (
               <tr key={i}>
-                <td scope="row">
+                <td>
                   <input type="checkbox" value={addressbook.addrNo} />
                 </td>
                 <td

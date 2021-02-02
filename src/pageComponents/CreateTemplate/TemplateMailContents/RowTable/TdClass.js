@@ -4,10 +4,8 @@ import React, {
   useContext,
   useEffect,
   useRef,
-  useCallback,
 } from "react";
 import styled from "styled-components";
-import Modal from "../../../../components/Modal";
 import ReactDOM from "react-dom";
 import AddImageModal from "../../../../components/AddImageModal";
 import CustomEditor from "../../../../components/CustomEditor";

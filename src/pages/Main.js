@@ -40,7 +40,7 @@ export default function Main({history}) {
           <StateProvider>
             <Switch>
               <Route path="/createtemplate:number" component={CreateTemplate} />
-              <Route path="/sendmail" component={SendMail} />
+              <Route path="/sendmail/:number" component={SendMail} />
               <Route path="/draft" component={Draft}/>
               <Route path="/managegroup/:search" component={ManageGroup}/>
               <Route path="/manageaddressbook" component={ManageAddressbook}/>

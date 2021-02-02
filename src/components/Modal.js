@@ -11,13 +11,11 @@ class Modal extends React.Component {
       height: 600
     };
   }
-
   onMaskClick = (event) => {
     if (event.target === event.currentTarget) {
       this.props.onClose(event);
     }
   };
-
   render() {
     return (
       <>
@@ -31,7 +29,7 @@ class Modal extends React.Component {
                 className="btn btn-dark"
                 onClick={this.props.onClose}
               >
-                ✖️
+                <span role="img" aria-label="close">✖️</span>
               </CloseButton>
             )}
             {this.props.children}
@@ -41,7 +39,6 @@ class Modal extends React.Component {
     );
   }
 }
-
 Modal.defaultProps = {
   visible: false,
   closable: true,
@@ -62,20 +59,6 @@ const ModalWrapper = styled.div`
   z-index: 1000;
   overflow-y: auto;
   outline: 0;
-`;
-
-const ModalOverlay = styled.div`
-  box-sizing: border-box;
-  display: ${(props) => (props.visible ? "block" : "none")};
-  position: fixed;
-  width: 100vw;
-  height: 100vh;
-  top: 0;
-  right: 0;
-  left: 0;
-  z-index: 999;
-  background-color: rgba(0, 0, 0, 0.6);
-  overflow: auto;
 `;
 
 const ModalInner = styled.div`
