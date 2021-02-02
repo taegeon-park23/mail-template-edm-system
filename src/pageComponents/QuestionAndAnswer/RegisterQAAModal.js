@@ -56,7 +56,7 @@ export default function QAADetailModal({id, onClose, setUpdateCountQa}) {
                 setUpdateCountQa();
                 onClose();
                 
-            } else if(response.data.status == "NOT_FOUND") {
+            } else if(response.data.status === "NOT_FOUND") {
                 localStorage.removeItem('jwtToken');
                 alert(response.message);
 

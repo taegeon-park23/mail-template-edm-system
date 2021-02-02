@@ -3,7 +3,6 @@ import styled from "styled-components";
 import Modal from "../components/Modal";
 import QAADetailModal from "../pageComponents/QuestionAndAnswer/QAADetailModal";
 import RegisterQAAModal from "../pageComponents/QuestionAndAnswer/RegisterQAAModal";
-import { tables } from "./sample.json";
 import axios from 'axios';
 import { globalStateStore } from "../stores/globalStateStore";
 
@@ -11,17 +10,20 @@ export default function QuestionAndAnser({}) {
   const [detailModalStatus, setDetailModalStatus] = useState(false);
   const [registerModalStatus, setRegisterModalStatus] = useState(false);
   const [id, setId] = useState(0);
-
   const globalState = useContext(globalStateStore);
-  const [qaList, setNotices] = useState([]);
+  const [qaList, setQaList] = useState([]);
   const [updateCount, setUpdateCount] = useState(0);
-  const { state } = globalState;
 
 
+
+  const onClickregisterModalCallback = useCallback((no)=>{
+    setRegisterModalStatus(true);
+    setId(no)
+  });
 
   const onClickQAADetailModalCallback = useCallback((no)=>{
-    setRegisterModalStatus(true);
-    setId(no);
+    setDetailModalStatus(true);
+    setId(no)
   });
 
 
@@ -36,15 +38,18 @@ export default function QuestionAndAnser({}) {
       }});
 
       if (response.data.status === 'OK') {
-        setNotices(response.data.data);
-      }
-    } catch(err) {
-      if(err.response.status === 403) {
+        if(response.data.data === null) {
+          alert("조회되는 그룹이 없습니다."); return;
+        }
+
+        setQaList(response.data.data);
+      } else if(response.data.status === "NOT_FOUND"){
         alert("인증되지 않은 접근입니다.");
-        globalState.dispatch({type:"UPDATE_JWT_TOKEN", value:{jwtToken: null}});
-      } else {
-        alert("서버와의 접근이 불안정합니다.")
-      }
+
+        localStorage.removeItem('jwtToken');
+    }
+    } catch(err) {
+      alert("서버와의 접근이 불안정합니다.")
     }
 
   }
@@ -68,6 +73,7 @@ export default function QuestionAndAnser({}) {
           }}
           children={
             <QAADetailModal
+              id = {id}
               onClose={() => {
                 setDetailModalStatus(false);
               }}
@@ -103,7 +109,7 @@ export default function QuestionAndAnser({}) {
           </p>
         </div>
         <div className="w-100 mb-2 d-flex flex-row-reverse">
-          <button className="btn btn-primary" onClick={()=>{onClickQAADetailModalCallback(0)}}>Q&A 등록</button>
+          <button className="btn btn-primary" onClick={()=>{onClickregisterModalCallback(0)}}>Q&A 등록</button>
         </div>
         <div className="container-fluid input-group shadow-sm py-10 mb-5 bg-white rounded">
           <form className="ml-5 mx-5 my-10">
@@ -155,16 +161,13 @@ export default function QuestionAndAnser({}) {
             {qaList.map((list, i) => (
               <tr
                 key={i}
-                onClick={() => {
-                  setDetailModalStatus(true);
-                }}
               >
-                <td>{i}</td>
-                <td>{list.qaGroup}</td>
-                <td>{list.qaTitle}</td>
-                <td>{list.qaReplyContent}</td>
-                <td>{list.regId}</td>
-                <td>{list.regDate}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{i+1}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.qaGroup}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.qaTitle}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.replyYn}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.qaUserNm}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.regDate}</td>
               </tr>
             ))}
           </tbody>
