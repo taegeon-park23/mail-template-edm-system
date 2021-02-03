@@ -5,7 +5,7 @@ import QAADetailModal from "../pageComponents/QuestionAndAnswer/QAADetailModal";
 import RegisterQAAModal from "../pageComponents/QuestionAndAnswer/RegisterQAAModal";
 import axios from 'axios';
 import { globalStateStore } from "../stores/globalStateStore";
-
+import dateFormat from "../../src/dateFormat";
 export default function QuestionAndAnser({}) {
   const [detailModalStatus, setDetailModalStatus] = useState(false);
   const [registerModalStatus, setRegisterModalStatus] = useState(false);
@@ -167,7 +167,7 @@ export default function QuestionAndAnser({}) {
                 <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.qaTitle}</td>
                 <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.replyYn}</td>
                 <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.qaUserNm}</td>
-                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.regDate}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{dateFormat(new Date(list.regDate))}</td>
               </tr>
             ))}
           </tbody>

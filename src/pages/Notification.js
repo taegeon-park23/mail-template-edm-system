@@ -6,6 +6,7 @@ import NotificationDetailModal from "../pageComponents/Notification/Notification
 import { StateProvider } from '../stores/globalStateStore';
 import { tables } from "./sample.json";
 import { globalStateStore } from "../stores/globalStateStore";
+import dateForm from "../../src/dateFormat";
 
 
 export default function Notification({}) {
@@ -107,7 +108,7 @@ export default function Notification({}) {
                 <td>{i}</td>
                 <td>{notice.noticeTitle}</td>
                 <td>{notice.noticeAttachment}</td>
-                <td>{notice.regDate}</td>
+                <td>{dateForm(new Date(notice.regDate))}</td>
               </tr>
             ))}
           </tbody>
