@@ -1,15 +1,10 @@
-<<<<<<< HEAD
 import axios from 'axios';
 import React, {useEffect, useState, useContext} from 'react'
 import styled from "styled-components";
-=======
-import React, { useState } from "react";
->>>>>>> switch-editor
 import Modal from "../components/Modal";
 import NotificationDetailModal from "../pageComponents/Notification/NotificationDetailModal";
 import { StateProvider } from '../stores/globalStateStore';
 import { tables } from "./sample.json";
-<<<<<<< HEAD
 import { globalStateStore } from "../stores/globalStateStore";
 import dateForm from "../../src/dateFormat";
 
@@ -57,28 +52,6 @@ export default function Notification({}) {
             onClose={()=>{setModalStatus(false)}}
             children={<NotificationDetailModal onClose={()=>{setModalStatus(false)}} onChangeId={()=>{}}/>}
         />:null}
-=======
-export default function Notification() {
-  const [modalStatus, setModalStatus] = useState(false);
-  return (
-    <div className="container bootdey">
-      {modalStatus === true ? (
-        <Modal
-          visible={modalStatus}
-          onClose={() => {
-            setModalStatus(false);
-          }}
-          children={
-            <NotificationDetailModal
-              onClose={() => {
-                setModalStatus(false);
-              }}
-              onChangeId={() => {}}
-            />
-          }
-        />
-      ) : null}
->>>>>>> switch-editor
 
       <main>
         <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
@@ -132,18 +105,8 @@ export default function Notification() {
             </tr>
           </thead>
           <tbody>
-<<<<<<< HEAD
             {notices.map((notice, i) => (
               <tr key={i} onClick={()=>{setModalStatus(true)}}>
-=======
-            {tables.map((td, i) => (
-              <tr
-                key={i}
-                onClick={() => {
-                  setModalStatus(true);
-                }}
-              >
->>>>>>> switch-editor
                 <td>{i}</td>
                 <td>{notice.noticeTitle}</td>
                 <td>{notice.noticeAttachment}</td>
