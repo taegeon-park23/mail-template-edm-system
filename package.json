@@ -36,6 +36,8 @@
     "@ckeditor/ckeditor5-special-characters": "^24.0.0",
     "@ckeditor/ckeditor5-table": "^24.0.0",
     "@ckeditor/ckeditor5-typing": "^24.0.0",
+    "@material-ui/core": "^4.11.3",
+    "@material-ui/icons": "^4.11.2",
     "@svgr/webpack": "4.3.3",
     "@typescript-eslint/eslint-plugin": "^2.10.0",
     "@typescript-eslint/parser": "^2.10.0",

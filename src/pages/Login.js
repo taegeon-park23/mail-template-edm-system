@@ -1,18 +1,53 @@
-import React, {useState} from "react";
+import React, { useState, useContext, useEffect, useCallback } from "react";
+import Modal from "@material-ui/core/Dialog";
+
 
 import "./Login.css";
 import bizeMDIcon from "../assets/images/BizeMD.PNG";
 import axios from "axios";
+import SignUpModal from "../pageComponents/Login/SignUpModal";
 
 const Login = ({history}) => {
 
     const [userId, setUserId] = useState("");
     const [userPw, setUserPw] = useState("");
+    const [signUpModalStatus, setSignUpModalStatus] = useState("false");
+    const [updateCount, setUpdateCount] = useState(0);
 
     
 
+    const onClickSignUpModalCallBack = useCallback((no)=>{
+      setSignUpModalStatus(true);
+
+    })
+
     return (
+
       <div className="sign-in">
+
+        {signUpModalStatus === true ? (
+          <Modal
+            open={signUpModalStatus}
+            onClose={()=>{
+              setSignUpModalStatus(false);
+            }}
+            children={
+              <SignUpModal
+                onClose={()=>{
+                  setSignUpModalStatus(false);
+                }}
+                setUpdateCountLogin={()=> {
+                  setUpdateCount(updateCount+1);
+                }}>
+
+              </SignUpModal>
+
+            }
+            >
+
+          </Modal>
+        ) : null}
+
         <div className="text-center shadow p-3 mb-5 bg-white rounded">
           <form className="form-signin">
             <img
@@ -73,13 +108,21 @@ const Login = ({history}) => {
                 alert("서버와 연결이 불안정합니다.");
               }
             }}>
-              Sign in
+              Sign In
             </button>
+            <button 
+              className="btn btn-lg btn-primary btn-block"
+              onClick={()=>{onClickSignUpModalCallBack(0)}}
+              >
+              Sign Up
+            </button>
+
             <p className="mt-5 mb-3 text-muted">&copy; 2020</p>
           </form>
         </div>
       </div>
     );
 }
+
 
 export default Login;
