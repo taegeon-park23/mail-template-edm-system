@@ -13,7 +13,6 @@ export default function AddButtonModal({setButton, setContent,button, tdWidth, t
         content: "button",
         result: "",
     };
-console.log(button);
     const [buttonConfig, setButtonConfig] = useState(button?button:IntitialButtonConfig);
     return(
     <AddButtonMoal className="bg-dark" style={{width: "300px"}}>
@@ -36,9 +35,9 @@ console.log(button);
                     setContent(newButtonConfig.result);
                     setButton(newButtonConfig);}
             }>추가</button>
-            <div class="input-group mb-3">
-                <div class="input-group-prepend">
-                    <span class="input-group-text">text</span>
+            <div className="input-group mb-3">
+                <div className="input-group-prepend">
+                    <span className="input-group-text">text</span>
                 </div>
                 <input
               type="text"
@@ -48,9 +47,9 @@ console.log(button);
               onChange={(e) => {setButtonConfig({...buttonConfig, link:e.target.value})}}
             />
             </div>
-            <div class="input-group mb-3">
-            <div class="input-group-prepend">
-                    <span class="input-group-text">text</span>
+            <div className="input-group mb-3">
+            <div className="input-group-prepend">
+                    <span className="input-group-text">text</span>
                 </div>
                 <input
               type="text"
@@ -61,29 +60,29 @@ console.log(button);
             />
             </div>
             <div className="input-group mb-3">
-            <div class="input-group-prepend">
-                    <span class="input-group-text">배경색</span>
+            <div className="input-group-prepend">
+                    <span className="input-group-text">배경색</span>
                 </div>
               <input
                 type="color"
-                class="form-control"
+                className="form-control"
                 value={buttonConfig.bgcolor}
                 onChange={(e) => {setButtonConfig({...buttonConfig, bgcolor:e.target.value})}}
               />
-              <div class="input-group-prepend">
-                    <span class="input-group-text">글자색</span>
+              <div className="input-group-prepend">
+                    <span className="input-group-text">글자색</span>
                 </div>
             
               <input
                 type="color"
-                class="form-control"
+                className="form-control"
                 value={buttonConfig.color}
                 onChange={(e) => {setButtonConfig({...buttonConfig, color:e.target.value})}}
               />
             </div>
             <div className="input-group mb-3">
-            <div class="input-group-prepend">
-                    <span class="input-group-text">br</span>
+            <div className="input-group-prepend">
+                    <span className="input-group-text">br</span>
                 </div>
                 <input
               type="number"
@@ -91,8 +90,8 @@ console.log(button);
               value={buttonConfig.borderRadius}
               onChange={(e) => {setButtonConfig({...buttonConfig, borderRadius:e.target.value})}}
             />
-            <div class="input-group-prepend">
-                    <span class="input-group-text">W</span>
+            <div className="input-group-prepend">
+                    <span className="input-group-text">W</span>
                 </div>
                 <input
               type="number"
@@ -100,8 +99,8 @@ console.log(button);
               value={buttonConfig.width}
               onChange={(e) => {setButtonConfig({...buttonConfig, width:e.target.value})}}
             />
-            <div class="input-group-prepend">
-                    <span class="input-group-text">H</span>
+            <div className="input-group-prepend">
+                    <span className="input-group-text">H</span>
                 </div>
                 <input
               type="text"

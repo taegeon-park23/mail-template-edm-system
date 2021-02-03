@@ -1,27 +1,39 @@
 import axios from 'axios';
 import React, {useEffect, useState, useContext} from 'react'
-import styled from "styled-components";
 import Modal from "../components/Modal";
+import qs from "qs";
 import NotificationDetailModal from "../pageComponents/Notification/NotificationDetailModal";
-import { StateProvider } from '../stores/globalStateStore';
-import { tables } from "./sample.json";
-import { globalStateStore } from "../stores/globalStateStore";
 import dateForm from "../../src/dateFormat";
 
 
-export default function Notification({}) {
+export default function Notification({ history, location }) {
+
+  // query
+  const query = qs.parse(location.search, {
+    ignoreQueryPrefix: true,
+  });
+  const _searchInput = query.searchInput ? query.searchInput : "";
+  const _searchStartDate = query.searchStartDate
+  ? query.searchStartDate
+  : "";
+  const _searchEndDate = query.searchEndDate
+  ? query.searchEndDate
+  : "";
+  const _searchIndex = query.searchIndex ? query.searchIndex : "0";
+
     const [modalStatus, setModalStatus] = useState(false);
-    const globalState = useContext(globalStateStore);
     const [notices, setNotices] = useState([]);
     const [updateCount, setUpdateCount] = useState(0);
-    const { state } = globalState;
-
+    const [searchInput, setSearchInput] = useState(_searchInput);
+    const [startDate, setStartDate] = useState(_searchStartDate);
+    const [endDate, setEndDate] = useState(_searchEndDate);
+    const [pageCount, setPageCount] = useState(notices.length>0?notices[0].pageCount:10);
 
     //call all notice list
-    const selectNoticeAll = async () => {
-      const url = "http://localhost:8080/notice/selectNoticeAll";
+    const selectNoticeAll = async (noticeInfo={}) => {
+      const url = "/user/selectNoticeAll";
       try {
-        const response = await axios.post(url, {}, {headers: {
+        const response = await axios.post(url, {...noticeInfo}, {headers: {
           "Content-Type" : "application/json",
           "x-auth-token" : localStorage.getItem('jwtToken')
         }});
@@ -32,8 +44,9 @@ export default function Notification({}) {
       } catch(err) {
         if(err.response.status === 403) {
           alert("인증되지 않은 접근입니다.");
-          globalState.dispatch({type:"UPDATE_JWT_TOKEN", value:{jwtToken: null}});
+          localStorage.removeItem('jwtToken');
         } else {
+          console.log(err);
           alert("서버와의 접근이 불안정합니다.")
         }
       }
@@ -41,9 +54,90 @@ export default function Notification({}) {
     }
 
     useEffect(()=>{
-      selectNoticeAll();
-    },[updateCount])
+      selectNoticeAll(
+        {
+          "noticeTitle": _searchInput,
+          "startDate": _searchStartDate,
+          "endDate": _searchEndDate,
+          "pageStart": _searchIndex,
+        }
+      );
+    },[updateCount,_searchInput, _searchStartDate, _searchEndDate, _searchIndex])
   
+    const getPageAnchors = (recordCount, pageCount) => {
+      let pages = recordCount / pageCount;
+      pages = pages < 1 ? 1 : Math.round(pages);
+      const pageAnchors = [];
+      const parsedIndex = parseInt(_searchIndex);
+  
+      if (_searchIndex !== "0")
+        pageAnchors.push(
+          <a
+            className="btn btn-primary btn-sm mr-1"
+            onClick={(e) => {
+              e.preventDefault();
+              history.push(`/notification?searchInput=${_searchInput}&searchIndex=${parsedIndex - 1}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
+              setUpdateCount(updateCount + 1);
+            }}
+          >
+            {"<"}
+          </a>
+        );
+      const currentIdxClassName = "btn btn-primary btn-sm mr-1";
+      const otherIdxClassName = "btn btn-secondary btn-sm mr-1";
+      const anc = (i) => {
+        return <a
+          key={i}
+          className={i == _searchIndex ? currentIdxClassName : otherIdxClassName}
+          onClick={(e) => {
+            e.preventDefault();
+            history.push(`/notification?searchInput=${_searchInput}&searchIndex=${i}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
+          }}
+        >
+          {i + 1}
+        </a>
+      };
+  
+      for (let i = 0; i < pages; i++) {
+        if((parsedIndex===0 && i<5) || (parsedIndex===1 && i<5)) {
+          pageAnchors.push(anc(i));
+        } else if (i <= parsedIndex + 2 && i >= parsedIndex - 2) {
+          pageAnchors.push(anc(i));
+        } else if((parsedIndex===pages-1 && i+5>=parsedIndex) || (parsedIndex===pages-2 && i+3>=parsedIndex)) {
+          pageAnchors.push(anc(i));
+        }
+      }
+  
+      if (_searchIndex !== `${pages - 1}`)
+          pageAnchors.push(
+          <a
+            className="btn btn-primary btn-sm mr-1"
+            onClick={(e) => {
+              e.preventDefault();
+              history.push(`/notification?searchInput=${_searchInput}&searchIndex=${parsedIndex - 1}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
+            }}
+          >
+            {">"}
+          </a>
+        );
+      return pageAnchors;
+    };
+  
+    const getEmptySpace = (length, tdCount) => {
+        const emptyTds = [];
+        const emptyTrs = [];
+        for(let j=0; j<tdCount; j++) {
+          emptyTds.push(
+            <td>&nbsp;</td>
+          )
+        }
+        for(let j=0; j<length; j++) {
+          emptyTrs.push(<tr>
+              {emptyTds}
+          </tr>)
+        }
+        return emptyTrs;
+    }
 
     return(
         <div className="container bootdey">
@@ -54,8 +148,8 @@ export default function Notification({}) {
         />:null}
 
       <main>
-        <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
-          <p class=" mr-auto">
+        <div className="d-flex justify-content-center align-items-center ml-3 mt-3">
+          <p className=" mr-auto">
             <h3>공지 사항</h3>
           </p>
         </div>
@@ -68,6 +162,13 @@ export default function Notification({}) {
                 className="mr-3 form-control bg-light border-1"
                 aria-label="Search"
                 aria-describedby="basic-addon2"
+                value={startDate}
+                max={dateForm(new Date(), 'yyyy-MM-dd')}
+                onChange={
+                  (e)=>{
+                    setStartDate(e.target.value);
+                  }
+                }
               />
               {"~"}
               <input
@@ -75,15 +176,46 @@ export default function Notification({}) {
                 className="ml-3 form-control bg-light border-1"
                 aria-label="Search"
                 aria-describedby="basic-addon2"
+                value={endDate}
+                max={dateForm(new Date(), 'yyyy-MM-dd')}
+                onChange={
+                  (e)=>{
+                    setEndDate(e.target.value);
+                  }
+                }
               />
               <input
                 type="text"
-                class="ml-4 form-control bg-light border-0"
-                placeholder="제목/수신자"
+                className="ml-4 form-control bg-light border-0"
+                placeholder="제목"
                 aria-label="Search"
                 aria-describedby="basic-addon2"
+                value={searchInput}
+                onChange={
+                  (e)=>{
+                    setSearchInput(e.target.value);
+                  }
+                }
               />
-              <button className="btn btn-primary mr-3" type="button">
+              <button className="btn btn-primary ml-10 mr-3" type="button"
+                onClick={
+                  ()=> {
+                    setSearchInput("");
+                    setStartDate("");
+                    setEndDate("");
+                  }
+                }
+                >
+                초기화
+              </button>
+              <button className="btn btn-primary mr-3" type="button"
+              onClick={
+                ()=>{
+                  history.push(
+                    `/notification?searchInput=${searchInput}&searchStartDate=${startDate}&searchEndDate=${endDate}`
+                  );
+                }
+              }>
                 <span role="img" aria-label="search">
                   🔍
                 </span>
@@ -113,20 +245,21 @@ export default function Notification({}) {
                 <td>{dateForm(new Date(notice.regDate))}</td>
               </tr>
             ))}
+            {
+              notices.length < pageCount ? getEmptySpace(pageCount-notices.length, 4)
+              : null
+            }
           </tbody>
-          <tfoot>
-            <tr>
-              <th>index</th>
-              <th>제목</th>
-              <th>파일</th>
-              <th>등록 일시</th>
-            </tr>
-          </tfoot>
         </table>
         <div className="w-100 d-flex flex-row-reverse shadow-sm px-0 mb-5 bg-white rounded">
-          <p className="p-2 bd-highlight">
-            페이지 이동 <input type="number"></input> 1-5 of 6 &lt; &gt;
-          </p>
+          <span>
+            {notices.length > 0
+              ? getPageAnchors(
+                notices[0].recordCount,
+                notices[0].pageCount
+                )
+              : null}
+          </span>
         </div>
       </main>
     </div>

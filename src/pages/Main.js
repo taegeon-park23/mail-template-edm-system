@@ -36,7 +36,7 @@ export default function Main({history}) {
       <MainContentDiv>
         {/* dropdown 메뉴 */}
         <MainDropdownBar />
-        <div class="container-fluid">
+        <div className="container-fluid">
           <StateProvider>
             <Switch>
               <Route path="/createtemplate:number" component={CreateTemplate} />

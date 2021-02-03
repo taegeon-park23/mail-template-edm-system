@@ -31,7 +31,6 @@ export default function SendItems({ history, location }) {
   );
 
   useEffect(() => {
-    console.log(_searchInput);
     selectSendRecordAll(
       {
         "sendRecTitle": _searchInput,
@@ -159,8 +158,8 @@ export default function SendItems({ history, location }) {
   return (
     <div className="container-fluid">
       <main>
-        <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
-          <p class=" mr-auto">
+        <div className="d-flex justify-content-center align-items-center ml-3 mt-3">
+          <p className=" mr-auto">
             <h3>발송 이력</h3>
           </p>
         </div>
@@ -200,7 +199,7 @@ export default function SendItems({ history, location }) {
 
               <input
                 type="text"
-                class="ml-4 form-control bg-light border-0"
+                className="ml-4 form-control bg-light border-0"
                 placeholder="제목/수신자"
                 aria-label="Search"
                 aria-describedby="basic-addon2"

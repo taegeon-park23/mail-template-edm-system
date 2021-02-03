@@ -134,7 +134,7 @@ export default function MailTemplateList({ onClose, setSendRecTplNo }) {
           <div className="input-group w-100">
             <input
               type="text"
-              class="form-control bg-light border-0 small"
+              className="form-control bg-light border-0 small"
               placeholder="이름 OR EMAIL"
               aria-label="이름 OR EMAIL"
               aria-describedby="basic-addon2"

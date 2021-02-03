@@ -84,7 +84,7 @@ export default function GroupAndAddressbookList({
   };
 
   return (
-    <div class="list-group">
+    <div className="list-group">
       {addrKeys.length !== 0
         ? addrKeys.map((key) => (
             <Fragment>

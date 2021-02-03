@@ -98,8 +98,6 @@ const StateProvider = ({ children }) => {
         const findIndex = newPopUpMessages.indexOf(
           `${action.value.popUpMessage}`
         );
-        console.log(action.value.popUpMessage, "-");
-        console.log(newPopUpMessages[0] === "" + action.value.popUpMessage);
         if (findIndex !== -1) {
           if (findIndex === 1) newPopUpMessages = [];
           else if (findIndex === newPopUpMessages.length - 1)

@@ -31,7 +31,6 @@ export default function QAADetailModal({id, onClose, onChangeId}) {
 
 
     const selectOneQa = async () => {
-        console.log("qaNo: " + qaNo);
         const url = "http://localhost:8080/qa/selectOneQa";
         try {
           const response =

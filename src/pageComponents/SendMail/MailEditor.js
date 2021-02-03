@@ -10,7 +10,7 @@ export default function MailEditor({width, content, setContent}) {
   }, [editContent]);
   return (
     <ResultAreaDiv
-      class="form-control"
+    className="form-control"
       id="message"
       name="body"
       rows="12"

@@ -214,7 +214,6 @@ const StateProvider = ({ children }) => {
   const [state, dispatch] = useReducer((state, action) => {
     switch (action.type) {
       case "DOWNLOAD_MAIL_STATE": 
-      console.log(action.value.mailState);
       return {
           ...action.value.mailState,
           version: state.version+1

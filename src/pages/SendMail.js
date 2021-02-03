@@ -186,7 +186,6 @@ export default function SendMail({ history, match }) {
         localStorage.removeItem("jwtToken");
       }
     } catch (err) {
-      console.log(err);
       alert("서버와의 접근이 불안정합니다.");
     }
   };
@@ -334,7 +333,7 @@ export default function SendMail({ history, match }) {
   // *********************************************************************************
 
   return (
-    <SendMailDiv class="container bootdey">
+    <SendMailDiv className="container bootdey">
       {modalStatus === true ? (
         <Modal
           visible={modalStatus}
@@ -390,14 +389,14 @@ export default function SendMail({ history, match }) {
         />
       ) : null}
 
-      <div class="email-app">
+      <div className="email-app">
         <main>
-          <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
-            <p class=" mr-auto">
+          <div className="d-flex justify-content-center align-items-center ml-3 mt-3">
+            <p className=" mr-auto">
               <h3>메일 보내기</h3>
             </p>
             <button
-              class="btn btn-primary rounded mr-3"
+              className="btn btn-primary rounded mr-3"
               onClick={() => {
                 sendMail();
               }}
@@ -405,13 +404,13 @@ export default function SendMail({ history, match }) {
               보내기
             </button>
             <button
-              class="btn btn-primary rounded mr-3"
+              className="btn btn-primary rounded mr-3"
               onClick={convertToHTML}
             >
               미리보기
             </button>
             <button
-              class="btn btn-primary rounded mr-3"
+              className="btn btn-primary rounded mr-3"
               onClick={() => {
                 if (number === "0") {
                   insertMailDraft({
@@ -439,7 +438,7 @@ export default function SendMail({ history, match }) {
             </button>
           </div>
           <p
-            class="text-center d-flext justify-content-center rounded-pill"
+            className="text-center d-flext justify-content-center rounded-pill"
             style={{ height: "30px" }}
           >
             템플릿을 선택하여 메일을 보내세요
@@ -454,7 +453,7 @@ export default function SendMail({ history, match }) {
             }}
           >
             <div className="position-static input-group mb-3">
-              <label for="bcc" class="col-2 col-sm-1 col-form-label">
+              <label for="bcc" className="col-2 col-sm-1 col-form-label">
                 받는 사람
               </label>
               <InputPrependDiv className="input-group-prepend">
@@ -510,7 +509,7 @@ export default function SendMail({ history, match }) {
               </InputSideButton>
             </div>
             <div className="input-group mb-3">
-              <label for="bcc" class="col-2 col-sm-1 col-form-label">
+              <label for="bcc" className="col-2 col-sm-1 col-form-label">
                 참조
               </label>
               <InputPrependDiv className="input-group-prepend">
@@ -565,7 +564,7 @@ export default function SendMail({ history, match }) {
               </InputSideButton>
             </div>
             <div className="input-group mb-3">
-              <label for="bcc" class="col-2 col-sm-1 col-form-label">
+              <label for="bcc" className="col-2 col-sm-1 col-form-label">
                 메일 템플릿
               </label>
               <div className="input-group-prepend"></div>
@@ -588,15 +587,15 @@ export default function SendMail({ history, match }) {
                 템플릿
               </InputSideButton>
             </div>
-            <div class="form-row mb-3">
-              <label for="bcc" class="col-2 col-sm-1 col-form-label">
+            <div className="form-row mb-3">
+              <label for="bcc" className="col-2 col-sm-1 col-form-label">
                 제목
               </label>
-              <div class="col-10 col-sm-11">
+              <div className="col-10 col-sm-11">
                 <span>
                   <input
                     type="text"
-                    class="form-control"
+                    className="form-control"
                     id="bcc"
                     placeholder="Title"
                     value={title}
@@ -607,18 +606,18 @@ export default function SendMail({ history, match }) {
                 </span>
               </div>
             </div>
-            <div class="form-row mb-3">
-              <label for="bcc" class="col-2 col-sm-1 col-form-label">
+            <div className="form-row mb-3">
+              <label for="bcc" className="col-2 col-sm-1 col-form-label">
                 파일 선택
               </label>
-              <div class="col-10 col-sm-11">
-                <FileInput type="file" class="form-control" />
+              <div className="col-10 col-sm-11">
+                <FileInput type="file" className="form-control" />
               </div>
             </div>
           </form>
-          <div class="row">
-            <div class="col-sm-11 ml-auto">
-              <div class="form-group mt-4" style={{ width: "100%" }}>
+          <div className="row">
+            <div className="col-sm-11 ml-auto">
+              <div className="form-group mt-4" style={{ width: "100%" }}>
                 <MailEditor
                   width={mailState.tableWidth}
                   content={content}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import dateFomrat from "../dateFormat";
 import qs from "qs";
@@ -191,8 +191,8 @@ export default function TemplateStorage({ history, location }) {
   return (
     <div className="container-fluid">
       <main>
-        <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
-          <p class=" mr-auto">
+        <div className="d-flex justify-content-center align-items-center ml-3 mt-3">
+          <p className=" mr-auto">
             <h3>템플릿 목록</h3>
           </p>
         </div>
@@ -201,7 +201,7 @@ export default function TemplateStorage({ history, location }) {
             <div className="input-group w-100">
               <input
                 type="text"
-                class="form-control bg-light border-0 small"
+                className="form-control bg-light border-0 small"
                 placeholder="이름 OR EMAIL"
                 aria-label="이름 OR EMAIL"
                 aria-describedby="basic-addon2"

@@ -69,7 +69,6 @@ const Login = ({history}) => {
                   history.push("/");
                 }
               } catch(err) {
-                console.log(err);
                 alert("서버와 연결이 불안정합니다.");
               }
             }}>

@@ -22,7 +22,6 @@ export default function AddImageModal({ synkEditorToResult, onlySrc, image }) {
 
     if (items[length - 1]["type"].indexOf("image") === 0) {
       const blob = items[length - 1].getAsFile();
-      // console.log("image on");
       const reader = new FileReader();
       reader.onload = function (readEvent) {
         setImageSrc(readEvent.target.result);
@@ -37,24 +36,18 @@ export default function AddImageModal({ synkEditorToResult, onlySrc, image }) {
   };
 
   const onDropOnCard = (e) => {
-    // debugger;
     e.stopPropagation();
     e.preventDefault();
     const items = e.dataTransfer.items;
     let length = e.dataTransfer.items.length;
 
-    // console.log(items);
-    // e.preventDefault();
-    // debugger;
     if (items[length - 1]["type"].indexOf("image") === 0) {
       const blob = items[length - 1].getAsFile();
-      // console.log("image on");
       const reader = new FileReader();
       reader.onload = function (readEvent) {
         setImageSrc(readEvent.target.result);
         setImage(readEvent.target.result);
       };
-      // console.log(blob);
       reader.readAsDataURL(blob);
     }
   };
@@ -81,7 +74,7 @@ export default function AddImageModal({ synkEditorToResult, onlySrc, image }) {
             </div>}
         </div>
 
-        <figcaption class="figure-caption">
+        <figcaption className="figure-caption">
           이미지를 끌어오거나 붙여넣기 하세요
         </figcaption>
         {onlySrc === true ? (
