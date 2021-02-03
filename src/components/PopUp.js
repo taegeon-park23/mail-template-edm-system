@@ -1,18 +1,10 @@
 import React, { useState, useContext, useCallback, useEffect } from "react";
 import styled, { keyframes, css } from "styled-components";
 import { globalStateStore } from "../stores/globalStateStore";
-const PopUp = ({}) => {
+const PopUp = () => {
   const globalState = useContext(globalStateStore);
-  const { state, dispatch } = globalState;
+  const { state} = globalState;
   const popUpMessages = state.popUpMessages;
-  const deleteEffectCallback = useCallback((message) => {
-    setTimeout(() => {
-      dispatch({
-        type: "DELETE_POPOUP_MESSAGE",
-        value: { popUpMessages: message }
-      });
-    }, 1000);
-  });
 
   return (
     <>

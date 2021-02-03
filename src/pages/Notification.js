@@ -1,10 +1,15 @@
+<<<<<<< HEAD
 import axios from 'axios';
 import React, {useEffect, useState, useContext} from 'react'
 import styled from "styled-components";
+=======
+import React, { useState } from "react";
+>>>>>>> switch-editor
 import Modal from "../components/Modal";
 import NotificationDetailModal from "../pageComponents/Notification/NotificationDetailModal";
 import { StateProvider } from '../stores/globalStateStore';
 import { tables } from "./sample.json";
+<<<<<<< HEAD
 import { globalStateStore } from "../stores/globalStateStore";
 import dateForm from "../../src/dateFormat";
 
@@ -52,6 +57,28 @@ export default function Notification({}) {
             onClose={()=>{setModalStatus(false)}}
             children={<NotificationDetailModal onClose={()=>{setModalStatus(false)}} onChangeId={()=>{}}/>}
         />:null}
+=======
+export default function Notification() {
+  const [modalStatus, setModalStatus] = useState(false);
+  return (
+    <div className="container bootdey">
+      {modalStatus === true ? (
+        <Modal
+          visible={modalStatus}
+          onClose={() => {
+            setModalStatus(false);
+          }}
+          children={
+            <NotificationDetailModal
+              onClose={() => {
+                setModalStatus(false);
+              }}
+              onChangeId={() => {}}
+            />
+          }
+        />
+      ) : null}
+>>>>>>> switch-editor
 
       <main>
         <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
@@ -83,12 +110,14 @@ export default function Notification({}) {
                 aria-label="Search"
                 aria-describedby="basic-addon2"
               />
-             <button className="btn btn-primary mr-3" type="button">🔍</button>
+              <button className="btn btn-primary mr-3" type="button">
+                <span role="img" aria-label="search">
+                  🔍
+                </span>
+              </button>
             </div>
           </form>
-
         </div>
-        
         <table
           id="example"
           className="table table-striped table-hover table-sm"
@@ -103,8 +132,18 @@ export default function Notification({}) {
             </tr>
           </thead>
           <tbody>
+<<<<<<< HEAD
             {notices.map((notice, i) => (
               <tr key={i} onClick={()=>{setModalStatus(true)}}>
+=======
+            {tables.map((td, i) => (
+              <tr
+                key={i}
+                onClick={() => {
+                  setModalStatus(true);
+                }}
+              >
+>>>>>>> switch-editor
                 <td>{i}</td>
                 <td>{notice.noticeTitle}</td>
                 <td>{notice.noticeAttachment}</td>
@@ -122,9 +161,11 @@ export default function Notification({}) {
           </tfoot>
         </table>
         <div className="w-100 d-flex flex-row-reverse shadow-sm px-0 mb-5 bg-white rounded">
-           <p className="p-2 bd-highlight">페이지 이동 <input type="number"></input> 1-5 of 6 &lt; &gt;</p>
+          <p className="p-2 bd-highlight">
+            페이지 이동 <input type="number"></input> 1-5 of 6 &lt; &gt;
+          </p>
         </div>
       </main>
     </div>
-    )
+  );
 }

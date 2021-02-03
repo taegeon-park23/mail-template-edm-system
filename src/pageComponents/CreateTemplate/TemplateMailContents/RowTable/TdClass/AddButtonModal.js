@@ -28,7 +28,8 @@ console.log(button);
                 ()=>{
                     const newButtonConfig = {
                         ...buttonConfig,
-                        result : `<table background="none" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td align="center" style="width: ${tdWidth}px; height:${tdHeight}px; "><a style="text-decoration:none" href="${buttonConfig.link}"><p style="width: ${buttonConfig.width}px; line-height: ${buttonConfig.height}px; background-color: ${buttonConfig.bgcolor}; border-radius: ${buttonConfig.borderRadius}px; text-align:center; font-weight:700; margin:0px; padding: 0px;">
+                        result : `<table background="none" width="100%" cellspacing="0" cellpadding="0"><tbody><tr><td align="center" style="width: ${tdWidth}px; height:${tdHeight}px; ">
+                        <a class="forsignup" style="text-decoration:none" href="${buttonConfig.link}"><p style="width: ${buttonConfig.width}px; line-height: ${buttonConfig.height}px; background-color: ${buttonConfig.bgcolor}; border-radius: ${buttonConfig.borderRadius}px; text-align:center; font-weight:700; margin:0px; padding: 0px;">
                         <font color="${buttonConfig.color}">${buttonConfig.content}</font>
                         </p></a></td></tr></tbody></table>`
                     };

@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
-import ReactHtmlParser from "react-html-parser";
 import CustomEditor from "../../components/CustomEditor";
 import MailContent from "../SendMail/MailContent";
 
-export default function MailEditor({width}) {
-  const [editContent, setEditContent] = useState("<p></p>");
-  useEffect(() => {}, [editContent]);
+export default function MailEditor({width, content, setContent}) {
+  const [editContent, setEditContent] = useState(content ? content: "<p></p>");
+  useEffect(() => {
+  }, [editContent]);
   return (
     <ResultAreaDiv
       class="form-control"
@@ -19,8 +19,9 @@ export default function MailEditor({width}) {
       <CustomEditorWrapper width={width}>
       <CustomEditor
               classic={true}
-              data={`${editContent}`}
+              data={`${content}`}
               onChangeHandler={(event, editor)=>{
+                setContent(editor.getData());
                 setEditContent(editor.getData());
               }}
               onBlurHandler={(event, editor)=>{

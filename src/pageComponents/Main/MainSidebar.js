@@ -28,7 +28,7 @@ class MainSidebar extends React.Component {
         <hr className="sidebar-divider my-0" />
 
         <li className="nav-item active">
-          <Link className="nav-link" to="/sendmail">
+          <Link className="nav-link" to="/sendmail/0">
             <i className="fas fa-fw fa-tachometer-alt">✉</i>
             <span>&nbsp;메일보내기</span>
           </Link>

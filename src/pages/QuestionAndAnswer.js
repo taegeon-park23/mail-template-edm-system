@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import React, { useState, useContext, useEffect, useCallback } from "react";
 import styled from "styled-components";
 import Modal from "../components/Modal";
@@ -6,6 +7,14 @@ import RegisterQAAModal from "../pageComponents/QuestionAndAnswer/RegisterQAAMod
 import axios from 'axios';
 import { globalStateStore } from "../stores/globalStateStore";
 import dateFormat from "../../src/dateFormat";
+=======
+import React, { useState } from "react";
+import Modal from "../components/Modal";
+import QAADetailModal from "../pageComponents/QuestionAndAnswer/QAADetailModal";
+import RegisterQAAModal from "../pageComponents/QuestionAndAnswer/RegisterQAAModal";
+
+import { tables } from "./sample.json";
+>>>>>>> switch-editor
 export default function QuestionAndAnser({}) {
   const [detailModalStatus, setDetailModalStatus] = useState(false);
   const [registerModalStatus, setRegisterModalStatus] = useState(false);
@@ -109,7 +118,18 @@ export default function QuestionAndAnser({}) {
           </p>
         </div>
         <div className="w-100 mb-2 d-flex flex-row-reverse">
+<<<<<<< HEAD
           <button className="btn btn-primary" onClick={()=>{onClickregisterModalCallback(0)}}>Q&A 등록</button>
+=======
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setRegisterModalStatus(true);
+            }}
+          >
+            Q&A 등록
+          </button>
+>>>>>>> switch-editor
         </div>
         <div className="container-fluid input-group shadow-sm py-10 mb-5 bg-white rounded">
           <form className="ml-5 mx-5 my-10">
@@ -136,7 +156,9 @@ export default function QuestionAndAnser({}) {
                 aria-describedby="basic-addon2"
               />
               <button className="btn btn-primary mr-3" type="button">
-                🔍
+                <span role="img" aria-label="search">
+                  🔍
+                </span>
               </button>
             </div>
           </form>

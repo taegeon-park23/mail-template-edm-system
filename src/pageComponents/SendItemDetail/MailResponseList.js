@@ -1,28 +1,29 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function MailTemplateList({ onClose, setSendRecTplNo }) {
-  const [templates, setTemplates] = useState([]);
+export default function MailResponseList({ onClose, sendRecNo }) {
+  const [mailResponseList, setMailResponseList] = useState([]);
   const [updateCount, setUpdateCount] = useState(0);
   const [searchIndex, setSearchIndex] = useState("0");
   const [searchInput, setSearchInput] = useState("");
   const [pageCount, setPageCount] = useState(
-    templates.length > 0 ? templates[0].pageCount : 10
+    mailResponseList.length > 0 ? mailResponseList[0].pageCount : 10
   );
 
   useEffect(() => {
-    selectMailTemplateAll({
-      tplSub: searchInput,
-      pageStart: searchIndex,
+    selectMailResponseAll({
+      "sendRecNo": sendRecNo,
+      "receiverEmail": searchInput,
+      "pageStart": searchIndex,
     });
   }, [updateCount]);
 
-  const selectMailTemplateAll = async (tpl = {}) => {
-    const url = "/user/selectMailTemplateAll";
+  const selectMailResponseAll = async (mailResponse = {}) => {
+    const url = "/user/selectMailResponseAll";
     try {
       const response = await axios.post(
         url,
-        { ...tpl },
+        { ...mailResponse },
         {
           headers: {
             "Content-Type": "application/json",
@@ -36,7 +37,7 @@ export default function MailTemplateList({ onClose, setSendRecTplNo }) {
           alert("조회되는 템플릿이 없습니다.");
           return;
         }
-        setTemplates(response.data.data);
+        setMailResponseList(response.data.data);
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
@@ -165,37 +166,35 @@ export default function MailTemplateList({ onClose, setSendRecTplNo }) {
         <thead>
           <tr>
             <th scope="col">index</th>
-            <th scope="col">템플릿 제목</th>
-            <th scope="col">템플릿 설명</th>
+            <th scope="col">이메일</th>
+            <th scope="col">이름</th>
+            <th scope="col">전화번호</th>
           </tr>
         </thead>
         <tbody>
-          {templates.map((tpl, i) => (
+          {mailResponseList.map((mailRe, i) => (
             <tr
               key={i}
-              onClick={() => {
-                setSendRecTplNo(parseInt(tpl.tplNo));
-                onClose();
-              }}
             >
               <td>
                 {i + 1 === 10
                   ? `${parseInt(searchIndex) + 1}${0}`
                   : `${searchIndex}${i + 1}`}
               </td>
-              <td>{tpl.tplSub}</td>
-              <td>{tpl.tplDesc}</td>
+              <td>{mailRe.receiverEmail}</td>
+              <td>{mailRe.receiverName}</td>
+              <td>{mailRe.receiverPhone}</td>
             </tr>
           ))}
-          {templates.length < pageCount
-            ? getEmptySpace(pageCount - templates.length, 5)
+          {mailResponseList.length < pageCount
+            ? getEmptySpace(pageCount - mailResponseList.length, 4)
             : null}
         </tbody>
       </table>
       <div className="w-100 d-flex flex-row-reverse shadow-sm px-0 mb-5 bg-white rounded">
         <span>
-          {templates.length > 0
-            ? getPageAnchors(templates[0].recordCount, templates[0].pageCount)
+          {mailResponseList.length > 0
+            ? getPageAnchors(mailResponseList[0].recordCount, mailResponseList[0].pageCount)
             : null}
         </span>
       </div>

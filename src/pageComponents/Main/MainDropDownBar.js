@@ -1,12 +1,6 @@
-import React, {useContext} from "react";
-import styled from "styled-components";
+import React from "react";
+const MainDropdownBar = () => {
 
-import {globalStateStore} from "../../stores/globalStateStore";
-
-const MainDropdownBar = ({}) => {
-
-  const _globalStateStore = useContext(globalStateStore);
-  const glbalDispatch = _globalStateStore.dispatch;
     return (
       <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
         {/* <!-- Sidebar Toggle (Topbar) --> */}
@@ -107,16 +101,11 @@ const MainDropdownBar = ({}) => {
               <span class="mr-2 d-none d-lg-inline text-gray-600 small">
                 Douglas McGee
               </span>
-              <i>🧏🏻‍♂️</i>
+              <i><span role="img" aria-label="search">🧏🏻‍♂️</span></i>
             </a>
           </li>
         </ul>
       </nav>
     );
 }
-
-const Nav = styled.nav`
-  //Topbar
-  height: 4.375rem;
-`;
 export default MainDropdownBar;
