@@ -77,7 +77,7 @@ export default function QuestionAndAnser({ history, location }) {
 
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
-    pages = pages < 1 ? 1 : Math.round(pages);
+    pages = pages < 1 ? 1 : Math.ceil(pages);
     const pageAnchors = [];
     const parsedIndex = parseInt(_searchIndex);
 
@@ -125,7 +125,7 @@ export default function QuestionAndAnser({ history, location }) {
           className="btn btn-primary btn-sm mr-1"
           onClick={(e) => {
             e.preventDefault();
-            history.push(`/questionandanswer?searchInput=${_searchInput}&searchIndex=${parsedIndex - 1}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
+            history.push(`/questionandanswer?searchInput=${_searchInput}&searchIndex=${parsedIndex + 1}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
           }}
         >
           {">"}
@@ -151,7 +151,7 @@ export default function QuestionAndAnser({ history, location }) {
   }
 
   return (
-    <div className="container bootdey">
+    <div className="container-fluid">
       {detailModalStatus === true ? (
         <Modal
           visible={detailModalStatus}
@@ -289,7 +289,11 @@ export default function QuestionAndAnser({ history, location }) {
               <tr
                 key={i}
               >
-                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{i+1}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>
+                {i + 1 === 10
+                  ? `${parseInt(_searchIndex) + 1}${0}`
+                  : `${_searchIndex}${i + 1}`}  
+                </td>
                 <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.qaGroup}</td>
                 <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.qaTitle}</td>
                 <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.replyYn}</td>

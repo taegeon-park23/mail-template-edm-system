@@ -66,7 +66,7 @@ export default function Notification({ history, location }) {
   
     const getPageAnchors = (recordCount, pageCount) => {
       let pages = recordCount / pageCount;
-      pages = pages < 1 ? 1 : Math.round(pages);
+      pages = pages < 1 ? 1 : Math.ceil(pages);
       const pageAnchors = [];
       const parsedIndex = parseInt(_searchIndex);
   
@@ -114,7 +114,7 @@ export default function Notification({ history, location }) {
             className="btn btn-primary btn-sm mr-1"
             onClick={(e) => {
               e.preventDefault();
-              history.push(`/notification?searchInput=${_searchInput}&searchIndex=${parsedIndex - 1}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
+              history.push(`/notification?searchInput=${_searchInput}&searchIndex=${parsedIndex + 1}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
             }}
           >
             {">"}
@@ -140,7 +140,7 @@ export default function Notification({ history, location }) {
     }
 
     return(
-        <div className="container bootdey">
+      <div className="container-fluid">
         {modalStatus === true ?<Modal
             visible={modalStatus}
             onClose={()=>{setModalStatus(false)}}
@@ -239,7 +239,11 @@ export default function Notification({ history, location }) {
           <tbody>
             {notices.map((notice, i) => (
               <tr key={i} onClick={()=>{setModalStatus(true)}}>
-                <td>{i}</td>
+                <td>
+                {i + 1 === 10
+                  ? `${parseInt(_searchIndex) + 1}${0}`
+                  : `${_searchIndex}${i + 1}`} 
+              </td>
                 <td>{notice.noticeTitle}</td>
                 <td>{notice.noticeAttachment}</td>
                 <td>{dateForm(new Date(notice.regDate))}</td>

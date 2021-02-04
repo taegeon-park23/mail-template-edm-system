@@ -172,11 +172,10 @@ function CreateTemplate({history, match}) {
               e.preventDefault();
             }}
           >
-            <div classNameName="input-group mb-3">
+            <div className="input-group mb-3">
               <label for="bcc" className="col-2 col-sm-1 col-form-label">
-                제목
+              제목
               </label>
-              <div className="input-group-prepend"></div>
               <input
                 type="text"
                 className="form-control"
@@ -191,7 +190,6 @@ function CreateTemplate({history, match}) {
               <label for="bcc" className="col-2 col-sm-1 col-form-label">
                 설명
               </label>
-              <div className="input-group-prepend"></div>
               <input
                 type="text"
                 className="form-control"
