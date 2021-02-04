@@ -161,8 +161,8 @@ function CreateTemplate({history, match}) {
 
   return (
     <CreateTemplateDiv className="container-fluid ">
-      <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
-          <p class=" mr-auto">
+      <div className="d-flex justify-content-center align-items-center ml-3 mt-3">
+          <p className=" mr-auto">
             <h3>템플릿 생성</h3><sup>{state.templateBackground === "backImage" ?"메일템플릿":"배경화면"}</sup>
           </p>
         </div>
@@ -173,10 +173,9 @@ function CreateTemplate({history, match}) {
             }}
           >
             <div className="input-group mb-3">
-              <label for="bcc" class="col-2 col-sm-1 col-form-label">
-                제목
+              <label for="bcc" className="col-2 col-sm-1 col-form-label">
+              제목
               </label>
-              <div className="input-group-prepend"></div>
               <input
                 type="text"
                 className="form-control"
@@ -188,10 +187,9 @@ function CreateTemplate({history, match}) {
               />
             </div>
             <div className="input-group mb-3">
-              <label for="bcc" class="col-2 col-sm-1 col-form-label">
+              <label for="bcc" className="col-2 col-sm-1 col-form-label">
                 설명
               </label>
-              <div className="input-group-prepend"></div>
               <input
                 type="text"
                 className="form-control"

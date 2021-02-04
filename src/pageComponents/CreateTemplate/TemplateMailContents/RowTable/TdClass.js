@@ -56,12 +56,28 @@ export default function TdClass({
   const [tdBorderRadius, setTdBorderRadius] = useState(tdClass.borderRadius);
   const [image, setImage] = useState(null);
   const [button, setButton] =useState(null);
+
   
+
+
+ // ================================== refs ===============================================
+
+  const tdContentEditorRef = useRef(null);
+  const tdContentImageRef = useRef(null);
+  const tdContentButtonRef = useRef(null);
   const tdHeightInputRef = useRef(null);
   const tdRef = useRef(null);
 
+
+  // ==================================== useEffect ==========================================================
+
+
   useEffect(() => {
-    
+
+    getImageSynk();
+    getButtonSynk();
+
+    // Template 중 TD가 변동사항이 생길시 -------------------------------------------------------
     const templateMailContentsTableDoc = document.getElementById(
       "TemplateMailContentsTable"
     );
@@ -102,11 +118,18 @@ export default function TdClass({
         borderRadius: tdBorderRadius,
       };
     }
+
     mailDispatch({
       type: "UPDATE_CONTENTS",
       value: { contents: newContents },
     });
+
+
   }, [content, tdWidth, tdHeight, tdBorderRadius, tdBgcolor]);
+
+
+
+  // =============================== tempStyle =======================================================
 
   // 테두리 ON(boxShadow===true)일때의 TD의 스타일
   const tdShadowStyle = {
@@ -135,6 +158,45 @@ export default function TdClass({
       ? { ...tempTdStyle, position: "relative" }
       : { ...tempTdStyle, position: "block" }
 
+
+// ===========================  functions =======================================================
+
+const getImageSynk = () => {
+  // Template 중 TD button, image 동기화
+if(tdRef.current && image === null) {
+  const dom = ReactDOM.findDOMNode(tdRef.current);
+  const aDom = dom.getElementsByTagName('a');
+  const imgDom = dom.getElementsByTagName('img');
+  
+    if(aDom && imgDom && aDom.length>0 && imgDom.length>0) {
+      const imageConfig = {link: aDom[0].href, src:imgDom[0].src};
+      setImage(imageConfig);
+    }
+  }
+}
+
+const getButtonSynk = () => {
+  if(tdRef.current && button === null) {
+    const dom = ReactDOM.findDOMNode(tdRef.current);
+    const aDom = dom.getElementsByClassName('forsignup');
+    if(aDom.length>0) {
+      const buttonDom = aDom[0].children[0];
+      const fontDom = buttonDom.children[0];
+      const buttonConfig = {
+        link: aDom[0].href, 
+        color:fontDom.color,
+        bgcolor:(buttonDom.style.backgroundColor),
+        borderRadius:parseInt(buttonDom.style.borderRadius),
+        width:parseInt(buttonDom.style.width),
+        height:parseInt(buttonDom.style.lineHeight),
+        content:fontDom.innerText,
+      };
+      setButton(buttonConfig);
+    }
+  }
+}
+
+// ====================================================== html ====================================================
   return (
     <Fragment>
       <td
@@ -236,6 +298,7 @@ export default function TdClass({
             <EditButton
               className="btn btn-primary"
               onClick={() => {
+                setTdBgcolor("");
                 setButtonModalStatus(!buttonModalStatus);
               }}
             >
@@ -249,6 +312,8 @@ export default function TdClass({
             <EditButton
               className="btn btn-primary"
               onClick={() => {
+                setTdBgcolor("");
+                getImageSynk();
                 setImageModalStatus(!imageModalStatus);
               }}
             >
@@ -259,7 +324,6 @@ export default function TdClass({
               onlySrc={true}
               image={image}
               synkEditorToResult={(image) =>{
-
               if(mailState.number === 0) {
                 alert("이미지를 업로드하기 위해서는 먼저 저장해주세요"); return;
               }
@@ -271,8 +335,8 @@ export default function TdClass({
                   templateImageName = `${rowTableIndex}:${index}.png`;
                 }
 
-                const tmpSrc = `https://firebasestorage.googleapis.com/v0/b/bizdem-c4931.appspot.com/o/images%2F${templateId}%2F${templateImageName}?alt=media`;
-                const newContent = `<a href="${image.link}"}><img src="${tmpSrc}" alt='${templateImageName}' style=' width: 100% height: 100%; border-radius: ${tdBorderRadius}px; background-color: none'/></a>`
+                let tmpSrc = `https://firebasestorage.googleapis.com/v0/b/bizdem-c4931.appspot.com/o/images%2F${templateId}%2F${templateImageName}?alt=media&time=${(new Date()).getTime()}`;
+                const newContent = `<a id="link-id" href="${image.link}"}><img id="image-id" src="${tmpSrc}" alt='${templateImageName}' style=' width: 100% height: 100%; border-radius: ${tdBorderRadius}px; background-color: none'/></a>`
                 
                 let dataURLtoFile = (dataurl, fileName) => {
                   let arr = dataurl.split(","),
@@ -292,11 +356,10 @@ export default function TdClass({
                 storageRef.child(`images/${templateId}/${templateImageName}`).put(imageFile)
                   .then(()=>{
                     setImage(image);})
-                  .then(()=>{setContent(newContent);})
                   .then(()=>{setTimeout(()=>{
                       saveTemplateInsert();
-                      history.go(0);
-                  }, 1000)});
+                  }, 1000)})
+                  .then(()=>{setContent(newContent)});
               }}
             />
             ) : null}
@@ -397,6 +460,7 @@ export default function TdClass({
 {/* ============================== Content ============================== */}
         {editStatus === true && image === null && button === null ? (
           <CustomEditor
+            ref={tdContentEditorRef}
             data={`${content}`}
             onChangeHandler={(event, editor) => {
               setContent(editor.getData());
@@ -406,9 +470,9 @@ export default function TdClass({
           />
         ) :
         button === null ?
-          <TdContent image={image} width={tdWidth} height={tdHeight} content={content} borderRadius={tdBorderRadius} />
+          <TdContent ref={tdContentImageRef} image={image} width={tdWidth} height={tdHeight} content={content} borderRadius={tdBorderRadius} />
         : 
-        <TdContent button={button} width={tdWidth} height={tdHeight} content={button.result} borderRadius={tdBorderRadius} />
+        <TdContent ref={tdContentButtonRef} button={button} width={tdWidth} height={tdHeight} content={content} borderRadius={tdBorderRadius} />
         }
       </td>
       {editStatus===true?

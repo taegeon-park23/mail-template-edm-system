@@ -68,6 +68,8 @@ export default function ManageGroup({ history, match }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
       alert("서버와의 접근이 불안정합니다.");
@@ -94,6 +96,8 @@ export default function ManageGroup({ history, match }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
       alert("서버와의 접근이 불안정합니다.");
@@ -107,7 +111,7 @@ export default function ManageGroup({ history, match }) {
 
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
-    pages = pages < 1 ? 1 : Math.round(pages);
+    pages = pages < 1 ? 1 : Math.ceil(pages);
     const pageAnchors = [];
     const parsedIndex = parseInt(_searchIndex);
 
@@ -203,8 +207,8 @@ export default function ManageGroup({ history, match }) {
       ) : null}
 
       <main>
-        <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
-          <p class=" mr-auto">
+        <div className="d-flex justify-content-center align-items-center ml-3 mt-3">
+          <p className=" mr-auto">
             <h3>그룹 관리</h3>
           </p>
         </div>
@@ -213,7 +217,7 @@ export default function ManageGroup({ history, match }) {
             <div className="input-group w-100">
               <input
                 type="text"
-                class="form-control bg-light border-0 small"
+                className="form-control bg-light border-0 small"
                 placeholder="그룹명/그룹설명"
                 aria-label="Search"
                 aria-describedby="basic-addon2"

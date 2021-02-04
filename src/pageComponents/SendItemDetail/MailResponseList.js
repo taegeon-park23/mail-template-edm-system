@@ -41,6 +41,8 @@ export default function MailResponseList({ onClose, sendRecNo }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
       alert("서버와의 접근이 불안정합니다.");
@@ -49,7 +51,7 @@ export default function MailResponseList({ onClose, sendRecNo }) {
 
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
-    pages = pages < 1 ? 1 : Math.round(pages);
+    pages = pages < 1 ? 1 : Math.ceil(pages);
     const pageAnchors = [];
     const parsedIndex = parseInt(searchIndex);
 
@@ -135,7 +137,7 @@ export default function MailResponseList({ onClose, sendRecNo }) {
           <div className="input-group w-100">
             <input
               type="text"
-              class="form-control bg-light border-0 small"
+              className="form-control bg-light border-0 small"
               placeholder="이름 OR EMAIL"
               aria-label="이름 OR EMAIL"
               aria-describedby="basic-addon2"

@@ -63,7 +63,6 @@ export default function QAADetailModal({id, onClose, setUpdateCountQa}) {
             }
 
         } catch(err) {
-            console.log(err);
             alert("서버와의 연결이 불안정합니다.");
 
         }

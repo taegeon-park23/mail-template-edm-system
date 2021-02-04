@@ -33,41 +33,26 @@ export default function SendMail({ history, match }) {
   const [references, setRefrences] = useState("");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [inputReceiverLeft, setInputReciverLeft] = useState(0);
-  const [inputRefLeft, setInputRefLeft] = useState(0);
   const [receiverList, setReceiverList] = useState([]);
   const [refList, setRefList] = useState([]);
   const [sendRecTplNo, setSendRecTplNo] = useState(0);
   const [tpl, setTpl] = useState(null);
 
   useEffect(() => {
-    if (showTemplate)
-      backDispatch({ type: "CONVERT_BOX_SHADOW", value: { boxShadow: false } });
+    if (showTemplate) backDispatch({ type: "CONVERT_BOX_SHADOW", value: { boxShadow: false } });
 
-    if (inputReceiverRef !== null) {
-      setCurrentPosition(inputReceiverRef, setInputRefLeft);
-    }
-
-    if (inputRefRef !== null) {
-      setCurrentPosition(inputReceiverRef, setInputReciverLeft);
-    }
-
-    if (sendRecTplNo !== 0) {
-      mailTemplateSelectOne({ tplNo: sendRecTplNo });
-    }
-
-    if (number != "0") {
+    if(sendRecTplNo !== 0) {
+      mailTemplateSelectOne({tplNo: sendRecTplNo})
+    } else if (number !== "0") {
       selectMailDraftByDraftNo({ draftNo: number });
     }
-  }, [sendRecTplNo, number]);
 
-  // get caretPosition
-  const setCurrentPosition = (inputRef, setPositionLeft) => {
-    const inputDom = ReactDOM.findDOMNode(inputRef.current);
-    const space = inputDom.selectionStart * 16;
-    const reft = inputDom.offsetLeft;
-    setPositionLeft(space + reft + 1);
-  };
+    if (showTemplate === false && number !== "0") {
+      setShowTemplate(true);
+    }
+    
+    
+  }, [number, showTemplate, sendRecTplNo]);
 
   // deleteReceiver
   const deleteReciver = (i) => {
@@ -121,10 +106,11 @@ export default function SendMail({ history, match }) {
           type: "DOWNLOAD_MAIL_STATE",
           value: { mailState: tmpMailState },
         });
-        if (showTemplate === false) setShowTemplate(true);
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
       alert("서버와의 접근이 불안정합니다.");
@@ -159,6 +145,8 @@ export default function SendMail({ history, match }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
       alert("서버와의 접근이 불안정합니다.");
@@ -184,6 +172,8 @@ export default function SendMail({ history, match }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
       console.log(err);
@@ -212,6 +202,8 @@ export default function SendMail({ history, match }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
       alert("서버와의 접근이 불안정합니다.");
@@ -323,8 +315,11 @@ export default function SendMail({ history, match }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
+      console.log(err);
       alert("서버와의 접근이 불안정합니다.");
     }
   };
@@ -334,7 +329,7 @@ export default function SendMail({ history, match }) {
   // *********************************************************************************
 
   return (
-    <SendMailDiv class="container bootdey">
+    <SendMailDiv className="container bootdey">
       {modalStatus === true ? (
         <Modal
           visible={modalStatus}
@@ -384,6 +379,7 @@ export default function SendMail({ history, match }) {
               }}
               setSendRecTplNo={(no) => {
                 setSendRecTplNo(no);
+                mailTemplateSelectOne({ tplNo: no });
               }}
             />
           }
@@ -492,7 +488,7 @@ export default function SendMail({ history, match }) {
                   setReciver(e.target.value);
                 }}
               ></input>
-              <AddressbookListModal left={inputReceiverLeft}>
+              <AddressbookListModal>
                 <AddressboookList
                   addrNm={receiver}
                   receiverList={receiverList}
@@ -509,7 +505,7 @@ export default function SendMail({ history, match }) {
                 주소록
               </InputSideButton>
             </div>
-            <div className="input-group mb-3">
+            {/* <div className="input-group mb-3">
               <label for="bcc" class="col-2 col-sm-1 col-form-label">
                 참조
               </label>
@@ -563,7 +559,7 @@ export default function SendMail({ history, match }) {
               >
                 주소록
               </InputSideButton>
-            </div>
+            </div> */}
             <div className="input-group mb-3">
               <label for="bcc" class="col-2 col-sm-1 col-form-label">
                 메일 템플릿

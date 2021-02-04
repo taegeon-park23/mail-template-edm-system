@@ -27,7 +27,6 @@ export default function Draft({ history, location }) {
   );
 
   useEffect(() => {
-    console.log(_searchInput);
     selectMailDraftAll(
       {
         "draftTitle": _searchInput,
@@ -80,9 +79,10 @@ export default function Draft({ history, location }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
-      console.log(err);
       alert("서버와의 접근이 불안정합니다.");
     }
   };
@@ -109,6 +109,8 @@ export default function Draft({ history, location }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
       alert("서버와의 접근이 불안정합니다.");
@@ -117,7 +119,7 @@ export default function Draft({ history, location }) {
 
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
-    pages = pages < 1 ? 1 : Math.round(pages);
+    pages = pages < 1 ? 1 : Math.ceil(pages);
     const pageAnchors = [];
     const parsedIndex = parseInt(_searchIndex);
 
@@ -201,8 +203,8 @@ export default function Draft({ history, location }) {
   return (
     <div className="container-fluid">
       <main>
-        <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
-          <p class=" mr-auto">
+        <div className="d-flex justify-content-center align-items-center ml-3 mt-3">
+          <p className=" mr-auto">
             <h3>임시 보관함</h3>
           </p>
         </div>
@@ -219,7 +221,7 @@ export default function Draft({ history, location }) {
             <div className="input-group w-100">
               <input
                 type="text"
-                class="form-control bg-light border-0 small"
+                className="form-control bg-light border-0 small"
                 placeholder="제목/받은사람"
                 aria-label="Search"
                 aria-describedby="basic-addon2"

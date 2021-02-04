@@ -43,7 +43,7 @@ export default function SendItemDetail({ match }) {
             setTitle(sendItem.sendRecTitle);
             setContent(sendItem.sendRecContent);
             setReceiverList(JSON.parse(sendItem.sendRecReceiver));
-            setRefList(JSON.parse(sendItem.sendRecRefference));
+            // setRefList(JSON.parse(sendItem.sendRecRefference));
             setTplNo(sendItem.sendRecTplNo);
             setTplTitle(sendItem.tplTitle);
             setDate(sendItem.regDate);
@@ -137,8 +137,8 @@ export default function SendItemDetail({ match }) {
                 </InputPrependDiv>
               </div>
 
-              <div className="form-row mb-3">
-                <label for="bcc" class="col-2 col-sm-1 col-form-label">
+              {/* <div className="form-row mb-3">
+                <label for="bcc" className="col-2 col-sm-1 col-form-label">
                   참조
                 </label>
                 <InputPrependDiv className="input-group-prepend">
@@ -155,7 +155,7 @@ export default function SendItemDetail({ match }) {
                     );
                   })}
                 </InputPrependDiv>
-              </div>
+              </div> */}
 
               <div className="form-row mb-3">
                 <div className="col"
@@ -187,7 +187,7 @@ export default function SendItemDetail({ match }) {
               </div>
 
               <div className="form-row mb-3">
-                <label for="bcc" class="col-2 col-sm-1 col-form-label">
+                <label for="bcc" className="col-2 col-sm-1 col-form-label">
                   파일
                 </label>
                 <div className="col-10 col-sm-11"></div>

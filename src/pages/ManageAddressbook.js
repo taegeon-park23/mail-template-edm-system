@@ -90,6 +90,8 @@ export default function ManageGroup({ history, location }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
       alert("서버와의 접근이 불안정합니다.");
@@ -124,6 +126,8 @@ export default function ManageGroup({ history, location }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
       alert("서버와의 접근이 불안정합니다.");
@@ -151,6 +155,8 @@ export default function ManageGroup({ history, location }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+      } else {
+        alert(response.data.message);
       }
     } catch (err) {
       alert("서버와의 접근이 불안정합니다.");
@@ -159,7 +165,7 @@ export default function ManageGroup({ history, location }) {
 
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
-    pages = pages < 1 ? 1 : Math.round(pages);
+    pages = pages < 1 ? 1 : Math.ceil(pages);
     const pageAnchors = [];
     const parsedIndex = parseInt(_searchIndex);
 
@@ -305,6 +311,9 @@ export default function ManageGroup({ history, location }) {
               autocomplete="off"
               onClick={() => {
                 setClassification("whole");
+                history.push(
+                  `/manageaddressbook?searchInput=${_searchInput}&searchIndex=0`
+                );
               }}
             />{" "}
             전체주소록
@@ -335,7 +344,7 @@ export default function ManageGroup({ history, location }) {
                 <Fragment>
                   <input
                     type="text"
-                    class="form-control bg-light border-0 small"
+                    className="form-control bg-light border-0 small"
                     placeholder="이름 OR EMAIL"
                     aria-label="이름 OR EMAIL"
                     aria-describedby="basic-addon2"
@@ -395,7 +404,7 @@ export default function ManageGroup({ history, location }) {
           <button className="btn btn-primary rounded  mr-3"
             onClick={()=>{deleteAddressbook()}}
           >삭제</button>
-          <button
+          {/* <button
             className="btn btn-primary rounded  ml-auto mr-3"
             onClick={() => {
               setModalStatus(true);
@@ -405,7 +414,7 @@ export default function ManageGroup({ history, location }) {
           </button>
           <button className="btn btn-primary rounded  mr-3">
             EXcel 다운로드
-          </button>
+          </button> */}
         </div>
         <table
           id="example"
@@ -473,7 +482,7 @@ export default function ManageGroup({ history, location }) {
               </tr>
             ))}
             {addressbooks.length < pageCount
-              ? getEmptySpace(pageCount - addressbooks.length, 7)
+              ? getEmptySpace(pageCount - addressbooks.length, 6)
               : null}
           </tbody>
         </table>

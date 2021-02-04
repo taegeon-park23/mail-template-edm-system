@@ -68,7 +68,6 @@ const MailResponse = ({match}) => {
                 );
                 alert(response.data.message);
               } catch(err) {
-                console.log(err);
                 alert("서버와 연결이 불안정합니다.");
               }
             }}>
