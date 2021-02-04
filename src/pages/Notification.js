@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, {useEffect, useState, useContext} from 'react'
+import React, {useEffect, useState, useContext, useCallback} from 'react'
 import styled from "styled-components";
 import Modal from "../components/Modal";
 import NotificationDetailModal from "../pageComponents/Notification/NotificationDetailModal";
@@ -15,7 +15,8 @@ export default function Notification({}) {
     const [notices, setNotices] = useState([]);
     const [updateCount, setUpdateCount] = useState(0);
     const { state } = globalState;
-
+    const [notificationDetailModalStatus, setNotificationDetailModalStatus] = useState(false);
+    const [id, setId] = useState(0);
 
     //call all notice list
     const selectNoticeAll = async () => {
@@ -45,13 +46,30 @@ export default function Notification({}) {
     },[updateCount])
   
 
+    const onClickNotificationDetailModallCallback = useCallback((no)=>{
+      setModalStatus(true);
+      setId(no)
+    });
+
     return(
         <div className="container bootdey">
-        {modalStatus === true ?<Modal
-            visible={modalStatus}
-            onClose={()=>{setModalStatus(false)}}
-            children={<NotificationDetailModal onClose={()=>{setModalStatus(false)}} onChangeId={()=>{}}/>}
-        />:null}
+        {modalStatus === true ? (
+        <Modal
+          visible={modalStatus}
+          onClose={() => {
+            setModalStatus(false);
+          }}
+          children={
+            <NotificationDetailModal
+              id = {id}
+              onClose={() => {
+                setModalStatus(false);
+              }}
+              onChangeId={() => {}}
+            />
+          }
+        />
+      ) : null}
 
       <main>
         <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
@@ -107,10 +125,10 @@ export default function Notification({}) {
           <tbody>
             {notices.map((notice, i) => (
               <tr key={i} onClick={()=>{setModalStatus(true)}}>
-                <td>{i}</td>
-                <td>{notice.noticeTitle}</td>
-                <td>{notice.noticeAttachment}</td>
-                <td>{dateForm(new Date(notice.regDate))}</td>
+                <td onClick={()=>{onClickNotificationDetailModallCallback(notice.noticeNo)}}>{i+1}</td>
+                <td onClick={()=>{onClickNotificationDetailModallCallback(notice.noticeNo)}}>{notice.noticeTitle}</td>
+                <td onClick={()=>{onClickNotificationDetailModallCallback(notice.noticeNo)}}>{notice.noticeAttachment}</td>
+                <td onClick={()=>{onClickNotificationDetailModallCallback(notice.noticeNo)}}>{dateForm(new Date(notice.regDate))}</td>
               </tr>
             ))}
           </tbody>
