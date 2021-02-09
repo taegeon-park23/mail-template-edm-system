@@ -49,6 +49,7 @@
     "case-sensitive-paths-webpack-plugin": "2.3.0",
     "css-loader": "3.4.2",
     "dom-to-image": "2.6.0",
+    "dom-to-image-more": "^2.8.0",
     "dotenv": "8.2.0",
     "dotenv-expand": "5.1.0",
     "eslint": "^6.6.0",

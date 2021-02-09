@@ -7,144 +7,202 @@ import dateForm from "../../src/dateFormat";
 
 
 export default function Notification({ history, location }) {
-
-  // query
+  // ============================================================================================================
+  // ==================  query =====================================================================================
+  // ============================================================================================================
+  // 페이지 쿼리
   const query = qs.parse(location.search, {
     ignoreQueryPrefix: true,
   });
-  const _searchInput = query.searchInput ? query.searchInput : "";
-  const _searchStartDate = query.searchStartDate
+  const _searchInput = query.searchInput ? query.searchInput : ""; // 검색 string
+  const _searchStartDate = query.searchStartDate                   // 검색 날짜 string(처음날짜)
   ? query.searchStartDate
-  : "";
-  const _searchEndDate = query.searchEndDate
+  : "";                                                            // ~
+  const _searchEndDate = query.searchEndDate                       // 검색 날짜 string(마지막날짜)
   ? query.searchEndDate
   : "";
-  const _searchIndex = query.searchIndex ? query.searchIndex : "0";
+  const _searchIndex = query.searchIndex ? query.searchIndex : "0"; // 검색 페이지 index 
 
-    const [modalStatus, setModalStatus] = useState(false);
-    const [notices, setNotices] = useState([]);
-    const [updateCount, setUpdateCount] = useState(0);
-    const [searchInput, setSearchInput] = useState(_searchInput);
-    const [startDate, setStartDate] = useState(_searchStartDate);
-    const [endDate, setEndDate] = useState(_searchEndDate);
-    const [pageCount, setPageCount] = useState(notices.length>0?notices[0].pageCount:10);
 
-    //call all notice list
-    const selectNoticeAll = async (noticeInfo={}) => {
-      const url = "/user/selectNoticeAll";
-      try {
-        const response = await axios.post(url, {...noticeInfo}, {headers: {
-          "Content-Type" : "application/json",
-          "x-auth-token" : localStorage.getItem('jwtToken')
-        }});
 
-        if (response.data.status === 'OK') {
-          setNotices(response.data.data);
-        }
-      } catch(err) {
-        if(err.response.status === 403) {
-          alert("인증되지 않은 접근입니다.");
-          localStorage.removeItem('jwtToken');
-        } else {
-          console.log(err);
-          alert("서버와의 접근이 불안정합니다.")
-        }
+
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+  const [modalStatus, setModalStatus] = useState(false);                                  // boolean, NotificationDetailModal(공지사항 상세 조회) on&off를 위한 state
+  const [notices, setNotices] = useState([]);                                             // [{}], 공지사항 조회 결과받는 list state
+  const [updateCount, setUpdateCount] = useState(0);                                      // number, 페이지 re-rendering state
+  const [searchInput, setSearchInput] = useState(_searchInput);                           // string, 제목 검색을 위한 state
+  const [startDate, setStartDate] = useState(_searchStartDate);                           // string, 날짜 검색(시작 날짜)을 위한 state
+  const [endDate, setEndDate] = useState(_searchEndDate);                                 // string, 날짜 검색(마지막 날짜)을 위한 state
+  const [pageCount, setPageCount] = useState(notices.length>0?notices[0].pageCount:10);   // number, 페이지에서 한번에 보여줄 레코드를 설정하는 state
+
+
+
+
+
+  // ============================================================================================================
+  // ===================== useEffect ===================================================================================
+  // ============================================================================================================
+  useEffect(()=>{
+    selectNoticeAll(
+      {
+        "noticeTitle": _searchInput,
+        "startDate": _searchStartDate,
+        "endDate": _searchEndDate,
+        "pageStart": _searchIndex,
       }
+    );
+  },[updateCount,_searchInput, _searchStartDate, _searchEndDate, _searchIndex])
 
-    }
 
-    useEffect(()=>{
-      selectNoticeAll(
-        {
-          "noticeTitle": _searchInput,
-          "startDate": _searchStartDate,
-          "endDate": _searchEndDate,
-          "pageStart": _searchIndex,
-        }
-      );
-    },[updateCount,_searchInput, _searchStartDate, _searchEndDate, _searchIndex])
-  
-    const getPageAnchors = (recordCount, pageCount) => {
-      let pages = recordCount / pageCount;
-      pages = pages < 1 ? 1 : Math.ceil(pages);
-      const pageAnchors = [];
-      const parsedIndex = parseInt(_searchIndex);
-  
-      if (_searchIndex !== "0")
-        pageAnchors.push(
-          <a
-            className="btn btn-primary btn-sm mr-1"
-            onClick={(e) => {
-              e.preventDefault();
-              history.push(`/notification?searchInput=${_searchInput}&searchIndex=${parsedIndex - 1}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
-              setUpdateCount(updateCount + 1);
-            }}
-          >
-            {"<"}
-          </a>
-        );
-      const currentIdxClassName = "btn btn-primary btn-sm mr-1";
-      const otherIdxClassName = "btn btn-secondary btn-sm mr-1";
-      const anc = (i) => {
-        return <a
-          key={i}
-          className={i == _searchIndex ? currentIdxClassName : otherIdxClassName}
+
+
+
+  // ============================================================================================================
+  // ===================== funtions ===================================================================================
+  // ============================================================================================================
+  // pages 생성 함수, 
+  // args = recordCount(number), pageCount(number) 
+  // return = pageAnchors [<a><a/>]
+  const getPageAnchors = (recordCount, pageCount) => {
+    let pages = recordCount / pageCount;
+    pages = pages < 1 ? 1 : Math.ceil(pages);
+    const pageAnchors = [];
+    const parsedIndex = parseInt(_searchIndex);
+
+    if (_searchIndex !== "0")
+      pageAnchors.push(
+        <a
+          className="btn btn-primary btn-sm mr-1"
           onClick={(e) => {
             e.preventDefault();
-            history.push(`/notification?searchInput=${_searchInput}&searchIndex=${i}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
+            history.push(`/notification?searchInput=${_searchInput}&searchIndex=${parsedIndex - 1}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
+            setUpdateCount(updateCount + 1);
           }}
         >
-          {i + 1}
+          {"<"}
         </a>
-      };
-  
-      for (let i = 0; i < pages; i++) {
-        if((parsedIndex===0 && i<5) || (parsedIndex===1 && i<5)) {
-          pageAnchors.push(anc(i));
-        } else if (i <= parsedIndex + 2 && i >= parsedIndex - 2) {
-          pageAnchors.push(anc(i));
-        } else if((parsedIndex===pages-1 && i+5>=parsedIndex) || (parsedIndex===pages-2 && i+3>=parsedIndex)) {
-          pageAnchors.push(anc(i));
-        }
-      }
-  
-      if (_searchIndex !== `${pages - 1}`)
-          pageAnchors.push(
-          <a
-            className="btn btn-primary btn-sm mr-1"
-            onClick={(e) => {
-              e.preventDefault();
-              history.push(`/notification?searchInput=${_searchInput}&searchIndex=${parsedIndex + 1}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
-            }}
-          >
-            {">"}
-          </a>
-        );
-      return pageAnchors;
+      );
+    const currentIdxClassName = "btn btn-primary btn-sm mr-1";
+    const otherIdxClassName = "btn btn-secondary btn-sm mr-1";
+    const anc = (i) => {
+      return <a
+        key={i}
+        className={i == _searchIndex ? currentIdxClassName : otherIdxClassName}
+        onClick={(e) => {
+          e.preventDefault();
+          history.push(`/notification?searchInput=${_searchInput}&searchIndex=${i}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
+        }}
+      >
+        {i + 1}
+      </a>
     };
-  
-    const getEmptySpace = (length, tdCount) => {
-        const emptyTds = [];
-        const emptyTrs = [];
-        for(let j=0; j<tdCount; j++) {
-          emptyTds.push(
-            <td>&nbsp;</td>
-          )
-        }
-        for(let j=0; j<length; j++) {
-          emptyTrs.push(<tr>
-              {emptyTds}
-          </tr>)
-        }
-        return emptyTrs;
+
+    for (let i = 0; i < pages; i++) {
+      if((parsedIndex===0 && i<5) || (parsedIndex===1 && i<5)) {
+        pageAnchors.push(anc(i));
+      } else if (i <= parsedIndex + 2 && i >= parsedIndex - 2) {
+        pageAnchors.push(anc(i));
+      } else if((parsedIndex===pages-1 && i+5>=parsedIndex) || (parsedIndex===pages-2 && i+3>=parsedIndex)) {
+        pageAnchors.push(anc(i));
+      }
     }
 
+    if (_searchIndex !== `${pages - 1}`)
+        pageAnchors.push(
+        <a
+          className="btn btn-primary btn-sm mr-1"
+          onClick={(e) => {
+            e.preventDefault();
+            history.push(`/notification?searchInput=${_searchInput}&searchIndex=${parsedIndex + 1}&searchStartDate=${_searchStartDate}&searchEndDate=${_searchEndDate}`);
+          }}
+        >
+          {">"}
+        </a>
+      );
+    return pageAnchors;
+  };
+
+  // 테이블 공백칸 생성
+  // args = length(number), tdCount(number) 
+  // return = emptyTrs([<td></td>])
+  const getEmptySpace = (length, tdCount) => {
+      const emptyTds = [];
+      const emptyTrs = [];
+      for(let j=0; j<tdCount; j++) {
+        emptyTds.push(
+          <td>&nbsp;</td>
+        )
+      }
+      for(let j=0; j<length; j++) {
+        emptyTrs.push(<tr>
+            {emptyTds}
+        </tr>)
+      }
+      return emptyTrs;
+  }
+
+
+
+
+
+  // ============================================================================================================
+  // ===================== axios apis ===================================================================================
+  // ============================================================================================================
+  // select, 공지사항 전체(검색) 조회 API
+  const selectNoticeAll = async (noticeInfo={}) => {
+    const url = "/user/selectNoticeAll";
+    try {
+      const response = await axios.post(url, {...noticeInfo}, {headers: {
+        "Content-Type" : "application/json",
+        "x-auth-token" : localStorage.getItem('jwtToken')
+      }}).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+
+      if (response.data.status === "OK") {
+        if (response.data.data === null) {
+          alert("조회되는 템플릿이 없습니다.");
+          return;
+        }
+        setNotices(response.data.data);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/loign");
+      } else {
+        alert(response.data.message);
+      }
+
+    } catch(err) {
+        alert("서버와의 접근이 불안정합니다.")
+    }
+  }
+
+
+
+
+
+
+  
+  // ============================================================================================================
+  // ============================ HTML ====================================================================================
+  // ============================================================================================================
     return(
       <div className="container-fluid">
         {modalStatus === true ?<Modal
             visible={modalStatus}
             onClose={()=>{setModalStatus(false)}}
-            children={<NotificationDetailModal onClose={()=>{setModalStatus(false)}} onChangeId={()=>{}}/>}
+            children={<NotificationDetailModal 
+              onClose={()=>{setModalStatus(false)}} 
+              onChangeId={()=>{}}
+              history={history}
+              />}
         />:null}
 
       <main>

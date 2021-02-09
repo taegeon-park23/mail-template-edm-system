@@ -6,25 +6,69 @@ import axios from "axios";
 import Modal from "../components/Modal";
 import MailResponseList from "../pageComponents/SendItemDetail/MailResponseList";
 
-export default function SendItemDetail({ match }) {
-    const { number } = match.params;
-  // state
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [receiverList, setReceiverList] = useState([]);
-  const [refList, setRefList] = useState([]);
-  const [date, setDate] = useState("");
-  const [tplNo, setTplNo] = useState("");
-  const [tplTitle, setTplTitle] = useState("");
-  const [modalStatus, setModalStatus] = useState(false);
-  const [fileList, setFileList] = useState([]);
+export default function SendItemDetail({ match, history }) {
+  // ============================================================================================================
+  // ==================  match =====================================================================================
+  // ============================================================================================================
+  const { number } = match.params;                      // number = sendRecNo, number(id)에 해당하는 발송이력 레코드를 가져온다.
+  
+  
+  
+  
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+  const [title, setTitle] = useState("");               // string, 발송이력 제목
+  const [content, setContent] = useState("");           // string, 발송이력 내용(보낸 HTML)
+  const [receiverList, setReceiverList] = useState([]); // [{}], 발송이력 받은사람 리스트
+  const [refList, setRefList] = useState([]);           // [{}], 발송이력 참조자 리스트
+  const [date, setDate] = useState("");                 // string, 발송이력 저장시기
+  const [tplNo, setTplNo] = useState("");               // string, 발송이력 템플릿no
+  const [tplTitle, setTplTitle] = useState("");         // string, 발송이력 템플릿제목
+  const [modalStatus, setModalStatus] = useState(false);// boolean, MailResponseList (참여 응답자 내역 리스트) on&off를 위한 state
+  const [fileList, setFileList] = useState([]);         // [""], 발송이력 전송 파일 리스트
 
+
+
+
+
+  // ============================================================================================================
+  // ===================== useEffect ===================================================================================
+  // ============================================================================================================
+  // 페이지 load 후 진입 점, 해당 sendRecNo의 튜플을 가져와 발송이력상세 조회
   useEffect(() => {
     selectSendRecordBySendRecNo({
         "sendRecNo": number
     });
   }, [number]);
 
+
+
+
+  // ============================================================================================================
+  // ===================== funtions ===================================================================================
+  // ============================================================================================================
+  // 불러온 html string을 파싱하여 <body>태그의 html 스트링을 리턴하는 함수
+  // args = content (string)
+  // return = element.getElementsByTagName('body')[0].innerHTML (string)
+  const getHtml = (content) => {
+    try {
+      const element = document.createElement('html');
+       element.innerHTML = content;
+       return element.getElementsByTagName('body')[0].innerHTML;
+    } catch(err) {
+       
+    }
+    return "<div>not Find</div>"
+  }
+
+
+
+
+  // ============================================================================================================
+  // ===================== axios apis ===================================================================================
+  // ============================================================================================================
+  // select, 발송이력상세 조회
   const selectSendRecordBySendRecNo = async (sendItem={}) => {
     const url = "/user/selectSendRecordBySendRecNo";
     try {
@@ -50,22 +94,15 @@ export default function SendItemDetail({ match }) {
         } else if(response.data.status === "NOT_FOUND"){
             alert("인증되지 않은 접근입니다.");
             localStorage.removeItem('jwtToken');
+            history.push('/login');
         }
       } catch(err) {
         alert("서버와의 접근이 불안정합니다.");
       }
   }
 
-  const getHtml = (content) => {
-    try {
-      const element = document.createElement('html');
-       element.innerHTML = content;
-       return element.getElementsByTagName('body')[0].innerHTML;
-    } catch(err) {
-       
-    }
-    return "<div>not Find</div>"
-  }
+
+
 
   // *************************************************************************************************
   // ************************************************ HTML *******************************************
@@ -87,6 +124,7 @@ export default function SendItemDetail({ match }) {
                 setModalStatus(false);
               }}
               sendRecNo={number}
+              history={history}
             />
           }
         />

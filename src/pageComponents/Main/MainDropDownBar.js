@@ -1,5 +1,5 @@
 import React from "react";
-const MainDropdownBar = () => {
+const MainDropdownBar = ({history}) => {
 
     return (
       <nav className="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
@@ -42,6 +42,7 @@ const MainDropdownBar = () => {
               onClick={(e)=>{
                   e.preventDefault();
                   localStorage.removeItem('jwtToken');
+                  history.push('/login');
               }}
             >
               <span className="mr-2 d-none d-lg-inline text-gray-600 small">

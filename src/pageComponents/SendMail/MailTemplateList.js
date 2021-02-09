@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function MailTemplateList({ onClose, setSendRecTplNo }) {
+export default function MailTemplateList({ onClose, setSendRecTplNo, history }) {
   const [templates, setTemplates] = useState([]);
   const [updateCount, setUpdateCount] = useState(0);
   const [searchIndex, setSearchIndex] = useState("0");
@@ -29,7 +29,13 @@ export default function MailTemplateList({ onClose, setSendRecTplNo }) {
             "x-auth-token": localStorage.getItem("jwtToken"),
           },
         }
-      );
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
 
       if (response.data.status === "OK") {
         if (response.data.data === null) {
@@ -40,6 +46,7 @@ export default function MailTemplateList({ onClose, setSendRecTplNo }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+        history.push("/login");
       } else {
         alert(response.data.message);
       }

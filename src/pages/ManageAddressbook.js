@@ -13,32 +13,54 @@ import qs from "qs";
 import ManageAddressbookDetailModal from "../pageComponents/ManageAddressbook/ManageAddressbookDetailModal";
 
 export default function ManageGroup({ history, location }) {
-  // query
+  // ============================================================================================================
+  // ==================  query =====================================================================================
+  // ============================================================================================================
+  // 페이지 쿼리
   const query = qs.parse(location.search, {
     ignoreQueryPrefix: true,
   });
-  const _searchInput = query.searchInput ? query.searchInput : "";
-  const _searchAddrGroupNo = query.searchAddrGroupNo
+  const _searchInput = query.searchInput ? query.searchInput : "";  // 검색 string
+  const _searchAddrGroupNo = query.searchAddrGroupNo                // 검색 groupNo
     ? query.searchAddrGroupNo
     : 0;
-  const _searchIndex = query.searchIndex ? query.searchIndex : "0";
+  const _searchIndex = query.searchIndex ? query.searchIndex : "0";  // 검색 페이지 index  
 
-  //ref
+  
+  
+
+  // ============================================================================================================
+  // ================== refs =====================================================================================
+  // ============================================================================================================
   const selectRef = useRef(null);
 
-  // state
-  const [modalStatus, setModalStatus] = useState(false);
-  const [classification, setClassification] = useState("whole");
-  const [detailModalStatus, setDetailModalStatus] = useState(false);
-  const [id, setId] = useState(0);
-  const [addressbooks, setAddressbooks] = useState([]);
-  const [updateCount, setUpdateCount] = useState(0);
-  const [groupDetails, setGroupDetails] = useState([]);
-  const [searchInput, setSearchInput] = useState(_searchInput);
-  const [pageCount, setPageCount] = useState(
+  
+  
+
+
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+  const [modalStatus, setModalStatus] = useState(false);                // boolean, ManageAddressbookDetailModal(주소록 상세 조회) on&off를 위한 state
+  const [classification, setClassification] = useState("whole");        // string, 분류 조건 검색을 위한 state, 'whole'=전체, 'group'=그룹별
+  const [detailModalStatus, setDetailModalStatus] = useState(false);    // boolean, ManageAddressbookDetailModal(주소록 상세 조회) on&off를 위한 state 
+  const [id, setId] = useState(0);                                      // number, 주소록 id를 통한 상세 조회를 위한 state 
+  const [addressbooks, setAddressbooks] = useState([]);                 // [{}], 주소록 조회 결과받는 list state
+  const [updateCount, setUpdateCount] = useState(0);                    // number, 페이지 re-rendering state
+  const [groupDetails, setGroupDetails] = useState([]);                 // [{}], 그룹 조회 결과받는 list state
+  const [searchInput, setSearchInput] = useState(_searchInput);         // string, 이름/email 검색을 위한 state
+  const [pageCount, setPageCount] = useState(                           // number, 페이지에서 한번에 보여줄 레코드를 설정하는 state
     addressbooks.length > 0 ? addressbooks[0].pageCount : 10
   );
 
+
+
+
+
+  // ============================================================================================================
+  // ===================== useEffect ===================================================================================
+  // ============================================================================================================
+  // 페이지 load 후 진입 점, 페이지 전체 조회
   useEffect(() => {
     selectAddressbookAll({
       addrGroupNo: _searchAddrGroupNo,
@@ -47,6 +69,16 @@ export default function ManageGroup({ history, location }) {
     });
   }, [modalStatus, classification, detailModalStatus, updateCount, _searchAddrGroupNo, _searchIndex, _searchInput]);
 
+
+
+
+
+
+  // ============================================================================================================
+  // ===================== funtions ===================================================================================
+  // ============================================================================================================
+  // 레코드 전체 선택 set true ol false
+  // args = e(event), flag(boolean)
   const setCheckAll = (e = null, flag = false) => {
     let checkFlag = false;
     if(flag) 
@@ -57,6 +89,8 @@ export default function ManageGroup({ history, location }) {
     inputArr.forEach((input)=>{input.checked = checkFlag})
   }
 
+  // 선택된 record 배열로 리턴, 
+  // return = checkedInputValues ["1","2","3"]
   const getCheckedGroupNoArr = () => {
      const inputArr = document.querySelectorAll("input[type=checkbox]");
      const checkedInputValues = [] ;
@@ -67,102 +101,9 @@ export default function ManageGroup({ history, location }) {
      return checkedInputValues;  
   }
 
-  const selectAddressbookAll = async (addressbookInfo = {}) => {
-    const url = "/user/selectAddressbookAll";
-    try {
-      const response = await axios.post(
-        url,
-        { ...addressbookInfo },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-
-      if (response.data.status === "OK") {
-        if (response.data.data === null) {
-          alert("조회되는 그룹이 없습니다.");
-          return;
-        }
-        setAddressbooks(response.data.data);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
-
-  const onClickDetailUseCallback = useCallback((no) => {
-    setDetailModalStatus(true);
-    setId(no);
-  });
-
-  const selectGroupDetailByGroupOwner = async () => {
-    const url = "/user/selectGroupDetailByGroupOwner";
-    try {
-      const response = await axios.post(
-        url,
-        {},
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-
-      if (response.data.status === "OK") {
-        if (response.data.data === null) {
-          alert("조회되는 주소록이 없습니다.");
-          return;
-        }
-        setGroupDetails(response.data.data);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
-
-  const deleteAddressbook = async () => {
-    const url = "/user/deleteAddressbook";
-    try {
-      const response = await axios.post(
-        url,
-        {"addressbookNos":getCheckedGroupNoArr()},
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-
-      if (response.data.status === "OK") {
-        history.push(
-          `/manageaddressbook?searchInput=${_searchInput}&searchIndex=${_searchIndex}&searchAddrGroupNo=${_searchAddrGroupNo}`);
-        alert(response.data.message);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
-
+   // pages 생성 함수, 
+  // args = recordCount(number), pageCount(number) 
+  // return = pageAnchors [<a><a/>]
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
     pages = pages < 1 ? 1 : Math.ceil(pages);
@@ -238,6 +179,9 @@ export default function ManageGroup({ history, location }) {
     return pageAnchors;
   };
 
+  // 테이블 공백칸 생성
+  // args = length(number), tdCount(number) 
+  // return = emptyTrs([<td></td>])
   const getEmptySpace = (length, tdCount) => {
     const emptyTds = [];
     const emptyTrs = [];
@@ -250,6 +194,150 @@ export default function ManageGroup({ history, location }) {
     return emptyTrs;
   };
 
+
+  
+
+// ============================================================================================================
+// ==================  callback =====================================================================================
+// ============================================================================================================
+// 주소록 상세 모달을 on 시키고, id를 할당시키기 위한 callback
+// args = no(number)
+// return = undefined
+  const onClickDetailUseCallback = useCallback((no) => {
+    setDetailModalStatus(true);
+    setId(no);
+  });
+
+
+
+
+
+// ============================================================================================================
+// ===================== axios apis ===================================================================================
+// ============================================================================================================
+// select, 주소록 전체(검색) 조회 api
+  const selectAddressbookAll = async (addressbookInfo = {}) => {
+    const url = "/user/selectAddressbookAll";
+    try {
+      const response = await axios.post(
+        url,
+        { ...addressbookInfo },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+
+      if (response.data.status === "OK") {
+        if (response.data.data === null) {
+          alert("조회되는 그룹이 없습니다.");
+          return;
+        }
+        setAddressbooks(response.data.data);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  // select, 그룹디테일 전체(검색) 조회 api
+  const selectGroupDetailByGroupOwner = async () => {
+    const url = "/user/selectGroupDetailByGroupOwner";
+    try {
+      const response = await axios.post(
+        url,
+        {},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+
+      if (response.data.status === "OK") {
+        if (response.data.data === null) {
+          alert("조회되는 주소록이 없습니다.");
+          return;
+        }
+        setGroupDetails(response.data.data);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  // delete, 주소록 삭제 api
+  const deleteAddressbook = async () => {
+    const url = "/user/deleteAddressbook";
+    try {
+      const response = await axios.post(
+        url,
+        {"addressbookNos":getCheckedGroupNoArr()},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+
+      if (response.data.status === "OK") {
+        history.push(
+          `/manageaddressbook?searchInput=${_searchInput}&searchIndex=${_searchIndex}&searchAddrGroupNo=${_searchAddrGroupNo}`);
+        alert(response.data.message);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      console.log(err);
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+ 
+  
+
+ 
+  // ============================================================================================================
+  // ============================ HTML ====================================================================================
+  // ============================================================================================================
   return (
     <div className="container-fluid">
       {modalStatus === true ? (
@@ -269,6 +357,7 @@ export default function ManageGroup({ history, location }) {
               setUpdateCountAddressbook={() => {
                 setUpdateCount(updateCount + 1);
               }}
+              history={history}
             />
           }
         />
@@ -288,6 +377,7 @@ export default function ManageGroup({ history, location }) {
               setUpdateCountAddressbook={() => {
                 setUpdateCount(updateCount + 1);
               }}
+              history={history}
             />
           }
         />

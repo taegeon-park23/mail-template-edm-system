@@ -4,28 +4,40 @@ import qs from "qs";
 import dateFormat from "../dateFormat";
 
 export default function Draft({ history, location }) {
-   // query
+  // ============================================================================================================
+  // ================== query =====================================================================================
+  // ============================================================================================================
    const query = qs.parse(location.search, {
     ignoreQueryPrefix: true,
   });
-  const _searchInput = query.searchInput ? query.searchInput : "";
-  const _searchStartDate = query.searchStartDate
+  const _searchInput = query.searchInput ? query.searchInput : "";      // 검색 string
+  const _searchStartDate = query.searchStartDate                        // 검색 날짜 string(년월)
     ? query.searchStartDate
     : "";
-    const _searchEndtDate = query.searchEndtDate
-    ? query.searchEndtDate
-    : "";
-    const _searchIndex = query.searchIndex ? query.searchIndex : "0";
+    const _searchIndex = query.searchIndex ? query.searchIndex : "0";   // 검색 페이지 index 
 
-    // state
-  const [updateCount, setUpdateCount] = useState(0);
-  const [searchInput, setSearchInput] = useState(_searchInput);
-  const [startDate, setStartDate] = useState(_searchStartDate);
-  const [draftList, setDraftList] = useState([]);
-  const [pageCount, setPageCount] = useState(
+  
+    
+
+
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+  const [updateCount, setUpdateCount] = useState(0);              // number, 페이지 re-rendering state
+  const [searchInput, setSearchInput] = useState(_searchInput);   // string, 제목 검색을 위한 state
+  const [startDate, setStartDate] = useState(_searchStartDate);   // string, 날짜 검색(년-월)을 위한 state
+  const [draftList, setDraftList] = useState([]);                 // [{}], 임시메일 조회 결과받는 list state
+  const [pageCount, setPageCount] = useState(                     // number, 페이지에서 한번에 보여줄 레코드를 설정하는 state
     draftList.length > 0 ? draftList[0].pageCount : 10
   );
 
+
+
+
+
+  // ============================================================================================================
+  // ===================== useEffect ===================================================================================
+  // ============================================================================================================
   useEffect(() => {
     selectMailDraftAll(
       {
@@ -36,6 +48,16 @@ export default function Draft({ history, location }) {
     );
   }, [updateCount, _searchInput, _searchStartDate, _searchIndex]);
 
+
+
+
+
+
+  // ============================================================================================================
+  // ===================== funtions ===================================================================================
+  // ============================================================================================================
+  // 레코드 전체 선택 set true ol false
+  // args = e(event), flag(boolean)
   const setCheckAll = (e = null, flag = false) => {
     let checkFlag = false;
     if (flag) checkFlag = flag;
@@ -46,6 +68,8 @@ export default function Draft({ history, location }) {
     });
   };
 
+  // 선택된 record 배열로 리턴, 
+  // return = checkedInputValues ["1","2","3"]
   const getCheckedDraftNoArr = () => {
     const inputArr = document.querySelectorAll("input[type=checkbox]");
     const checkedInputValues = [];
@@ -56,67 +80,9 @@ export default function Draft({ history, location }) {
     return checkedInputValues;
   };
 
-  const selectMailDraftAll = async (draft={}) => {
-    const url = "/user/selectMailDraftAll";
-    try {
-      const response = await axios.post(
-        url,
-        {...draft},
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-
-      if (response.data.status === "OK") {
-        if (response.data.data === null) {
-          alert("조회되는 임시메일이 없습니다.");
-          return;
-        }
-        setDraftList(response.data.data);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
-
-  const deleteMailDraft = async () => {
-    const url = "/user/deleteMailDraft";
-    try {
-      const response = await axios.post(
-        url,
-        { draftNos: getCheckedDraftNoArr() },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-      if (response.data.status === "OK") {
-        alert(response.data.message);
-        history.push(
-          `/draft?searchInput=${_searchInput}&searchIndex=${_searchIndex}&searchStartDate=${_searchStartDate}`
-        );
-        setCheckAll(null, false);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
-
+  // pages 생성 함수, 
+  // args = recordCount(number), pageCount(number) 
+  // return = pageAnchors [<a><a/>]
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
     pages = pages < 1 ? 1 : Math.ceil(pages);
@@ -188,6 +154,9 @@ export default function Draft({ history, location }) {
     return pageAnchors;
   };
 
+  // 테이블 공백칸 생성
+  // args = length(number), tdCount(number) 
+  // return = emptyTrs([<td></td>])
   const getEmptySpace = (length, tdCount) => {
     const emptyTds = [];
     const emptyTrs = [];
@@ -200,6 +169,100 @@ export default function Draft({ history, location }) {
     return emptyTrs;
   };
 
+
+
+
+
+// ============================================================================================================
+// ===================== axios apis ===================================================================================
+// ============================================================================================================
+// select, 임시메일 전체(검색) 조회 api
+  const selectMailDraftAll = async (draft={}) => {
+    const url = "/user/selectMailDraftAll";
+    try {
+      const response = await axios.post(
+        url,
+        {...draft},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+
+      if (response.data.status === "OK") {
+        if (response.data.data === null) {
+          alert("조회되는 임시메일이 없습니다.");
+          return;
+        }
+        setDraftList(response.data.data);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  // delete, 임시 메일 삭제
+  const deleteMailDraft = async () => {
+    const url = "/user/deleteMailDraft";
+    try {
+      const response = await axios.post(
+        url,
+        { draftNos: getCheckedDraftNoArr() },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+
+      if (response.data.status === "OK") {
+        alert(response.data.message);
+        history.push(
+          `/draft?searchInput=${_searchInput}&searchIndex=${_searchIndex}&searchStartDate=${_searchStartDate}`
+        );
+        setCheckAll(null, false);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  
+
+
+
+
+
+  // ============================================================================================================
+  // ============================ HTML ====================================================================================
+  // ============================================================================================================
   return (
     <div className="container-fluid">
       <main>

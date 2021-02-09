@@ -2,6 +2,7 @@ import React, { useState, useContext, useEffect, useRef } from "react";
 import styled from "styled-components";
 import axios from "axios";
 
+import Loading from "../components/Loading";
 import MailEditor from "../pageComponents/SendMail/MailEditor";
 import { globalStateStore } from "../stores/globalStateStore";
 import { mailTemplateStore } from "../stores/mailTemplateStore";
@@ -13,213 +14,96 @@ import Modal from "../components/Modal";
 import MailTemplateList from "../pageComponents/SendMail/MailTemplateList";
 
 export default function SendMail({ history, match }) {
-  const globalState = useContext(globalStateStore);
-  const backState = globalState.state;
-  const backDispatch = globalState.dispatch;
-  const mailStateSotre = useContext(mailTemplateStore);
-  const mailState = mailStateSotre.state;
-  const mailDispatch = mailStateSotre.dispatch;
-  const [showTemplate, setShowTemplate] = useState(false);
+  // ============================================================================================================
+  // ===================== context ===================================================================================
+  // ============================================================================================================
+  const globalState = useContext(globalStateStore);       // globaState
+  const backState = globalState.state;                    // boxShadow(선) 제거를 위한 state
+  const backDispatch = globalState.dispatch;              // boxShadow 제거를 위한 dispatch
+  const mailStateSotre = useContext(mailTemplateStore);   // mailTemplateState
+  const mailState = mailStateSotre.state;                 // 메일 템플릿을 불러오기 위한 state
+  const mailDispatch = mailStateSotre.dispatch;           // 메일 템플릿을 불러오기 위한 dispatch
 
-  const { number } = match.params;
-  // ref
-  const inputReceiverRef = useRef(null);
-  const inputRefRef = useRef(null);
-  // state
-  const [modalStatus, setModalStatus] = useState(false);
-  const [refModalStatus, setRefModalStatus] = useState(false);
-  const [tplModalStatus, setTplModalStatus] = useState(false);
-  const [receiver, setReciver] = useState("");
-  const [references, setRefrences] = useState("");
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [receiverList, setReceiverList] = useState([]);
-  const [refList, setRefList] = useState([]);
-  const [sendRecTplNo, setSendRecTplNo] = useState(0);
-  const [tpl, setTpl] = useState(null);
 
+
+
+  // ============================================================================================================
+  // ==================  match =====================================================================================
+  // ============================================================================================================
+  const { number } = match.params;    // number = draftNo, 메일임시보관 0일때는 임시저장할 시 insert(삽입), 0이 아닐때는 임시저장할 시 update(수정)
+  
+
+
+
+  // ============================================================================================================
+  // ==================  ref =====================================================================================
+  // ============================================================================================================
+  const inputReceiverRef = useRef(null); 
+
+
+
+
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+  const [modalStatus, setModalStatus] = useState(false);          // GroupAndAddressbookList(주소) on&off를 위한 state
+  const [refModalStatus, setRefModalStatus] = useState(false);    // GroupAndAddressbookList(참조) on&off를 위한 state
+  const [tplModalStatus, setTplModalStatus] = useState(false);    // MailTemplateList on&off를 위한 state
+  const [loadingStatus, setLodingStatus] = useState(false);       // Loaidng on & off state
+  const [receiver, setReciver] = useState("");                    // 받는사람 input
+  const [references, setRefrences] = useState("");                // 참조 input
+  const [title, setTitle] = useState("");                         // 제목
+  const [content, setContent] = useState("");                     // 내용
+  const [receiverList, setReceiverList] = useState([]);           // 받는사람주소록 리스트 [{"addrNm":"name", "addrEmail":"email@co.com"}] , addrNm은 없을수도 있음.
+  const [refList, setRefList] = useState([]);                     // 참조주소록 리스트  [{"addrNm":"name", "addrEmail":"email@co.com"}] , addrNm은 없을수도 있음.
+  const [sendRecTplNo, setSendRecTplNo] = useState(0);            // 템플릿 번호
+  const [tpl, setTpl] = useState(null);                           // 템플릿 {"tplNo":"1", "tplDesc":"content", "tplTitle":"tplTitle"}
+  const [showTemplate, setShowTemplate] = useState(false);        // 템플릿 on&off를 위한 state
+
+
+
+
+  // ============================================================================================================
+  // ===================== useEffect ===================================================================================
+  // ============================================================================================================
+  // 페이지 load 후 진입 점, 페이지 전체 조회
   useEffect(() => {
+    // 템플릿을 보여줄 때, 템플릿에 박스 표시선 제거
     if (showTemplate) backDispatch({ type: "CONVERT_BOX_SHADOW", value: { boxShadow: false } });
 
+    // 템플릿을 선택했을 때, 해당 템플릿을 불러오기 
     if(sendRecTplNo !== 0) {
-      mailTemplateSelectOne({tplNo: sendRecTplNo})
+      mailTemplateSelectOne({tplNo: sendRecTplNo});
+    // number가 0이 아닐때, number에 해당하는 임시메일 불러오기
     } else if (number !== "0") {
       selectMailDraftByDraftNo({ draftNo: number });
     }
 
+    // number가 0이 아닐때, 템플릿을 보여주기
     if (showTemplate === false && number !== "0") {
       setShowTemplate(true);
     }
     
-    
   }, [number, showTemplate, sendRecTplNo]);
 
-  // deleteReceiver
-  const deleteReciver = (i) => {
-    let newReceiverList = [...receiverList];
-    if (i === newReceiverList.length - 1) newReceiverList.pop();
-    else {
-      newReceiverList = newReceiverList
-        .slice(0, i)
-        .concat(newReceiverList.slice(i + 1, newReceiverList.length));
-    }
-    setReceiverList(newReceiverList);
-  };
 
-  const deleteRef = (i) => {
-    let newReceiverList = [...refList];
-    if (i === newReceiverList.length - 1) newReceiverList.pop();
-    else {
-      newReceiverList = newReceiverList
-        .slice(0, i)
-        .concat(newReceiverList.slice(i + 1, newReceiverList.length));
-    }
-    setRefList(newReceiverList);
-  };
 
-  // 템플릿 불러오기 API ******************************************************************
-  const mailTemplateSelectOne = async (tplInfo = {}) => {
-    const url = "/user/selectMailTemplate";
-    try {
-      const response = await axios.post(
-        url,
-        { ...tplInfo },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-      if (response.data.status === "OK") {
-        if (response.data.data === null) {
-          alert("조회되는 템플릿이 없습니다.");
-          return;
-        }
-        const tpl = response.data.data;
-        setTpl(tpl);
-        const tmpMailState = {
-          ...JSON.parse(tpl.tplContent),
-          number: tpl.tplNo,
-        };
-        mailDispatch({
-          type: "DOWNLOAD_MAIL_STATE",
-          value: { mailState: tmpMailState },
-        });
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
 
-  // draft 불러오기 API ******************************************************************
-  const selectMailDraftByDraftNo = async (draftInfo = {}) => {
-    const url = "/user/selectMailDraftByDraftNo";
-    try {
-      const response = await axios.post(
-        url,
-        { ...draftInfo },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-      if (response.data.status === "OK") {
-        if (response.data.data === null) {
-          alert("조회되는 템플릿이 없습니다.");
-          return;
-        }
-        const draft = response.data.data;
-        setTitle(draft.draftTitle);
-        setContent(draft.draftDesc);
-        setReceiverList(JSON.parse(draft.draftReceiver));
-        setRefList(JSON.parse(draft.draftReference));
-        setSendRecTplNo(parseInt(draft.draftTplNo));
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
+  // ============================================================================================================
+  // ===================== funtions ===================================================================================
+  // ============================================================================================================
+  // 미리보기 함수,
+  // args = undefined, return = undefined
+  let backgrundSrc = `https://firebasestorage.googleapis.com/v0/b/bizdem-c4931.appspot.com/o/images%2F${tpl?tpl.tplNo:"nope"}%2Fbackground.png?alt=media&time=${(new Date()).getTime()}`;
 
-  // draft 저장(insert) API ******************************************************************
-  const updateMailDraft = async (draftInfo = {}) => {
-    const url = "/user/updateMailDraft";
-    try {
-      const response = await axios.post(
-        url,
-        { ...draftInfo },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-      if (response.data.status === "OK") {
-        alert(response.data.message);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      console.log(err);
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
-
-  // draft 저장(update) API ******************************************************************
-  const insertMailDraft = async (draftInfo = {}) => {
-    const url = "/user/insertMailDraft";
-    try {
-      const response = await axios.post(
-        url,
-        { ...draftInfo },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-      if (response.data.status === "OK") {
-        alert(response.data.message);
-        const draftNo = response.data.data.draftNo;
-        history.push(`/sendmail/${draftNo}`);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
-
-  // 미리보기
   const convertToHTML = () => {
     const mailResultDoc = document.getElementById("mailResult");
     const resultDoc = document.getElementById("TemplateMailContentsTable");
-
     if (resultDoc === undefined) {
       alert("템플릿을 설정해주세요");
       return;
     }
-
+    
     const downloadHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Email Design</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <!--[if (mso 16)]><style type="text/css">a {text-decoration: none;}</style><![endif]--><!--[if gte mso 9]><style>sup { font-size: 100% !important; }</style><![endif]--><!--[if gte mso 9]>
       <v:rect xmlns_v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;">
@@ -229,10 +113,12 @@ export default function SendMail({ history, match }) {
     </head><body style="background-repeat:no-repeat"><!--[if gte mso 9]><v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t"><v:fill type="tile" color="#fff1e6"></v:fill></v:background><![endif]-->
     <table border="0" cellspadding="0" cesllspacing="0"><tbody><tr><td style="width: ${
       mailState.tableWidth
-    }px">${
+    }px;">${
       mailResultDoc ? mailResultDoc.innerHTML : ""
-    }</td></tr></tobdy></table>
-     ${resultDoc ? resultDoc.innerHTML : ""}
+    }</td></tr></tbody></table>
+    <table border="0" cellspadding="0" cesllspacing="0" style="background-image:url('${backgrundSrc}'); background-repeat:no-repeat">
+     ${resultDoc ? resultDoc.children[0].innerHTML : ""}
+     </table>
     </body></html>`;
 
     const blob = new Blob([downloadHtml], {
@@ -252,6 +138,26 @@ export default function SendMail({ history, match }) {
     document.body.removeChild(element);
   };
 
+  // 주소록 제거 함수
+  // args = i(number), return = undefined
+  const deleteReciver = (i) => {
+    let newReceiverList = [...receiverList];
+    if (i === newReceiverList.length - 1) newReceiverList.pop();
+    else {
+      newReceiverList = newReceiverList
+        .slice(0, i)
+        .concat(newReceiverList.slice(i + 1, newReceiverList.length));
+    }
+    setReceiverList(newReceiverList);
+  };
+
+
+
+
+  // ============================================================================================================
+  // ===================== axios apis ===================================================================================
+  // ============================================================================================================
+  // sendMail 메일 보내기, html 파일을 생성하여 multipart 형식으로 전송
   const sendMail = async () => {
     const mailResultDoc = document.getElementById("mailResult");
     const resultDoc = document.getElementById("TemplateMailContentsTable");
@@ -268,9 +174,10 @@ export default function SendMail({ history, match }) {
     </head><body style="background-repeat:no-repeat"><!--[if gte mso 9]><v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t"><v:fill type="tile" color="#fff1e6"></v:fill></v:background><![endif]-->
     <table border="0" cellspadding="0" cesllspacing="0"><tbody><tr><td id="mailResult" style="width: ${
       mailState.tableWidth
-    }px">${
+    }px;">${
         mailResultDoc ? mailResultDoc.innerHTML : ""
-      }</td></tr></tobdy></table>
+      }</td></tr></tobdy></table style="background-image: url('${backgrundSrc}');
+      background-repeat: no-repeat;">
      ${resultDoc ? resultDoc.innerHTML : ""}
     </body></html>`;
       blob = new Blob([downloadHtml], {
@@ -284,7 +191,7 @@ export default function SendMail({ history, match }) {
       return;
     }
 
-    // sendMail API *********************************************************************************
+    // sendMail, 메일 전송
     try {
       const instance = axios.create({
         url: "user/mail",
@@ -303,33 +210,209 @@ export default function SendMail({ history, match }) {
       formData.append("message", mailResultDoc.innerHTML);
       formData.append("tplNo", sendRecTplNo);
       formData.append("htmlTemplate", blob, "htmlTemplate.html");
+      setLodingStatus(true);
       const response = await instance.post("/user/mail", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
           "x-auth-token": localStorage.getItem("jwtToken"),
         },
+      }).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
       });
+      setLodingStatus(false);
+      if (response.data.status === "OK") {
+        alert(response.data.message);
+        history.push("/");
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      setLodingStatus(false);
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
 
+
+
+
+
+  // select, 템플릿 불러오기 API
+  const mailTemplateSelectOne = async (tplInfo = {}) => {
+    const url = "/user/selectMailTemplate";
+    try {
+      const response = await axios.post(
+        url,
+        { ...tplInfo },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+      if (response.data.status === "OK") {
+        if (response.data.data === null) {
+          alert("조회되는 템플릿이 없습니다.");
+          return;
+        }
+        const tpl = response.data.data;
+        setTpl(tpl);
+        const tmpMailState = {
+          ...JSON.parse(tpl.tplContent),
+          number: tpl.tplNo,
+        };
+        mailDispatch({
+          type: "DOWNLOAD_MAIL_STATE",
+          value: { mailState: tmpMailState },
+        });
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  // select, draft 불러오기 API 
+  const selectMailDraftByDraftNo = async (draftInfo = {}) => {
+    const url = "/user/selectMailDraftByDraftNo";
+    try {
+      const response = await axios.post(
+        url,
+        { ...draftInfo },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+      if (response.data.status === "OK") {
+        if (response.data.data === null) {
+          alert("조회되는 템플릿이 없습니다.");
+          return;
+        }
+        const draft = response.data.data;
+        setTitle(draft.draftTitle);
+        setContent(draft.draftDesc);
+        setReceiverList(JSON.parse(draft.draftReceiver));
+        setRefList(JSON.parse(draft.draftReference));
+        setSendRecTplNo(parseInt(draft.draftTplNo));
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  // update, draft 수정(update) API 
+  const updateMailDraft = async (draftInfo = {}) => {
+    const url = "/user/updateMailDraft";
+    try {
+      const response = await axios.post(
+        url,
+        { ...draftInfo },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
       if (response.data.status === "OK") {
         alert(response.data.message);
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+        history.push("/login");
       } else {
         alert(response.data.message);
       }
     } catch (err) {
-      console.log(err);
       alert("서버와의 접근이 불안정합니다.");
     }
   };
 
-  // *********************************************************************************
-  // HTML *********************************************************************************
-  // *********************************************************************************
+  // insert, draft 저장(insert) API 
+    const insertMailDraft = async (draftInfo = {}) => {
+    const url = "/user/insertMailDraft";
+    try {
+      const response = await axios.post(
+        url,
+        { ...draftInfo },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+      if (response.data.status === "OK") {
+        alert(response.data.message);
+        const draftNo = response.data.data.draftNo;
+        history.push(`/sendmail/${draftNo}`);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
 
+  
+
+  // ============================================================================================================
+  // ============================ HTML ====================================================================================
+  // ============================================================================================================
   return (
-    <SendMailDiv className="container bootdey">
+    <SendMailDiv cclassName="container-fluid">
+      {/* <Loading></Loading> */}
+      {loadingStatus === true ? <Loading></Loading> : null }
       {modalStatus === true ? (
         <Modal
           visible={modalStatus}
@@ -343,6 +426,7 @@ export default function SendMail({ history, match }) {
               }}
               receiverList={receiverList}
               setReceiverList={setReceiverList}
+              history={history}
             />
           }
         />
@@ -361,6 +445,7 @@ export default function SendMail({ history, match }) {
               }}
               receiverList={refList}
               setReceiverList={setRefList}
+              history={history}
             />
           }
         />
@@ -381,6 +466,7 @@ export default function SendMail({ history, match }) {
                 setSendRecTplNo(no);
                 mailTemplateSelectOne({ tplNo: no });
               }}
+              history={history}
             />
           }
         />
@@ -494,6 +580,7 @@ export default function SendMail({ history, match }) {
                   receiverList={receiverList}
                   setReceiverList={setReceiverList}
                   setReciver={setReciver}
+                  history={history}
                 />
               </AddressbookListModal>
               <InputSideButton
@@ -623,7 +710,7 @@ export default function SendMail({ history, match }) {
                 <DivideHr />
                 {showTemplate ? (
                   <ResultTemplateDiv>
-                    <TemplateMailContents result={true} />
+                    <TemplateMailContents result={true} tplNo={tpl ? tpl.tplNo : 0}/>
                   </ResultTemplateDiv>
                 ) : null}
               </div>
@@ -635,9 +722,9 @@ export default function SendMail({ history, match }) {
   );
 }
 
-// *********************************************************************************
-// StlyeDiv *********************************************************************************
-// *********************************************************************************
+  // ============================================================================================================
+  // ============================ CSS ====================================================================================
+  // ============================================================================================================
 
 const InputPrependDiv = styled.div`
   max-width: 50%;

@@ -1,11 +1,10 @@
-import React, { useContext, useEffect } from "react";
-import { Route, Link, Switch } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Route, Switch } from "react-router-dom";
 import styled from "styled-components";
 
-import { StateProvider,mailTemplateStore } from "../stores/mailTemplateStore";
+import { StateProvider } from "../stores/mailTemplateStore";
 import MainSidebar from "../pageComponents/Main/MainSidebar";
 import MainDropdownBar from "../pageComponents/Main/MainDropDownBar";
-import {globalStateStore} from "../stores/globalStateStore";
 
 
 
@@ -21,21 +20,30 @@ import Notification from "./Notification";
 import QuestionAndAnser from "./QuestionAndAnswer";
 import SendItemDetail from "./SendItemDetail";
 export default function Main({history}) {
-  const _globalStateStore = useContext(globalStateStore);
-  const globalState = _globalStateStore.state;
 
+  // ============================================================================================================
+  // ===================== useEffect ===================================================================================
+  // ============================================================================================================
+  // 페이지 load 후 진입 점, 인증 토큰이 없을시 login page로 이동
   useEffect(()=> {
     if(!localStorage.getItem('jwtToken')) history.push("/login");
   })
 
+
+
+
+
+  // ============================================================================================================
+  // ============================ HTML ====================================================================================
+  // ============================================================================================================
   return (
     <MainDiv id="wrapper">
       {/* <!-- Sidebar --> */}
       <MainSidebar />
       {/* <!-- Page Content --> */}
-      <MainContentDiv>
+      <MainContentDiv >
         {/* dropdown 메뉴 */}
-        <MainDropdownBar />
+        <MainDropdownBar history={history} />
         <div className="container-fluid">
           <StateProvider>
             <Switch>
@@ -66,6 +74,10 @@ export default function Main({history}) {
     </MainDiv>
   );
 }
+
+// ============================================================================================================
+// ============================ CSS ====================================================================================
+// ============================================================================================================
 
 const MainDiv = styled.div`
   display: flex;

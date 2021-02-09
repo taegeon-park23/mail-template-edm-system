@@ -7,24 +7,47 @@ import styled from "styled-components";
 
 export default function ManageGroup({ history, match }) {
   
-  // match
+  // ============================================================================================================
+  // ================== match =====================================================================================
+  // ============================================================================================================
   const { search } = match.params;
   const _search = `${search}`.split(":");
-  const _searchInput = _search[0] ? _search[0] : "";
-  const _searchIndex = _search[1] ? _search[1] : "";
+  const _searchInput = _search[0] ? _search[0] : "";    // 검색 string
+  const _searchIndex = _search[1] ? _search[1] : "";    // 검색 페이지 index 
   
-  // state
-  const [modalStatus, setModalStatus] = useState(false);
-  const [id, setId] = useState(0);
-  const [groups, setGroups] = useState([]);
-  const [updateCount, setUpdateCount] = useState(0);
-  const [searchInput, setSearchInput] = useState(_searchInput);
-  const [pageCount, setPageCount] = useState(groups.length>0?groups[0].pageCount:10);
 
+
+
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+  const [modalStatus, setModalStatus] = useState(false);                                  // boolean, ManageGroupDetailModal(그룹 상세 조회) on&off를 위한 state
+  const [id, setId] = useState(0);                                                        // number, id = groupId, group상세 조회를 위한 조건 state
+  const [groups, setGroups] = useState([]);                                               // [{}], 그룹 조회 결과받는 list state
+  const [updateCount, setUpdateCount] = useState(0);                                      // number, 페이지 re-rendering state
+  const [searchInput, setSearchInput] = useState(_searchInput);                           // string, 제목, 내용 검색을 위한 state
+  const [pageCount, setPageCount] = useState(groups.length>0?groups[0].pageCount:10);     // number, 페이지에서 한번에 보여줄 레코드를 설정하는 state
+
+
+
+
+  // ============================================================================================================
+  // ===================== useEffect ===================================================================================
+  // ============================================================================================================
+  // 페이지 load 후 진입 점, 페이지 전체 조회
   useEffect(() => {
     selectAddressGroupAll({ groupNm: _searchInput, pageStart: _searchIndex });
   }, [search, updateCount]);
 
+
+
+
+
+  // ============================================================================================================
+  // ===================== funtions ===================================================================================
+  // ============================================================================================================
+  // 레코드 전체 선택 set true ol false
+  // args = e(event), flag(boolean)
   const setCheckAll = (e = null, flag = false) => {
     let checkFlag = false;
     if(flag) 
@@ -35,6 +58,8 @@ export default function ManageGroup({ history, match }) {
     inputArr.forEach((input)=>{input.checked = checkFlag})
   }
 
+  // 선택된 record 배열로 리턴, 
+  // return = checkedInputValues ["1","2","3"]
   const getCheckedGroupNoArr = () => {
      const inputArr = document.querySelectorAll("input[type=checkbox]");
      const checkedInputValues = [] ;
@@ -45,70 +70,9 @@ export default function ManageGroup({ history, match }) {
      return checkedInputValues;  
   }
 
-  const selectAddressGroupAll = async (addressGroup = {}) => {
-    const url = "/user/selectAddressGroupAll";
-    try {
-      const response = await axios.post(
-        url,
-        { ...addressGroup },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-
-      if (response.data.status === "OK") {
-        if (response.data.data === null) {
-          alert("조회되는 그룹이 없습니다.");
-          return;
-        }
-        setGroups(response.data.data);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
-
-  const deleteAddressGroup = async () => {
-    const url = "/user/deleteAddressGroup";
-    try {
-      const response = await axios.post(
-        url,
-        {"addressGroupNos":getCheckedGroupNoArr()},
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-
-      if (response.data.status === "OK") {
-        alert(response.data.message);
-        history.push(`/managegroup/${_searchInput}:0`);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
-
-  const onClickDetailUseCallback = useCallback((no) => {
-    setModalStatus(true);
-    setId(no);
-  });
-
+  // pages 생성 함수, 
+  // args = recordCount(number), pageCount(number) 
+  // return = pageAnchors [<a><a/>]
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
     pages = pages < 1 ? 1 : Math.ceil(pages);
@@ -168,6 +132,10 @@ export default function ManageGroup({ history, match }) {
     return pageAnchors;
   };
 
+
+  // 테이블 공백칸 생성
+  // args = length(number), tdCount(number) 
+  // return = emptyTrs([<td></td>])
   const getEmptySpace = (length, tdCount) => {
       const emptyTds = [];
       const emptyTrs = [];
@@ -184,6 +152,109 @@ export default function ManageGroup({ history, match }) {
       return emptyTrs;
   }
 
+
+
+
+
+  // ============================================================================================================
+  // ================== callback =====================================================================================
+  // ============================================================================================================
+  // 그룹 상세 모달을 on 시키고, id를 할당시키기 위한 callback
+  // args = no(number)
+  // return = undefined
+  const onClickDetailUseCallback = useCallback((no) => {
+    setModalStatus(true);
+    setId(no);
+  });
+
+
+
+
+
+// ============================================================================================================
+// ===================== axios apis ===================================================================================
+// ============================================================================================================
+// select, 그룹 전체(검색) 조회 api
+  const selectAddressGroupAll = async (addressGroup = {}) => {
+    const url = "/user/selectAddressGroupAll";
+    try {
+      const response = await axios.post(
+        url,
+        { ...addressGroup },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+
+      if (response.data.status === "OK") {
+        if (response.data.data === null) {
+          alert("조회되는 그룹이 없습니다.");
+          return;
+        }
+        setGroups(response.data.data);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  // delete, 그룹 삭제 api
+  const deleteAddressGroup = async () => {
+    const url = "/user/deleteAddressGroup";
+    try {
+      const response = await axios.post(
+        url,
+        {"addressGroupNos":getCheckedGroupNoArr()},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+
+      if (response.data.status === "OK") {
+        alert(response.data.message);
+        history.push(`/managegroup/${_searchInput}:0`);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  
+  
+
+  // ============================================================================================================
+  // ============================ HTML ====================================================================================
+  // ============================================================================================================
   return (
     <div className="container-fluid">
       {modalStatus === true ? (
@@ -201,6 +272,7 @@ export default function ManageGroup({ history, match }) {
               setUpdateCountGroup={() => {
                 setUpdateCount(updateCount + 1);
               }}
+              history={history}
             />
           }
         />

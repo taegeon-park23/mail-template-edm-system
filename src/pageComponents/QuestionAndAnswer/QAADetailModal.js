@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import axios from 'axios';
 import styled from "styled-components";
 
-export default function QAADetailModal({id, onClose, onChangeId}) {
+export default function QAADetailModal({id, onClose, onChangeId, history}) {
 
 
 
@@ -58,6 +58,7 @@ export default function QAADetailModal({id, onClose, onChangeId}) {
             } else if(response.data.status === "NOT_FOUND"){
                 alert("인증되지 않은 접근입니다.");
                 localStorage.removeItem('jwtToken');
+                history.push('/login');
             }
           } catch(err) {
             alert("서버와의 접근이 불안정합니다.");

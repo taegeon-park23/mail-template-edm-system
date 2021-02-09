@@ -5,6 +5,7 @@ export default function GroupAndAddressbookList({
   onClose,
   setReceiverList,
   receiverList,
+  history
 }) {
   const [addrListInGroup, setAddrListInGroup] = useState({});
   const [addrKeys, setAddrKeys] = useState([]);
@@ -25,7 +26,13 @@ export default function GroupAndAddressbookList({
             "x-auth-token": localStorage.getItem("jwtToken"),
           },
         }
-      );
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      })
 
       if (response.data.status === "OK") {
         if (response.data.data === null) {
@@ -55,6 +62,7 @@ export default function GroupAndAddressbookList({
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+        history.push("/login");
       } else {
         alert(response.data.message);
       }

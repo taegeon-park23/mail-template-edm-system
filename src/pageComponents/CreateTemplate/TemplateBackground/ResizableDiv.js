@@ -59,14 +59,11 @@ export default function ResizableDiv({
     if (ContentDiv.current !== null) {
       const childHtmlElements = ContentDiv.current.children;
       const childElements = Array.prototype.slice.call(childHtmlElements);
-      if (
-        childHtmlElements.length === 3 &&
-        childElements[0].innerText === "" &&
-        childElements[2].innerText === ""
-      ) {
-        childElements[0].style.marginBottom = 0;
-        childElements[2].style.marginBottom = 0;
-        childElements[1].style = `width:${state.width}px; height:${state.height}px; z-index:0;`;
+      const contentDivDom = ReactDOM.findDOMNode(ContentDiv.current);
+      const imgDom = contentDivDom.querySelector('img');
+      // debugger;
+      if(imgDom){
+        contentDivDom.innerHTML = `<img src=${imgDom.src} style="width:${state.width}px; height:${state.height}px">`;
         return;
       }
 
