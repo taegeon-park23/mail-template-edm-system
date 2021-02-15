@@ -13,9 +13,11 @@ const initialState = {
   modifiableBoxesState: true,
   convertedImage: "#",
   templateBackground: "backImage",
+  tableWidth: 600,
   tableHeight: 1000,
   boxShadow: true,
-  popUpMessages: []
+  popUpMessages: [],
+  jwtToken: null
 };
 const globalStateStore = createContext(initialState);
 const { Provider } = globalStateStore;
@@ -96,8 +98,6 @@ const StateProvider = ({ children }) => {
         const findIndex = newPopUpMessages.indexOf(
           `${action.value.popUpMessage}`
         );
-        console.log(action.value.popUpMessage, "-");
-        console.log(newPopUpMessages[0] === "" + action.value.popUpMessage);
         if (findIndex !== -1) {
           if (findIndex === 1) newPopUpMessages = [];
           else if (findIndex === newPopUpMessages.length - 1)
@@ -115,6 +115,17 @@ const StateProvider = ({ children }) => {
           };
         }
         return { ...state };
+      }
+      case "TABLE_RESIZE" :
+      return {
+        ...state,
+        tableWidth: action.value.tableWidth,
+        tableHeight: action.value.tableHeight
+      }
+      case "UPDATE_JWT_TOKEN" :
+      return {
+          ...state,
+          jwtToken: action.value.jwtToken
       }
       default:
         throw new Error(`Unhandled action type: ${action.type}`);

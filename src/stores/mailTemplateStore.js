@@ -23,7 +23,7 @@ const initialContents = {
             align: "center",
             bgcolor: "",
             width: "10",
-            height: "200",
+            height: "10",
             borderRadius: "0",
             content: `<p style="padding:0px; margin:0px"></p>`
           },
@@ -39,7 +39,7 @@ const initialContents = {
             align: "center",
             bgcolor: "",
             width: "10",
-            height: "200",
+            height: "10",
             borderRadius: "0",
             content: `<p style="padding:0px; margin:0px"></p>`
           }
@@ -63,7 +63,7 @@ const initialContents = {
             align: "center",
             bgcolor: "",
             width: "10",
-            height: "200",
+            height: "10",
             borderRadius: "0",
             content: `<p style="padding:0px; margin:0px"></p>`
           },
@@ -79,7 +79,7 @@ const initialContents = {
             align: "center",
             bgcolor: "",
             width: "10",
-            height: "200",
+            height: "10",
             borderRadius: "0",
             content: `<p style="padding:0px; margin:0px"></p>`
           }
@@ -103,7 +103,7 @@ const initialContents = {
             align: "center",
             bgcolor: "",
             width: "10",
-            height: "150",
+            height: "10",
             borderRadius: "0",
             content: `<p style="padding:0px; margin:0px"></p>`
           },
@@ -111,7 +111,7 @@ const initialContents = {
             align: "center",
             bgcolor: "",
             width: "285",
-            height: "150",
+            height: "10",
             borderRadius: "0",
             content: `<b>content</b>`
           },
@@ -119,7 +119,7 @@ const initialContents = {
             align: "center",
             bgcolor: "",
             width: "10",
-            height: "150",
+            height: "10",
             borderRadius: "0",
             content: `<p style="padding:0px; margin:0px"></p>`
           },
@@ -127,7 +127,7 @@ const initialContents = {
             align: "center",
             bgcolor: "",
             width: "285",
-            height: "150",
+            height: "10",
             borderRadius: "0",
             content: `<b>content</b>`
           },
@@ -135,7 +135,7 @@ const initialContents = {
             align: "center",
             bgcolor: "",
             width: "10",
-            height: "150",
+            height: "10",
             borderRadius: "0",
             content: `<p style="padding:0px; margin:0px"></p>`
           }
@@ -159,7 +159,7 @@ const initialContents = {
             align: "center",
             bgcolor: "",
             width: "10",
-            height: "100",
+            height: "10",
             borderRadius: "0",
             content: `<p style="padding:0px; margin:0px"></p>`
           },
@@ -175,7 +175,7 @@ const initialContents = {
             align: "center",
             bgcolor: "",
             width: "10",
-            height: "100",
+            height: "10",
             borderRadius: "0",
             content: `<p style="padding:0px; margin:0px"></p>`
           }
@@ -203,7 +203,8 @@ const initialState = {
   version: 0,
   tableWidth: 600,
   contents: initialContents,
-  saveContentsStatus: false
+  saveContentsStatus: false,
+  number: 0
 };
 const mailTemplateStore = createContext(initialState);
 const { Provider } = mailTemplateStore;
@@ -232,6 +233,11 @@ const StateProvider = ({ children }) => {
         return {
           ...state,
           bgcolor: action.value.bgcolor
+        }
+      case "UPDATE_NUMBER":
+        return {
+          ...state,
+          number: action.value.number
         }
       default:
         throw new console.log(`Unhandled action type: ${action.type}`);

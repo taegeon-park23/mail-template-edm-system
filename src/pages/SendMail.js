@@ -1,24 +1,109 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext, useEffect, useRef } from "react";
 import styled from "styled-components";
+import axios from "axios";
 
+import Loading from "../components/Loading";
 import MailEditor from "../pageComponents/SendMail/MailEditor";
-import {globalStateStore} from "../stores/globalStateStore";
-import {mailTemplateStore} from "../stores/mailTemplateStore";
+import { globalStateStore } from "../stores/globalStateStore";
+import { mailTemplateStore } from "../stores/mailTemplateStore";
 import TemplateMailContents from "../pageComponents/CreateTemplate/TemplateMailContents";
+import AddressboookList from "../pageComponents/SendMail/AddressbookList";
+import ReactDOM from "react-dom";
+import GroupAndAddressbookList from "../pageComponents/SendMail/GroupAndAddressbookList";
+import Modal from "../components/Modal";
+import MailTemplateList from "../pageComponents/SendMail/MailTemplateList";
 
-export default function SendMail({}) {
-  const globalState = useContext(globalStateStore);
-  const backState = globalState.state;
-  const backDispatch = globalState.dispatch;
-  const mailStateSotre = useContext(mailTemplateStore);
-  const mailState = mailStateSotre.state;
-  const [showTemplate, setShowTemplate] = useState(false);
-  useEffect(()=>{
-    backDispatch({type:"CONVERT_BOX_SHADOW", value:{boxShadow: false}})
-  },[showTemplate]);
+export default function SendMail({ history, match }) {
+  // ============================================================================================================
+  // ===================== context ===================================================================================
+  // ============================================================================================================
+  const globalState = useContext(globalStateStore);       // globaState
+  const backState = globalState.state;                    // boxShadow(선) 제거를 위한 state
+  const backDispatch = globalState.dispatch;              // boxShadow 제거를 위한 dispatch
+  const mailStateSotre = useContext(mailTemplateStore);   // mailTemplateState
+  const mailState = mailStateSotre.state;                 // 메일 템플릿을 불러오기 위한 state
+  const mailDispatch = mailStateSotre.dispatch;           // 메일 템플릿을 불러오기 위한 dispatch
+
+
+
+
+  // ============================================================================================================
+  // ==================  match =====================================================================================
+  // ============================================================================================================
+  const { number } = match.params;    // number = draftNo, 메일임시보관 0일때는 임시저장할 시 insert(삽입), 0이 아닐때는 임시저장할 시 update(수정)
+  
+
+
+
+  // ============================================================================================================
+  // ==================  ref =====================================================================================
+  // ============================================================================================================
+  const inputReceiverRef = useRef(null); 
+
+
+
+
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+  const [modalStatus, setModalStatus] = useState(false);          // GroupAndAddressbookList(주소) on&off를 위한 state
+  const [refModalStatus, setRefModalStatus] = useState(false);    // GroupAndAddressbookList(참조) on&off를 위한 state
+  const [tplModalStatus, setTplModalStatus] = useState(false);    // MailTemplateList on&off를 위한 state
+  const [loadingStatus, setLodingStatus] = useState(false);       // Loaidng on & off state
+  const [receiver, setReciver] = useState("");                    // 받는사람 input
+  const [references, setRefrences] = useState("");                // 참조 input
+  const [title, setTitle] = useState("");                         // 제목
+  const [content, setContent] = useState("");                     // 내용
+  const [receiverList, setReceiverList] = useState([]);           // 받는사람주소록 리스트 [{"addrNm":"name", "addrEmail":"email@co.com"}] , addrNm은 없을수도 있음.
+  const [refList, setRefList] = useState([]);                     // 참조주소록 리스트  [{"addrNm":"name", "addrEmail":"email@co.com"}] , addrNm은 없을수도 있음.
+  const [sendRecTplNo, setSendRecTplNo] = useState(0);            // 템플릿 번호
+  const [tpl, setTpl] = useState(null);                           // 템플릿 {"tplNo":"1", "tplDesc":"content", "tplTitle":"tplTitle"}
+  const [showTemplate, setShowTemplate] = useState(false);        // 템플릿 on&off를 위한 state
+
+
+
+
+  // ============================================================================================================
+  // ===================== useEffect ===================================================================================
+  // ============================================================================================================
+  // 페이지 load 후 진입 점, 페이지 전체 조회
+  useEffect(() => {
+    // 템플릿을 보여줄 때, 템플릿에 박스 표시선 제거
+    if (showTemplate) backDispatch({ type: "CONVERT_BOX_SHADOW", value: { boxShadow: false } });
+
+    // 템플릿을 선택했을 때, 해당 템플릿을 불러오기 
+    if(sendRecTplNo !== 0) {
+      mailTemplateSelectOne({tplNo: sendRecTplNo});
+    // number가 0이 아닐때, number에 해당하는 임시메일 불러오기
+    } else if (number !== "0") {
+      selectMailDraftByDraftNo({ draftNo: number });
+    }
+
+    // number가 0이 아닐때, 템플릿을 보여주기
+    if (showTemplate === false && number !== "0") {
+      setShowTemplate(true);
+    }
+    
+  }, [number, showTemplate, sendRecTplNo]);
+
+
+
+
+  // ============================================================================================================
+  // ===================== funtions ===================================================================================
+  // ============================================================================================================
+  // 미리보기 함수,
+  // args = undefined, return = undefined
+  let backgrundSrc = `https://firebasestorage.googleapis.com/v0/b/bizdem-c4931.appspot.com/o/images%2F${tpl?tpl.tplNo:"nope"}%2Fbackground.png?alt=media&time=${(new Date()).getTime()}`;
+
   const convertToHTML = () => {
     const mailResultDoc = document.getElementById("mailResult");
     const resultDoc = document.getElementById("TemplateMailContentsTable");
+    if (resultDoc === undefined) {
+      alert("템플릿을 설정해주세요");
+      return;
+    }
+    
     const downloadHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Email Design</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <!--[if (mso 16)]><style type="text/css">a {text-decoration: none;}</style><![endif]--><!--[if gte mso 9]><style>sup { font-size: 100% !important; }</style><![endif]--><!--[if gte mso 9]>
       <v:rect xmlns_v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;">
@@ -26,56 +111,414 @@ export default function SendMail({}) {
         <v:textbox style="mso-fit-shape-to-text:true" inset="0,0,0,0">
       <![endif]--><!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG></o:AllowPNG><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
     </head><body style="background-repeat:no-repeat"><!--[if gte mso 9]><v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t"><v:fill type="tile" color="#fff1e6"></v:fill></v:background><![endif]-->
-    <table border="0" cellspadding="0" cesllspacing="0"><tbody><tr><td style="width: ${mailState.tableWidth}px">${mailResultDoc ? mailResultDoc.innerHTML : ""}</td></tr></tobdy></table>
-     ${resultDoc? resultDoc.innerHTML : ""}
+    <table border="0" cellspadding="0" cesllspacing="0"><tbody><tr><td style="width: ${
+      mailState.tableWidth
+    }px;">${
+      mailResultDoc ? mailResultDoc.innerHTML : ""
+    }</td></tr></tbody></table>
+    <table border="0" cellspadding="0" cesllspacing="0" style="background-image:url('${backgrundSrc}'); background-repeat:no-repeat">
+     ${resultDoc ? resultDoc.children[0].innerHTML : ""}
+     </table>
     </body></html>`;
 
-    const blob =new Blob([downloadHtml], {
-      type: 'text/html',
-      endings: 'native'
+    const blob = new Blob([downloadHtml], {
+      type: "text/html",
+      endings: "native",
     });
+    blob.name = "htmlTemplate.html";
+    blob.lastModifiedData = new Date();
     const url = URL.createObjectURL(blob);
-    const dom = document.getElementById("uploadHtmlFile");
     const element = document.createElement("a");
-    element.setAttribute(
-        "href",
-        url
-      );
+    element.setAttribute("href", url);
     element.setAttribute("target", "_blank");
     element.click();
-    console.log(url);
     element.style.display = "none";
     document.body.appendChild(element);
     element.click();
     document.body.removeChild(element);
-    const formData = new FormData(dom);
-    formData.append("uploadHTMLFile", blob, "target.html");
-    for (var value of formData.values()) {
-
-      console.log(value);
-    
-    }
-    // dom.value = url;
-    // const element = document.createElement("a");
-    // element.setAttribute(
-    //   "href",
-    //   "data:text/html;charset=utf-8," + encodeURIComponent(downloadHtml)
-    // );
-    // element.setAttribute("download", "mail");
-
   };
 
+  // 주소록 제거 함수
+  // args = i(number), return = undefined
+  const deleteReciver = (i) => {
+    let newReceiverList = [...receiverList];
+    if (i === newReceiverList.length - 1) newReceiverList.pop();
+    else {
+      newReceiverList = newReceiverList
+        .slice(0, i)
+        .concat(newReceiverList.slice(i + 1, newReceiverList.length));
+    }
+    setReceiverList(newReceiverList);
+  };
+
+
+
+
+  // ============================================================================================================
+  // ===================== axios apis ===================================================================================
+  // ============================================================================================================
+  // sendMail 메일 보내기, html 파일을 생성하여 multipart 형식으로 전송
+  const sendMail = async () => {
+    const mailResultDoc = document.getElementById("mailResult");
+    const resultDoc = document.getElementById("TemplateMailContentsTable");
+    let blob = null;
+
+    // 템플릿이 존재할 때, HTML 파일 생성
+    if (resultDoc !== null) {
+      const downloadHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Email Design</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <!--[if (mso 16)]><style type="text/css">a {text-decoration: none;}</style><![endif]--><!--[if gte mso 9]><style>sup { font-size: 100% !important; }</style><![endif]--><!--[if gte mso 9]>
+      <v:rect xmlns_v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;">
+        <v:fill type="tile" src="${backState.convertedImage}" color="#7bceeb" />
+        <v:textbox style="mso-fit-shape-to-text:true" inset="0,0,0,0">
+      <![endif]--><!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG></o:AllowPNG><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
+    </head><body style="background-repeat:no-repeat"><!--[if gte mso 9]><v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t"><v:fill type="tile" color="#fff1e6"></v:fill></v:background><![endif]-->
+    <table border="0" cellspadding="0" cesllspacing="0"><tbody><tr><td id="mailResult" style="width: ${
+      mailState.tableWidth
+    }px;">${
+        mailResultDoc ? mailResultDoc.innerHTML : ""
+      }</td></tr></tobdy></table style="background-image: url('${backgrundSrc}');
+      background-repeat: no-repeat;">
+     ${resultDoc ? resultDoc.innerHTML : ""}
+    </body></html>`;
+      blob = new Blob([downloadHtml], {
+        type: "text/html",
+        endings: "native",
+      });
+      blob.name = "htmlTemplate.html";
+      blob.lastModifiedData = new Date();
+    } else {
+      alert("템플릿을 설정해주세요");
+      return;
+    }
+
+    // sendMail, 메일 전송
+    try {
+      const instance = axios.create({
+        url: "user/mail",
+        method: "post",
+        baseURL: "",
+        headers: { "Content-Type": "application/json" },
+        responseType: "json",
+        onUploadProgress: (progressEvent) => {},
+        onDownloadProgress: (progressEvent) => {},
+      });
+
+      const formData = new FormData();
+      formData.append("address", JSON.stringify(receiverList));
+      formData.append("ccs", JSON.stringify(refList));
+      formData.append("title", title);
+      formData.append("message", mailResultDoc.innerHTML);
+      formData.append("tplNo", sendRecTplNo);
+      formData.append("htmlTemplate", blob, "htmlTemplate.html");
+      setLodingStatus(true);
+      const response = await instance.post("/user/mail", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          "x-auth-token": localStorage.getItem("jwtToken"),
+        },
+      }).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+      setLodingStatus(false);
+      if (response.data.status === "OK") {
+        alert(response.data.message);
+        history.push("/");
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      setLodingStatus(false);
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+
+
+
+
+  // select, 템플릿 불러오기 API
+  const mailTemplateSelectOne = async (tplInfo = {}) => {
+    const url = "/user/selectMailTemplate";
+    try {
+      const response = await axios.post(
+        url,
+        { ...tplInfo },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+      if (response.data.status === "OK") {
+        if (response.data.data === null) {
+          alert("조회되는 템플릿이 없습니다.");
+          return;
+        }
+        const tpl = response.data.data;
+        setTpl(tpl);
+        const tmpMailState = {
+          ...JSON.parse(tpl.tplContent),
+          number: tpl.tplNo,
+        };
+        mailDispatch({
+          type: "DOWNLOAD_MAIL_STATE",
+          value: { mailState: tmpMailState },
+        });
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  // select, draft 불러오기 API 
+  const selectMailDraftByDraftNo = async (draftInfo = {}) => {
+    const url = "/user/selectMailDraftByDraftNo";
+    try {
+      const response = await axios.post(
+        url,
+        { ...draftInfo },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+      if (response.data.status === "OK") {
+        if (response.data.data === null) {
+          alert("조회되는 템플릿이 없습니다.");
+          return;
+        }
+        const draft = response.data.data;
+        setTitle(draft.draftTitle);
+        setContent(draft.draftDesc);
+        setReceiverList(JSON.parse(draft.draftReceiver));
+        setRefList(JSON.parse(draft.draftReference));
+        setSendRecTplNo(parseInt(draft.draftTplNo));
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  // update, draft 수정(update) API 
+  const updateMailDraft = async (draftInfo = {}) => {
+    const url = "/user/updateMailDraft";
+    try {
+      const response = await axios.post(
+        url,
+        { ...draftInfo },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+      if (response.data.status === "OK") {
+        alert(response.data.message);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  // insert, draft 저장(insert) API 
+    const insertMailDraft = async (draftInfo = {}) => {
+    const url = "/user/insertMailDraft";
+    try {
+      const response = await axios.post(
+        url,
+        { ...draftInfo },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+      if (response.data.status === "OK") {
+        alert(response.data.message);
+        const draftNo = response.data.data.draftNo;
+        history.push(`/sendmail/${draftNo}`);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  
+
+  // ============================================================================================================
+  // ============================ HTML ====================================================================================
+  // ============================================================================================================
   return (
-    <SendMailDiv class="container bootdey">
+    <SendMailDiv cclassName="container-fluid">
+      {/* <Loading></Loading> */}
+      {loadingStatus === true ? <Loading></Loading> : null }
+      {modalStatus === true ? (
+        <Modal
+          visible={modalStatus}
+          onClose={() => {
+            setModalStatus(false);
+          }}
+          children={
+            <GroupAndAddressbookList
+              onClose={() => {
+                setModalStatus(false);
+              }}
+              receiverList={receiverList}
+              setReceiverList={setReceiverList}
+              history={history}
+            />
+          }
+        />
+      ) : null}
+
+      {refModalStatus === true ? (
+        <Modal
+          visible={refModalStatus}
+          onClose={() => {
+            setRefModalStatus(false);
+          }}
+          children={
+            <GroupAndAddressbookList
+              onClose={() => {
+                setRefModalStatus(false);
+              }}
+              receiverList={refList}
+              setReceiverList={setRefList}
+              history={history}
+            />
+          }
+        />
+      ) : null}
+
+      {tplModalStatus === true ? (
+        <Modal
+          visible={tplModalStatus}
+          onClose={() => {
+            setTplModalStatus(false);
+          }}
+          children={
+            <MailTemplateList
+              onClose={() => {
+                setTplModalStatus(false);
+              }}
+              setSendRecTplNo={(no) => {
+                setSendRecTplNo(no);
+                mailTemplateSelectOne({ tplNo: no });
+              }}
+              history={history}
+            />
+          }
+        />
+      ) : null}
+
       <div class="email-app">
         <main>
           <div class="d-flex justify-content-center align-items-center ml-3 mt-3">
             <p class=" mr-auto">
               <h3>메일 보내기</h3>
             </p>
-            <button class="btn btn-primary rounded mr-3">보내기</button>
-            <button class="btn btn-primary rounded mr-3" onClick={convertToHTML}>미리보기</button>
-            <button class="btn btn-primary rounded mr-3">임시저장</button>
+            <button
+              class="btn btn-primary rounded mr-3"
+              onClick={() => {
+                sendMail();
+              }}
+            >
+              보내기
+            </button>
+            <button
+              class="btn btn-primary rounded mr-3"
+              onClick={convertToHTML}
+            >
+              미리보기
+            </button>
+            <button
+              class="btn btn-primary rounded mr-3"
+              onClick={() => {
+                if (number === "0") {
+                  insertMailDraft({
+                    draftTplNo: sendRecTplNo,
+                    draftTitle: title,
+                    draftDesc: content,
+                    draftReceiver: JSON.stringify(receiverList),
+                    draftReference: JSON.stringify(refList),
+                    draftAttach: "",
+                  });
+                } else {
+                  updateMailDraft({
+                    draftNo: number,
+                    draftTplNo: sendRecTplNo,
+                    draftTitle: title,
+                    draftDesc: content,
+                    draftReceiver: JSON.stringify(receiverList),
+                    draftReference: JSON.stringify(refList),
+                    draftAttach: "",
+                  });
+                }
+              }}
+            >
+              임시저장
+            </button>
           </div>
           <p
             class="text-center d-flext justify-content-center rounded-pill"
@@ -83,44 +526,127 @@ export default function SendMail({}) {
           >
             템플릿을 선택하여 메일을 보내세요
           </p>
-          <form method="post" action="upload" enctype="multipart/form-data" id="uploadHtmlFile"
+          <form
+            method="post"
+            action="upload"
+            enctype="multipart/form-data"
+            id="uploadHtmlFile"
             onSubmit={(e) => {
               e.preventDefault();
             }}
           >
-            <input type="file" hidden/>
-            <div className="input-group mb-3">
+            <div className="position-static input-group mb-3">
               <label for="bcc" class="col-2 col-sm-1 col-form-label">
                 받는 사람
               </label>
-              <div className="input-group-prepend"></div>
+              <InputPrependDiv className="input-group-prepend">
+                {receiverList.map((receiver, i) => {
+                  return (
+                    <span
+                      className="badge badge-info ml-0 mr-1 my-0 px-1 py-0"
+                      style={{ height: "32px", lineHeight: "32px" }}
+                    >
+                      {receiver.addrNm ? receiver.addrNm : receiver.addrEmail}{" "}
+                      <a
+                        href=""
+                        className="badge badge-light"
+                        value={i}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          deleteReciver(i);
+                        }}
+                      >
+                        x
+                      </a>
+                    </span>
+                  );
+                })}
+              </InputPrependDiv>
               <input
                 type="text"
+                ref={inputReceiverRef}
                 className="form-control"
                 placeholder="To"
                 aria-label="receiver"
                 aria-describedby="basic-addon2"
-              />
-              <InputSideButton className="btn btn-primary ml-2">
+                value={receiver}
+                onChange={(e) => {
+                  setReciver(e.target.value);
+                }}
+              ></input>
+              <AddressbookListModal>
+                <AddressboookList
+                  addrNm={receiver}
+                  receiverList={receiverList}
+                  setReceiverList={setReceiverList}
+                  setReciver={setReciver}
+                  history={history}
+                />
+              </AddressbookListModal>
+              <InputSideButton
+                className="btn btn-primary ml-2"
+                onClick={() => {
+                  setModalStatus(true);
+                }}
+              >
                 주소록
               </InputSideButton>
             </div>
-            <div className="input-group mb-3">
+            {/* <div className="input-group mb-3">
               <label for="bcc" class="col-2 col-sm-1 col-form-label">
                 참조
               </label>
-              <div className="input-group-prepend"></div>
+              <InputPrependDiv className="input-group-prepend">
+                {refList.map((receiver, i) => {
+                  return (
+                    <span
+                      className="badge badge-info ml-0 mr-1 my-0 px-1 py-0"
+                      style={{ height: "32px", lineHeight: "32px" }}
+                    >
+                      {receiver.addrNm ? receiver.addrNm : receiver.addrEmail}{" "}
+                      <a
+                        className="badge badge-light"
+                        value={i}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          deleteRef(i);
+                        }}
+                      >
+                        x
+                      </a>
+                    </span>
+                  );
+                })}
+              </InputPrependDiv>
               <input
                 type="text"
+                ref={inputRefRef}
                 className="form-control"
                 placeholder="Ref"
                 aria-label="ref"
                 aria-describedby="basic-addon2"
+                value={references}
+                onChange={(e) => {
+                  setRefrences(e.target.value);
+                }}
               />
-              <InputSideButton className="btn btn-primary ml-2">
+              <AddressbookListModal left={inputRefLeft}>
+                <AddressboookList
+                  addrNm={references}
+                  receiverList={refList}
+                  setReceiverList={setRefList}
+                  setReciver={setRefrences}
+                />
+              </AddressbookListModal>
+              <InputSideButton
+                className="btn btn-primary ml-2"
+                onClick={() => {
+                  setRefModalStatus(true);
+                }}
+              >
                 주소록
               </InputSideButton>
-            </div>
+            </div> */}
             <div className="input-group mb-3">
               <label for="bcc" class="col-2 col-sm-1 col-form-label">
                 메일 템플릿
@@ -132,11 +658,14 @@ export default function SendMail({}) {
                 placeholder="@"
                 aria-label="mailTemplate"
                 aria-describedby="basic-addon2"
+                value={tpl ? `${tpl.tplNo}:${tpl.tplSub}` : "@"}
+                readOnly={true}
               />
               <InputSideButton
                 className="btn btn-primary ml-2"
-                onClick={()=>{
-                  setShowTemplate(!showTemplate);
+                onClick={() => {
+                  setShowTemplate(true);
+                  setTplModalStatus(true);
                 }}
               >
                 템플릿
@@ -153,6 +682,10 @@ export default function SendMail({}) {
                     class="form-control"
                     id="bcc"
                     placeholder="Title"
+                    value={title}
+                    onChange={(e) => {
+                      setTitle(e.target.value);
+                    }}
                   />
                 </span>
               </div>
@@ -169,11 +702,15 @@ export default function SendMail({}) {
           <div class="row">
             <div class="col-sm-11 ml-auto">
               <div class="form-group mt-4" style={{ width: "100%" }}>
-                <MailEditor width={mailState.tableWidth}/>
+                <MailEditor
+                  width={mailState.tableWidth}
+                  content={content}
+                  setContent={setContent}
+                />
                 <DivideHr />
                 {showTemplate ? (
                   <ResultTemplateDiv>
-                    <TemplateMailContents result={true} />
+                    <TemplateMailContents result={true} tplNo={tpl ? tpl.tplNo : 0}/>
                   </ResultTemplateDiv>
                 ) : null}
               </div>
@@ -185,9 +722,43 @@ export default function SendMail({}) {
   );
 }
 
+  // ============================================================================================================
+  // ============================ CSS ====================================================================================
+  // ============================================================================================================
+
+const InputPrependDiv = styled.div`
+  max-width: 50%;
+  height: 38px;
+  overflow-x: auto;
+
+  &::-webkit-scrollbar {
+    width: 3px;
+    height: 5px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #2f3542;
+    border-radius: 3px;
+    background-clip: padding-box;
+    border: 2px solid transparent;
+  }
+  &::-webkit-scrollbar-track {
+    background-color: grey;
+    border-radius: 3px;
+    box-shadow: inset 0px 0px 2px white;
+  }
+`;
+const AddressbookListModal = styled.div`
+  position: absolute;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 1px 1px 2px #858796, -1px -1px 2px #858796;
+  z-index: 100;
+  left: ${(props) => props.left + 20}px;
+`;
 const InputSideButton = styled.button`
   height: 38px;
 `;
+
 const DivideHr = styled.hr`
   background-color: #d1d3e2;
 `;

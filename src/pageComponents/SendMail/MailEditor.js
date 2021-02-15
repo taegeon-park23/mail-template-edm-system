@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import styled from "styled-components";
 
-import ReactHtmlParser from "react-html-parser";
 import CustomEditor from "../../components/CustomEditor";
+import MailContent from "../SendMail/MailContent";
 
-export default function MailEditor({width}) {
-  const [editContent, setEditContent] = useState("<p></p>");
-  useEffect(() => {}, [editContent]);
+export default function MailEditor({width, content, setContent}) {
+  const [editContent, setEditContent] = useState(content ? content: "<p></p>");
+  useEffect(() => {
+  }, [editContent]);
   return (
     <ResultAreaDiv
       class="form-control"
@@ -16,14 +17,19 @@ export default function MailEditor({width}) {
       placeholder="Click here to reply" 
     >
       <CustomEditorWrapper width={width}>
-        <CustomEditor
-          childrenHtml={`<p>hello</p>`}
-          synkEditorToResult={(html) => {
-            setEditContent(html);
-          }}
-        />
+      <CustomEditor
+              classic={true}
+              data={`${content}`}
+              onChangeHandler={(event, editor)=>{
+                setContent(editor.getData());
+                setEditContent(editor.getData());
+              }}
+              onBlurHandler={(event, editor)=>{
+              }}
+              onFocusHnadler={()=>{}}
+            />
       </CustomEditorWrapper>
-      <ResultDiv id="mailResult">{ReactHtmlParser(editContent)}</ResultDiv>
+      <ResultDiv id="mailResult"><MailContent content={editContent}/></ResultDiv>
       <ResultDivOveray>&nbsp;</ResultDivOveray>
     </ResultAreaDiv>
   );
@@ -39,9 +45,15 @@ const ResultAreaDiv = styled.div`
   
 `;
 const CustomEditorWrapper = styled.div`
-width: ${props=>props.width}px;
-  p {
-    margin-bottom: 0px;
+  display: flex;
+  color: black;
+  .ck-editor__editable:not(.ck-editor__nested-editable) {
+    
+    width: inherit;
+    min-height: 200px;
+  }
+  .ck.ck-editor {
+    max-width: ${props=>props.width}px;
   }
 `;
 const ResultDivOveray = styled.div`

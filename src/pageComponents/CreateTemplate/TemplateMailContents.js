@@ -11,7 +11,7 @@ import { mailTemplateStore } from "../../stores/mailTemplateStore";
 
 //components
 import RowTable from "./TemplateMailContents/RowTable";
-export default function TemplateMailContents({ tableWidth, result }) {
+export default function TemplateMailContents({ tableWidth, result, tplNo }) {
   // 백그라운드 이미지, boxShadow 관련 상태 저장 store
   const globalState = useContext(globalStateStore);
   const backState = globalState.state;
@@ -26,18 +26,15 @@ export default function TemplateMailContents({ tableWidth, result }) {
 
   const [contents, setContents] = useState(mailState.contents);
   const [bgcolor, setBgcolor] = useState(mailState.bgcolor);
+  let backgrundSrc = `https://firebasestorage.googleapis.com/v0/b/bizdem-c4931.appspot.com/o/images%2F${tplNo?tplNo:"nope"}%2Fbackground.png?alt=media&time=${(new Date()).getTime()}`;
+
   useEffect(() => {
-    mailDispatch({ type: "UPDATE_BGCOLOR", value: { bgcolor: bgcolor } });
+    mailDispatch({ type: "UPDATE_BGCOLOR", value: { bgcolor: bgcolor, version: mailState.version+1 } });
   }, [bgcolor]);
-  // useEffect(() => {
-  //   if (result === true)
-  //     backDispatch({
-  //       type: "CONVERT_BOX_SHADOW",
-  //       value: { boxShadow: false }
-  //     });
-  // });
   const convertToHTML = () => {
     const resultDoc = document.getElementById("TemplateMailContentsTable");
+    resultDoc.style.background = `${backState.convertedImage}`;
+    resultDoc.style.backgroundImage = `${backState.convertedImage}`;
     const downloadHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Email Design</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <!--[if (mso 16)]>
     <style type="text/css">
@@ -58,13 +55,15 @@ export default function TemplateMailContents({ tableWidth, result }) {
     </o:OfficeDocumentSettings>
 </xml>
 <![endif]-->
-    </head><body background="${backState.convertedImage}" style="background-repeat:no-repeat">
+    </head><body>
     <!--[if gte mso 9]>
                <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
 				<v:fill type="tile" color="#fff1e6"></v:fill>
 			</v:background>
-		<![endif]-->
-    ${resultDoc.innerHTML}
+    <![endif]-->
+    <table border="0" cellspadding="0" cesllspacing="0" style="background-image:url('${backgrundSrc}'); background-repeat:no-repeat">
+    ${resultDoc ? resultDoc.children[0].innerHTML : ""}
+    </table>
     </body></html>`;
     const element = document.createElement("a");
     element.setAttribute(
@@ -168,7 +167,7 @@ export default function TemplateMailContents({ tableWidth, result }) {
 
   const onClickTempraryDownload = () => {
     temporaryDownloadCallback();
-  }
+  };
   return (
     <div id="TemplateMailContents" className="container-fluid">
       {result !== true ? (
@@ -238,11 +237,19 @@ export default function TemplateMailContents({ tableWidth, result }) {
             </ConvertButton>
           </MenuDiv>
           <ColorPickerDiv className="input-group mb-1">
+              <span className="btn btn-secondary border rounded mr-3 d-flex align-items-center">
+                W {backState.tableWidth}{", "}H {backState.tableHeight}
+              </span>
             <div className="input-group-prepend">
+              
               <span className="input-group-text" id="basic-addon1">
                 배경색
               </span>
-              <div id="cp4" className="input-group" title="Using color option">
+              <div
+                id="cp4"
+                className="input-group mr-3"
+                title="Using color option"
+              >
                 <ColorPickerInput
                   type="color"
                   className="form-control input-lg"
@@ -251,19 +258,24 @@ export default function TemplateMailContents({ tableWidth, result }) {
                   }}
                 />
               </div>
+              <button className="input-group-text" onClick={()=>{
+                  setBgcolor("");
+              }}>
+                  배경색지우기
+              </button>
             </div>
           </ColorPickerDiv>
         </Fragment>
       ) : null}
+
       <TemplateFormWrapper>
         <div id="TemplateMailContentsDiv">
-          <BackImageDiv>
-            &nbsp;
-            {/* <img
-              alt=""
-              src={backState.convertedImage}
-              style={{ width: "auto", height: "auto" }}
-            /> */}
+          <BackImageDiv id="backImageDiv">
+              <img
+                alt=""
+                src={backgrundSrc}
+                style={{ width: "auto", height: "auto" }}
+              />
           </BackImageDiv>
           <div id="TemplateMailContentsTable">
             <table
@@ -275,15 +287,12 @@ export default function TemplateMailContents({ tableWidth, result }) {
               <tbody>
                 <tr>
                   <td
-                    bgcolor={bgcolor}
+                    bgcolor={mailState.bgcolor}
                     style={{
-                      // backgroundColor: "#1a1a1a",
-                      backgroundImage: `${backState.convertedImage}`,
                       backgroundRepeat: "no-repeat",
                       backgroundPosition: "center",
-                      backgroundColor: `${bgcolor}`,
+                      backgroundColor: `${mailState.bgcolor}`,
                     }}
-                    background={`${backState.convertedImage}`}
                   >
                     {mailState.contents.body.contentRowTables.map(
                       (contentRowTale, i) => {
@@ -321,8 +330,12 @@ const MenuDiv = styled.div`
   }
 `;
 const ColorPickerDiv = styled.div`
-  width: 50px;
+  width: 100%;
+  span {
+    height: 30px;
+  }
 `;
+
 const ColorPickerInput = styled.input`
   width: 30px;
   height: 100%;
@@ -332,10 +345,10 @@ const ConvertButton = styled.button``;
 const TemplateFormWrapper = styled.div`
   display: flex;
   justify-content: center;
+  margin-top: 30px;
 `;
 const BackImageDiv = styled.div`
   position: absolute;
   width: ${(props) => props.width}px;
   height: ${(props) => props.height}px;
-  background: ${(props) => `no-repeat url("${props.image}")`};
 `;

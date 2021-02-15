@@ -1,7 +1,6 @@
 import React, { useContext, useRef, useEffect, useCallback } from "react";
 import ReactDOM from "react-dom";
 import styled from "styled-components";
-import DomToImage from "dom-to-image";
 
 import BoxEditor from "../../components/CustomEditor";
 import Modal from "../../components/Modal";
@@ -222,7 +221,6 @@ export default function TemplateBackground() {
               maxWidth={600}
               maxHeight={1000}
               createBox={createBox}
-              // onClose={onClickModalButton}
             />
           }
         />
@@ -244,9 +242,11 @@ export default function TemplateBackground() {
           onClose={onClickEditorModalButton}
           children={
             <BoxEditor
-              synkEditorToResult={synkEditorToResult}
-              // onClose={onClickEditorModalButton}
-              childrenHtml={state.html}
+              classic={true}
+              onChangeHandler={(event, editor)=>{synkEditorToResult(editor.getData())}}
+              onBlurHandler={()=>{}}
+              onFocusHnadler={()=>{}}
+              data={state.html}
             />
           }
         />
@@ -254,7 +254,7 @@ export default function TemplateBackground() {
 
       <TemplateFormWrapper>
         {/* [background div] */}
-        <BackMailDiv
+        <BackMailDiv id="backMailDiv"
           width={600}
           height={state.tableHeight}
           ref={TemplateFormTableRef}

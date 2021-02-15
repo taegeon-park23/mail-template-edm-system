@@ -1,12 +1,7 @@
 import React from "react";
-import styled from "styled-components";
 import { Link } from "react-router-dom";
 
 class MainSidebar extends React.Component {
-  constructor(props) {
-    super(props);
-  }
-
   renderClassName = (scale) => {
     if (scale === null) return "";
     if (scale === true) return "sidebar-scale-up";
@@ -21,6 +16,7 @@ class MainSidebar extends React.Component {
         id="accordionSidebar"
       >
         {/* Sidebar --- brand */}
+
         <Link
           className="sidebar-brand d-flex align-items-center justify-content-center"
           to="/"
@@ -33,7 +29,7 @@ class MainSidebar extends React.Component {
         <hr className="sidebar-divider my-0" />
 
         <li className="nav-item active">
-          <Link className="nav-link" to="/sendmail">
+          <Link className="nav-link" to="/sendmail/0">
             <i className="fas fa-fw fa-tachometer-alt">✉</i>
             <span>&nbsp;메일보내기</span>
           </Link>
@@ -52,7 +48,7 @@ class MainSidebar extends React.Component {
           </Link>
         </li>
         <li className="nav-item">
-          <Link className="nav-link" to="/createtemplate">
+          <Link className="nav-link" to="/createtemplate:0">
             <span>&nbsp;템플릿 생성</span>
           </Link>
         </li>
@@ -105,8 +101,10 @@ class MainSidebar extends React.Component {
           <Link className="nav-link" to="/questionandanswer">
             <span>&nbsp;Q&A</span>
           </Link>
-          <Link className="nav-link collapsed" to="/">
-            <span>&nbsp;계정관리</span>
+        </li>
+        <li className="nav-item">
+          <Link className="nav-link" to="/manageUsers">
+            <span>&nbsp;사용자 관리</span>
           </Link>
         </li>
       </ul>

@@ -6,8 +6,8 @@ import React, {
   useContext
 } from "react";
 import ReactDOM from "react-dom";
-import ReactHtmlParser from "react-html-parser";
 import ResizableRect from "react-resizable-rotatable-draggable";
+import DivContent from "./ResizableDiv/DivContent";
 import styled from "styled-components";
 import { globalStateStore } from "../../../stores/globalStateStore";
 export default function ResizableDiv({
@@ -20,12 +20,10 @@ export default function ResizableDiv({
   editBox,
   orderChangeBox,
   addImageBox,
-  setCanModifiableBox,
   id
 }) {
   const globalStateContext = useContext(globalStateStore);
   const globalState = globalStateContext.state;
-  const { dispatch } = globalStateContext;
 
   const modifiableRectInitialState = true;
   const intialState = {
@@ -45,13 +43,8 @@ export default function ResizableDiv({
   );
 
   useEffect(() => {
-    // console.log(setCanModifiableBox);
     if (!ResizableRectRef.current) return;
     const dom = ReactDOM.findDOMNode(ResizableRectRef.current);
-    // if (globalState.modifiableBoxesState === false) {
-    //   setModifiableRectState(true);
-    //   // return;
-    // }
     dom.addEventListener(
       "mousedown",
       (mouseEvent) => {
@@ -66,14 +59,11 @@ export default function ResizableDiv({
     if (ContentDiv.current !== null) {
       const childHtmlElements = ContentDiv.current.children;
       const childElements = Array.prototype.slice.call(childHtmlElements);
-      if (
-        childHtmlElements.length === 3 &&
-        childElements[0].innerText === "" &&
-        childElements[2].innerText === ""
-      ) {
-        childElements[0].style.marginBottom = 0;
-        childElements[2].style.marginBottom = 0;
-        childElements[1].style = `width:${state.width}px; height:${state.height}px; z-index:0;`;
+      const contentDivDom = ReactDOM.findDOMNode(ContentDiv.current);
+      const imgDom = contentDivDom.querySelector('img');
+      // debugger;
+      if(imgDom){
+        contentDivDom.innerHTML = `<img src=${imgDom.src} style="width:${state.width}px; height:${state.height}px">`;
         return;
       }
 
@@ -88,7 +78,6 @@ export default function ResizableDiv({
         const elementHeight = Math.ceil(element.offsetHeight + marginHeight);
         const elementWidth = Math.ceil(element.offsetWidth + marginWidth);
 
-        // console.log(elementWidth, elementHeight);
         maxWidth = maxWidth < elementWidth ? elementWidth : maxWidth;
         totalHeight += elementHeight;
 
@@ -138,7 +127,6 @@ export default function ResizableDiv({
   };
 
   const handleDrag = (deltaX, deltaY) => {
-    // ResizableRectRef.zoomable = false;
     setState({
       ...state,
       left: horizetalMovebyDrag(deltaX),
@@ -168,7 +156,7 @@ export default function ResizableDiv({
           }
         }}
       >
-        {ReactHtmlParser(state.content)}
+        <DivContent content={state.content}/>
       </div>
       {
         modifiableRectState === true &&
@@ -247,18 +235,6 @@ export default function ResizableDiv({
             />
           </Fragment>
         ) : null
-        // (
-        //   <div
-        //     style={contentStyle}
-        //     onMouseDown={(mouseEvent) => {
-        //       if (mouseEvent.button === 2) {
-        //         setModifiableRectState(!modifiableRectState);
-        //       }
-        //     }}
-        //   >
-        //     {ReactHtmlParser(state.content)}
-        //   </div>
-        // )
       }
     </Fragment>
   );
