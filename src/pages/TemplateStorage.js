@@ -4,21 +4,35 @@ import dateFomrat from "../dateFormat";
 import qs from "qs";
 
 export default function TemplateStorage({ history, location }) {
-  // query
+  // ============================================================================================================
+  // ==================  query =====================================================================================
+  // ============================================================================================================
+  // 페이지 쿼리
   const query = qs.parse(location.search, {
     ignoreQueryPrefix: true,
   });
-  const _searchInput = query.searchInput ? query.searchInput : "";
-  const _searchIndex = query.searchIndex ? query.searchIndex : "0";
+  const _searchInput = query.searchInput ? query.searchInput : "";    // 검색 string
+  const _searchIndex = query.searchIndex ? query.searchIndex : "0";   // 검색 페이지 page
 
-  // const { state, dispatch } = globalState;
-  const [updateCount, setUpdateCount] = useState(0);
-  const [templates, setTemplates] = useState([]);
-  const [searchInput, setSearchInput] = useState(_searchInput);
-  const [pageCount, setPageCount] = useState(
+
+
+
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+  const [updateCount, setUpdateCount] = useState(0);            // number, 페이지 re-rendering state
+  const [templates, setTemplates] = useState([]);               // [{}], 템플릿 조회결과 받아온 template list state
+  const [searchInput, setSearchInput] = useState(_searchInput); // string, 제목/내용 검색을 위한 state
+  const [pageCount, setPageCount] = useState(                   // number, 페이지에서 한번에 보여줄 레코드를 설정하는 state
     templates.length > 0 ? templates[0].pageCount : 10
   );
 
+
+
+
+  // ============================================================================================================
+  // ===================== useEffect ===================================================================================
+  // ============================================================================================================
   useEffect(() => {
     selectMailTemplateAll({
       tplSub: _searchInput,
@@ -26,6 +40,14 @@ export default function TemplateStorage({ history, location }) {
     });
   }, [updateCount, _searchIndex, _searchInput]);
 
+
+
+
+  // ============================================================================================================
+  // ===================== funtions ===================================================================================
+  // ============================================================================================================
+  // 레코드 전체 선택 set true ol false
+  // args = e(event), flag(boolean)
   const setCheckAll = (e = null, flag = false) => {
     let checkFlag = false;
     if (flag) checkFlag = flag;
@@ -36,6 +58,8 @@ export default function TemplateStorage({ history, location }) {
     });
   };
 
+  // 선택된 record 배열로 리턴, 
+  // return = checkedInputValues ["1","2","3"]
   const getCheckedTplNoArr = () => {
     const inputArr = document.querySelectorAll("input[type=checkbox]");
     const checkedInputValues = [];
@@ -46,65 +70,9 @@ export default function TemplateStorage({ history, location }) {
     return checkedInputValues;
   };
 
-  const selectMailTemplateAll = async (tpl = {}) => {
-    const url = "/user/selectMailTemplateAll";
-    try {
-      const response = await axios.post(
-        url,
-        { ...tpl },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-
-      if (response.data.status === "OK") {
-        if (response.data.data === null) {
-          alert("조회되는 템플릿이 없습니다.");
-          return;
-        }
-        setTemplates(response.data.data);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
-
-  const deleteMailTemplate = async () => {
-    const url = "/user/deleteMailTemplate";
-    try {
-      const response = await axios.post(
-        url,
-        { tplNos: getCheckedTplNoArr() },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
-      if (response.data.status === "OK") {
-        alert(response.data.message);
-        history.push("/templatestorage");
-        setCheckAll(null, false);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
-
+  // pages 생성 함수, 
+  // args = recordCount(number), pageCount(number) 
+  // return = pageAnchors [<a><a/>]
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
     pages = pages < 1 ? 1 : Math.ceil(pages);
@@ -180,6 +148,9 @@ export default function TemplateStorage({ history, location }) {
     return pageAnchors;
   };
 
+  // 테이블 공백칸 생성
+  // args = length(number), tdCount(number) 
+  // return = emptyTrs([<td></td>])
   const getEmptySpace = (length, tdCount) => {
     const emptyTds = [];
     const emptyTrs = [];
@@ -192,6 +163,93 @@ export default function TemplateStorage({ history, location }) {
     return emptyTrs;
   };
 
+
+
+  
+// ============================================================================================================
+// ===================== axios apis ===================================================================================
+// ============================================================================================================
+// select, 메일 템플릿 전체 조회 api
+const selectMailTemplateAll = async (tpl = {}) => {
+    const url = "/user/selectMailTemplateAll";
+    try {
+      const response = await axios.post(
+        url,
+        { ...tpl },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+
+      if (response.data.status === "OK") {
+        if (response.data.data === null) {
+          alert("조회되는 템플릿이 없습니다.");
+          return;
+        }
+        setTemplates(response.data.data);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  // delete, 메일 템플릿 삭제 api
+  const deleteMailTemplate = async () => {
+    const url = "/user/deleteMailTemplate";
+    try {
+      const response = await axios.post(
+        url,
+        { tplNos: getCheckedTplNoArr() },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+      if (response.data.status === "OK") {
+        alert(response.data.message);
+        history.push("/templatestorage");
+        setCheckAll(null, false);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+
+
+
+  // ============================================================================================================
+  // ============================ HTML ====================================================================================
+  // ============================================================================================================
   return (
     <div className="container-fluid">
       <main>

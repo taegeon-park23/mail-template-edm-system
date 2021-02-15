@@ -1,22 +1,35 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 export default function AddImageModal({ synkEditorToResult, onlySrc, image }) {
   
-  const [link, setLink] = useState(image ? image.link : "#");
-  const [imageSrc, setImageSrc] = useState(image ? image.src : "#");
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+  const [link, setLink] = useState(image ? image.link : "#");         // string, 앵커 태그 href 속성을 위한 state
+  const [imageSrc, setImageSrc] = useState(image ? image.src : "#");  // string, 이미지 태그 src 속성을 위한 state
 
+
+
+
+  // ============================================================================================================
+  // ===================== funtions ===================================================================================
+  // ============================================================================================================
+  // 이미지 지정 함수
   const setImage = (imageSrc) => {
-    if (onlySrc === true) {
-      synkEditorToResult({ src: `${imageSrc}`, link: link });
-    } else {
+    if (onlySrc === true) { //onlySrc props가 true라면, (tdClass에서 이미지를 지정한 것임으로) 
+      synkEditorToResult({ src: `${imageSrc}`, link: link }); // tdClass에서 사용하는 image 객체를 생성하여 synk
+    } else {  // onlySrc props를 지정하지 않았다면, 배경화면에서 지정한 것임으로, 이미지를 가지는 html 태그 문자열을 작성하여 리턴
       synkEditorToResult(
         `<p style="margin:0"></p><img src='${imageSrc}'/><p style="margin:0"></p>`
       );
     }
   }
 
+
+  // 붙여넣기 이벤트 핸들러
+  // args = e(PasteEvent)
+  // return = undefined
   const onPasteOnCard = (e) => {
-    // debugger;
     const items = e.clipboardData.items;
     let length = e.clipboardData.items.length;
 
@@ -30,11 +43,18 @@ export default function AddImageModal({ synkEditorToResult, onlySrc, image }) {
       reader.readAsDataURL(blob);
     }
   };
+
+  // dragOver 이벤트 핸들러
+  // args = e(DragOverEvent)
+  // return = undefined
   const onDragOverOnCard = (e) => {
     e.stopPropagation();
     e.preventDefault();
   };
 
+  // drop 이벤트 핸들러
+  // args = e(DropEvent)
+  // return = undefined
   const onDropOnCard = (e) => {
     e.stopPropagation();
     e.preventDefault();
@@ -52,6 +72,14 @@ export default function AddImageModal({ synkEditorToResult, onlySrc, image }) {
     }
   };
 
+
+
+
+
+
+  // ============================================================================================================
+  // ============================ HTML ====================================================================================
+  // ============================================================================================================
   return (
     <div
       className="card bg-dark text-white"

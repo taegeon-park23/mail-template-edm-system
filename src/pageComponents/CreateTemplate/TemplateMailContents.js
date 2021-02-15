@@ -11,7 +11,7 @@ import { mailTemplateStore } from "../../stores/mailTemplateStore";
 
 //components
 import RowTable from "./TemplateMailContents/RowTable";
-export default function TemplateMailContents({ tableWidth, result }) {
+export default function TemplateMailContents({ tableWidth, result, tplNo }) {
   // 백그라운드 이미지, boxShadow 관련 상태 저장 store
   const globalState = useContext(globalStateStore);
   const backState = globalState.state;
@@ -26,6 +26,8 @@ export default function TemplateMailContents({ tableWidth, result }) {
 
   const [contents, setContents] = useState(mailState.contents);
   const [bgcolor, setBgcolor] = useState(mailState.bgcolor);
+  let backgrundSrc = `https://firebasestorage.googleapis.com/v0/b/bizdem-c4931.appspot.com/o/images%2F${tplNo?tplNo:"nope"}%2Fbackground.png?alt=media&time=${(new Date()).getTime()}`;
+
   useEffect(() => {
     mailDispatch({ type: "UPDATE_BGCOLOR", value: { bgcolor: bgcolor, version: mailState.version+1 } });
   }, [bgcolor]);
@@ -53,13 +55,15 @@ export default function TemplateMailContents({ tableWidth, result }) {
     </o:OfficeDocumentSettings>
 </xml>
 <![endif]-->
-    </head><body style="background-repeat:no-repeat">
+    </head><body>
     <!--[if gte mso 9]>
                <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
 				<v:fill type="tile" color="#fff1e6"></v:fill>
 			</v:background>
-		<![endif]-->
-    ${resultDoc.innerHTML}
+    <![endif]-->
+    <table border="0" cellspadding="0" cesllspacing="0" style="background-image:url('${backgrundSrc}'); background-repeat:no-repeat">
+    ${resultDoc ? resultDoc.children[0].innerHTML : ""}
+    </table>
     </body></html>`;
     const element = document.createElement("a");
     element.setAttribute(
@@ -254,6 +258,11 @@ export default function TemplateMailContents({ tableWidth, result }) {
                   }}
                 />
               </div>
+              <button className="input-group-text" onClick={()=>{
+                  setBgcolor("");
+              }}>
+                  배경색지우기
+              </button>
             </div>
           </ColorPickerDiv>
         </Fragment>
@@ -262,14 +271,11 @@ export default function TemplateMailContents({ tableWidth, result }) {
       <TemplateFormWrapper>
         <div id="TemplateMailContentsDiv">
           <BackImageDiv id="backImageDiv">
-            &nbsp;
-            {backState.convertedImage !== "#" ? (
               <img
                 alt=""
-                src={backState.convertedImage}
+                src={backgrundSrc}
                 style={{ width: "auto", height: "auto" }}
               />
-            ) : null}
           </BackImageDiv>
           <div id="TemplateMailContentsTable">
             <table

@@ -3,12 +3,31 @@ import React, {useState} from "react";
 import "./Login.css";
 import axios from "axios";
 
-const MailResponse = ({match}) => {
-    const {number} = match.params;
-    const [receiverEmail, setReceiverEmail] = useState("");
-    const [receiverName, setReceiverName] = useState("");
-    const [receiverPhone, setReceiverPhone] = useState("");
+const MailResponse = ({match, history}) => {
+  // ============================================================================================================
+  // ==================  match =====================================================================================
+  // ============================================================================================================
+    const {number} = match.params;      // number = sendRecNo
 
+  
+
+
+
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+    const [receiverEmail, setReceiverEmail] = useState("");     // string, 응답자 email
+    const [receiverName, setReceiverName] = useState("");       // string, 응답자 이름
+    const [receiverPhone, setReceiverPhone] = useState("");     // string, 응답자 전화번호
+
+
+
+
+
+
+  // ============================================================================================================
+  // ============================ HTML ====================================================================================
+  // ============================================================================================================
     return (
       <div className="sign-in">
         <div className="text-center shadow p-3 mb-5 bg-white rounded">
@@ -65,7 +84,13 @@ const MailResponse = ({match}) => {
                 "receiverName": receiverName
                 }
                   ,{headers:{ "Content-Type":'application/json'}}
-                );
+                ).catch(function(error) {
+        
+                  if(error.response.status===403) {
+                    localStorage.removeItem("jwtToken");
+                    history.push("/login");
+                  }
+                });
                 alert(response.data.message);
               } catch(err) {
                 alert("서버와 연결이 불안정합니다.");

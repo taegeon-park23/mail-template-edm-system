@@ -3,7 +3,9 @@ import React, {useEffect, useState, useContext} from 'react'
 import styled from "styled-components";
 import { globalStateStore } from "../../stores/globalStateStore";
 
-export default function RegisterQAAModal({id, onClose, setUpdateCountQa}) {
+
+export default function RegisterQAAModal({id, onClose, setUpdateCountQa, history}) {
+
 
     const globalState = useContext(globalStateStore);
     const { state } = globalState;
@@ -48,7 +50,13 @@ export default function RegisterQAAModal({id, onClose, setUpdateCountQa}) {
             }, {headers : {
                 "Content-Type" : "application/json",
                 "x-auth-token" : localStorage.getItem('jwtToken')
-            }});
+            }}).catch(function(error) {
+        
+                if(error.response.status===403) {
+                  localStorage.removeItem("jwtToken");
+                  history.push("/login");
+                }
+              });
 
             if (response.data.status === "OK") {
                 alert(response.data.message);
@@ -58,6 +66,7 @@ export default function RegisterQAAModal({id, onClose, setUpdateCountQa}) {
                 
             } else if(response.data.status === "NOT_FOUND") {
                 localStorage.removeItem('jwtToken');
+                history.push("/login");
                 alert(response.message);
 
             }

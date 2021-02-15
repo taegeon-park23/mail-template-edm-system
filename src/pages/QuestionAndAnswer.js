@@ -1,81 +1,52 @@
-import React, { useState, useContext, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Modal from "../components/Modal";
 import QAADetailModal from "../pageComponents/QuestionAndAnswer/QAADetailModal";
 import RegisterQAAModal from "../pageComponents/QuestionAndAnswer/RegisterQAAModal";
 import axios from 'axios';
 import qs from "qs";
 import dateFormat from "../../src/dateFormat";
+
 export default function QuestionAndAnswer({ history, location }) {
-  // query
+  // ============================================================================================================
+  // ==================  query =====================================================================================
+  // ============================================================================================================
+  // 페이지 쿼리
   const query = qs.parse(location.search, {
     ignoreQueryPrefix: true,
   });
-  const _searchInput = query.searchInput ? query.searchInput : "";
-  const _searchStartDate = query.searchStartDate
+  const _searchInput = query.searchInput ? query.searchInput : "";  // 검색 string
+  const _searchStartDate = query.searchStartDate                    // 검색 날짜 string(처음날짜)
   ? query.searchStartDate
-  : "";
-  const _searchEndDate = query.searchEndDate
+  : "";                                                             // ~
+  const _searchEndDate = query.searchEndDate                        // 검색 날짜 string(마지막날짜)
   ? query.searchEndDate
   : "";
-  const _searchIndex = query.searchIndex ? query.searchIndex : "0";
+  const _searchIndex = query.searchIndex ? query.searchIndex : "0"; // 검색 페이지 index 
   
-  const [detailModalStatus, setDetailModalStatus] = useState(false);
-  const [registerModalStatus, setRegisterModalStatus] = useState(false);
-  const [id, setId] = useState(0);
-  const [qaList, setQaList] = useState([]);
-  const [updateCount, setUpdateCount] = useState(0);
-  const [searchInput, setSearchInput] = useState(_searchInput);
-  const [startDate, setStartDate] = useState(_searchStartDate);
-  const [endDate, setEndDate] = useState(_searchEndDate);
-  const [pageCount, setPageCount] = useState(qaList.length > 0 ? qaList[0].pageCount : 10);
+
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+  const [detailModalStatus, setDetailModalStatus] = useState(false);                  // boolean, QAADetailModal(Q&A 상세 조회) on&off를 위한 state
+  const [registerModalStatus, setRegisterModalStatus] = useState(false);              // boolean, RegisterQAAModal(Q&A 등록) on&off를 위한 state
+  const [id, setId] = useState(0);                                                    // number, Q&A id를 통한 상세 조회를 위한 state
+  const [qaList, setQaList] = useState([]);                                           // [{}], Q&A 조회 결과받는 list state
+  const [updateCount, setUpdateCount] = useState(0);                                  // number, 페이지 re-rendering state
+  const [searchInput, setSearchInput] = useState(_searchInput);                       // string, 제목 검색을 위한 state
+  const [startDate, setStartDate] = useState(_searchStartDate);                       // string, 날짜 검색(시작 날짜)을 위한 state
+  const [endDate, setEndDate] = useState(_searchEndDate);                             // string, 날짜 검색(마지막 날짜)을 위한 state
+  const [pageCount, setPageCount] = useState(qaList.length>0?qaList[0].pageCount:10); // number, 페이지에서 한번에 보여줄 레코드를 설정하는 state
 
 
-  const onClickregisterModalCallback = useCallback((no)=>{
-    setRegisterModalStatus(true);
-    setId(no)
-  });
-
-  const onClickQAADetailModalCallback = useCallback((no)=>{
-    setDetailModalStatus(true);
-    setId(no)
-  });
 
 
-   //call all qa List
-   const selectQaAll = async (qaInfo = {}) => {
-     console.log(qaInfo)
-    const url = "/user/qa/selectQaAll";
-    try {
-      const response = await axios.post(
-        url,
-         {...qaInfo},
-         {headers: {
-          "Content-Type" : "application/json",
-          "x-auth-token" : localStorage.getItem('jwtToken')
 
-          }
-        }
-      );
 
-      if (response.data.status === 'OK') {
-        if(response.data.data === null) {
-          alert("조회되는 QNA가 없습니다.");
-          return;
-        }
-        setQaList(response.data.data);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-      } else {
-        alert(response.data.message);
-      }
-    } catch(err) {
-      console.log(err);
-      alert("서버와의 접근이 불안정합니다.");
-    }
+  // ============================================================================================================
+  // ===================== useEffect ===================================================================================
+  // ============================================================================================================
+  // 페이지 load 후 진입 점, 페이지 전체 조회
 
-  }
-
-  // call selectQaAll API
   useEffect(()=>{
     selectQaAll({
       "qaTitle": _searchInput,
@@ -85,6 +56,16 @@ export default function QuestionAndAnswer({ history, location }) {
     });
   },[updateCount, _searchInput, _searchStartDate, _searchEndDate, _searchIndex])
 
+
+
+
+
+   // ============================================================================================================
+  // ===================== funtions ===================================================================================
+  // ============================================================================================================
+  // pages 생성 함수, 
+  // args = recordCount(number), pageCount(number) 
+  // return = pageAnchors [<a><a/>]
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
     pages = pages < 1 ? 1 : Math.ceil(pages);
@@ -146,6 +127,9 @@ export default function QuestionAndAnswer({ history, location }) {
     return pageAnchors;
   };
 
+  // 테이블 공백칸 생성 함수
+  // args = length(number), tdCount(number) 
+  // return = emptyTrs([<td></td>])
   const getEmptySpace = (length, tdCount) => {
       const emptyTds = [];
       const emptyTrs = [];
@@ -162,6 +146,75 @@ export default function QuestionAndAnswer({ history, location }) {
       return emptyTrs;
   }
 
+
+
+
+
+  // ============================================================================================================
+  // ==================  callback =====================================================================================
+  // ============================================================================================================
+  // Q&A 등록 모달을 on 시키고, id를 할당시키기 위한 callback
+  // args = no(number)
+  // return = undefined
+  const onClickregisterModalCallback = useCallback((no)=>{
+    setRegisterModalStatus(true);
+    setId(no)
+  });
+
+  // Q&A 상세 모달을 on시키고, id를 할당시키기 위한 callback
+  // args = no(number)
+  // return = undefined
+  const onClickQAADetailModalCallback = useCallback((no)=>{
+    setDetailModalStatus(true);
+    setId(no)
+  });
+
+
+  
+  
+  
+  
+  // ============================================================================================================
+  // ===================== axios apis ===================================================================================
+  // ============================================================================================================
+  // select, 질의응답 전체(검색) 조회 API
+   const selectQaAll = async (qaInfo = {}) => {
+    const url = "/user/selectQaAll";
+    try {
+      const response = await axios.post(url, {...qaInfo}, {headers: {
+        "Content-Type" : "application/json",
+        "x-auth-token" : localStorage.getItem('jwtToken')
+
+      }}).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+
+      if (response.data.status === 'OK') {
+        if(response.data.data === null) {
+          alert("조회되는 그룹이 없습니다."); return;
+        }
+        setQaList(response.data.data);
+      } else if(response.data.status === "NOT_FOUND"){
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem('jwtToken');
+        history.push('/login');
+    }
+    } catch(err) {
+      alert("서버와의 접근이 불안정합니다.")
+    }
+
+  }
+
+
+
+
+ // ============================================================================================================
+  // ============================ HTML ====================================================================================
+  // ============================================================================================================
   return (
     <div className="container-fluid">
       {detailModalStatus === true ? (
@@ -177,6 +230,7 @@ export default function QuestionAndAnswer({ history, location }) {
                 setDetailModalStatus(false);
               }}
               onChangeId={() => {}}
+              history={history}
             />
           }
         />
@@ -195,7 +249,7 @@ export default function QuestionAndAnswer({ history, location }) {
               setUpdateCountQa={() => {
                 setUpdateCount(updateCount+1);
               }}
-
+              history={history}
             />
           }
         />

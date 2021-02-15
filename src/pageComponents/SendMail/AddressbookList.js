@@ -2,7 +2,7 @@ import React,{useState, useEffect} from 'react';
 import styled from "styled-components";
 import axios from "axios";
 
-export default function AddressboookList({addrNm, receiverList, setReciver, setReceiverList}) {
+export default function AddressboookList({addrNm, receiverList, setReciver, setReceiverList, history}) {
     const [addressbooks, setAddressbooks] = useState([]);
 
     useEffect(()=>{
@@ -29,6 +29,7 @@ export default function AddressboookList({addrNm, receiverList, setReciver, setR
             } else if(response.data.status === "NOT_FOUND"){
                 alert("인증되지 않은 접근입니다.");
                 localStorage.removeItem('jwtToken');
+                history.push('/login');
             }
           } catch(err) {
             alert("서버와의 접근이 불안정합니다.");

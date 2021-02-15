@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
-export default function MailResponseList({ onClose, sendRecNo }) {
+export default function MailResponseList({ onClose, sendRecNo, history }) {
   const [mailResponseList, setMailResponseList] = useState([]);
   const [updateCount, setUpdateCount] = useState(0);
   const [searchIndex, setSearchIndex] = useState("0");
@@ -30,7 +30,13 @@ export default function MailResponseList({ onClose, sendRecNo }) {
             "x-auth-token": localStorage.getItem("jwtToken"),
           },
         }
-      );
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
 
       if (response.data.status === "OK") {
         if (response.data.data === null) {
@@ -41,6 +47,7 @@ export default function MailResponseList({ onClose, sendRecNo }) {
       } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
         localStorage.removeItem("jwtToken");
+        history.push("/login");
       } else {
         alert(response.data.message);
       }
@@ -48,6 +55,49 @@ export default function MailResponseList({ onClose, sendRecNo }) {
       alert("서버와의 접근이 불안정합니다.");
     }
   };
+
+  const selectMailResponseForExcel = async (mailResponse = {}) => {
+    const url = "/user/selectMailResponseForExcel";
+    try {
+      const response = await axios.post(
+        url,
+        { ...mailResponse },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+          responseType: "blob"
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+
+      const blob = new Blob([response.data], 
+        {type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64"}
+      );
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = '참석자.xlsx';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+  const s2ab = (s) => {
+    const buf = new ArrayBuffer(s.length);
+    const view = new Uint8Array(buf);
+    for (var j=0; j!==s.length; ++j) view[j] = s.charCodeAt(j) & 0xFF;
+    return buf;
+  }
 
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
@@ -155,6 +205,17 @@ export default function MailResponseList({ onClose, sendRecNo }) {
             >
               <span role="img" aria-label="search">
                 🔍
+              </span>
+            </button>
+            <button
+              className="btn btn-primary mr-3"
+              type="button"
+              onClick={() => {
+                selectMailResponseForExcel({"sendRecNo":sendRecNo});
+              }}
+            >
+              <span role="img" aria-label="search">
+                🎫 엑셀
               </span>
             </button>
           </div>

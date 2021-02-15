@@ -7,7 +7,9 @@ import TdContent from "../pageComponents/CreateTemplate/TemplateMailContents/Row
 
 
 export default function SendItems({ history, location }) {
-  // query
+  // ============================================================================================================
+  // ================== query =====================================================================================
+  // ============================================================================================================
   const query = qs.parse(location.search, {
     ignoreQueryPrefix: true,
   });
@@ -20,16 +22,29 @@ export default function SendItems({ history, location }) {
     : "";
     const _searchIndex = query.searchIndex ? query.searchIndex : "0";
   
-  // state
-  const [updateCount, setUpdateCount] = useState(0);
-  const [searchInput, setSearchInput] = useState(_searchInput);
-  const [startDate, setStartDate] = useState(_searchStartDate);
-  const [endDate, setEndDate] = useState(_searchEndtDate);
-  const [sendItemList, setSendItemList] = useState([]);
-  const [pageCount, setPageCount] = useState(
+
+
+
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+  const [updateCount, setUpdateCount] = useState(0);              // number, 페이지 re-rendering를 위한 state
+  const [searchInput, setSearchInput] = useState(_searchInput);   // string, 제목/받는사람 검색을 위한 state
+  const [startDate, setStartDate] = useState(_searchStartDate);   // string, 날짜 검색을 위한 state
+  const [endDate, setEndDate] = useState(_searchEndtDate);        // string, 날짜 검색을 위한 state
+  const [sendItemList, setSendItemList] = useState([]);           // [{}], select로 받은 메일전송기록 리스트 state
+  const [pageCount, setPageCount] = useState(                     // string, 페이지에서 한번에 보여줄 레코드를 설정하는 state
     sendItemList.length > 0 ? sendItemList[0].pageCount : 10
   );
 
+
+
+
+
+  // ============================================================================================================
+  // ===================== useEffect ===================================================================================
+  // ============================================================================================================
+  // 페이지 load 후 진입 점, 페이지 전체 조회
   useEffect(() => {
     selectSendRecordAll(
       {
@@ -41,37 +56,16 @@ export default function SendItems({ history, location }) {
     );
   }, [updateCount, _searchInput, _searchStartDate, _searchEndtDate, _searchIndex]);
 
-  const selectSendRecordAll = async (sendRecord={}) => {
-    const url = "/user/selectSendRecordAll";
-    try {
-      const response = await axios.post(
-        url,
-        {...sendRecord},
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-auth-token": localStorage.getItem("jwtToken"),
-          },
-        }
-      );
 
-      if (response.data.status === "OK") {
-        if (response.data.data === null) {
-          alert("조회되는 템플릿이 없습니다.");
-          return;
-        }
-        setSendItemList(response.data.data);
-      } else if (response.data.status === "NOT_FOUND") {
-        alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem("jwtToken");
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      alert("서버와의 접근이 불안정합니다.");
-    }
-  };
 
+
+
+  // ============================================================================================================
+  // ===================== funtions ===================================================================================
+  // ============================================================================================================
+  // pages 생성 함수, 
+  // args = recordCount(number), pageCount(number) 
+  // return = pageAnchors [<a><a/>]
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
     pages = pages < 1 ? 1 : Math.ceil(pages);
@@ -143,6 +137,9 @@ export default function SendItems({ history, location }) {
     return pageAnchors;
   };
 
+  // 테이블 공백칸 생성 함수
+  // args = length(number), tdCount(number) 
+  // return = emptyTrs([<td></td>])
   const getEmptySpace = (length, tdCount) => {
     const emptyTds = [];
     const emptyTrs = [];
@@ -157,6 +154,57 @@ export default function SendItems({ history, location }) {
     return emptyTrs;
   };
 
+
+
+
+  // ============================================================================================================
+  // ===================== axios apis ===================================================================================
+  // ============================================================================================================
+  // select, 발송이력 전체 (검색) 조회 API
+  const selectSendRecordAll = async (sendRecord={}) => {
+    const url = "/user/selectSendRecordAll";
+    try {
+      const response = await axios.post(
+        url,
+        {...sendRecord},
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-auth-token": localStorage.getItem("jwtToken"),
+          },
+        }
+      ).catch(function(error) {
+        
+        if(error.response.status===403) {
+          localStorage.removeItem("jwtToken");
+          history.push("/login");
+        }
+      });
+
+      if (response.data.status === "OK") {
+        if (response.data.data === null) {
+          alert("조회되는 템플릿이 없습니다.");
+          return;
+        }
+        setSendItemList(response.data.data);
+      } else if (response.data.status === "NOT_FOUND") {
+        alert("인증되지 않은 접근입니다.");
+        localStorage.removeItem("jwtToken");
+        history.push("/login");
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      alert("서버와의 접근이 불안정합니다.");
+    }
+  };
+
+
+
+
+  // ============================================================================================================
+  // ============================ HTML ====================================================================================
+  // ============================================================================================================
   return (
     <div className="container-fluid">
       <main>
