@@ -41,7 +41,7 @@ export default function Notification({ history, location }) {
   const [pageCount, setPageCount] = useState(notices.length>0?notices[0].pageCount:10);   // number, 페이지에서 한번에 보여줄 레코드를 설정하는 state
   const [role, setRole] = useState(localStorage.getItem('role'));
   const [registerModalStatus, setRegisterModalStatus] = useState(false);
-
+  const [id, setId] = useState("");
 
 
 
@@ -148,7 +148,8 @@ export default function Notification({ history, location }) {
       return emptyTrs;
   }
 
-  const onClickNotificationDetailModallCallback = useCallback((no)=>{
+  const onClickNotificationDetailModallCallback = useCallback((id)=>{
+    setId(id);
     setModalStatus(true);
   });
 
@@ -216,10 +217,11 @@ export default function Notification({ history, location }) {
   // ============================================================================================================
     return(
       <div className="container-fluid">
-        {modalStatus === true ?<Modal
+        {modalStatus === true ?<Modal1
             visible={modalStatus}
             onClose={()=>{setModalStatus(false)}}
             children={<NotificationDetailModal
+              id={id}
               onClose={()=>{setModalStatus(false)}} 
               onChangeId={()=>{}}
               history={history}
