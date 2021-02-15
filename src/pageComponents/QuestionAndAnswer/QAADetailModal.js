@@ -31,7 +31,7 @@ export default function QAADetailModal({id, onClose, onChangeId}) {
 
 
     const selectOneQa = async () => {
-        const url = "http://localhost:8080/qa/selectOneQa";
+        const url = "/user/qa/selectOneQa";
         try {
           const response =
           await axios.post(url, 
@@ -54,7 +54,7 @@ export default function QAADetailModal({id, onClose, onChangeId}) {
                 const regDate = response.data.data.regDate;
                 const editDate = response.data.data.editDate;
                 setQaDate(!editDate ? regDate : editDate);
-                setQaRegNm(response.data.data.qaRegNm);
+                setQaRegNm(response.data.data.qaUserNm);
             } else if(response.data.status === "NOT_FOUND"){
                 alert("인증되지 않은 접근입니다.");
                 localStorage.removeItem('jwtToken');

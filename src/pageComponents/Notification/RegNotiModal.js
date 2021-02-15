@@ -3,23 +3,15 @@ import React, {useEffect, useState, useContext} from 'react'
 import styled from "styled-components";
 import { globalStateStore } from "../../stores/globalStateStore";
 
-export default function RegisterQAAModal({id, onClose, setUpdateCountQa}) {
+export default function RegNotiModal({id, onClose, setUpdateCountNotice}) {
 
     const globalState = useContext(globalStateStore);
     const { state } = globalState;
     const [updateCount, setUpdateCount] = useState(0);
 
-    const [qaNo, setQaNo] = useState();
-    const [qaTitle, setQaTitle] = useState();
-    const [qaContent, setQaContent] = useState();
-    const [qaAttach, setQaAttach] = useState();
-    const [qaGroup, setQaGroup] = useState('템플릿 관련');
-    const [qaReplyContent, setQaReplyContent] = useState();
-    const [useStatus, setUseStatus] = useState();
-    const [regDate, setRegDate] = useState();
-    const [regId, setRegId] = useState();
-    const [editDate, setEditDate] = useState();
-    const [editor, setEditor] = useState();
+    const [noticeNo, setNoticeNo] = useState(id);
+    const [noticeTitle, setNoticeTitle] = useState();
+    const [noticeContent, setNoticeContent] = useState();
 
 
     useEffect(()=>{
@@ -28,22 +20,15 @@ export default function RegisterQAAModal({id, onClose, setUpdateCountQa}) {
 
 
 
-    const saveQaInsert = async (e) => {
-        const url = "/user/qa/save";
+    const saveNoticeInsert = async (e) => {
+        const url = "/admin/notice/save";
 
         try {
             const response = await axios.post(url, {
-                "qaNo" : qaNo,
-                "qaTitle" : qaTitle,
-                "qaContent" : qaContent,
-                "qaAttach" : 0,
-                "qaGroup" : qaGroup,
-                "qaReplyContent" : qaReplyContent,
-                "useStatus" : 0,
-                "regDate" : null,
-                "regId" : null,
-                "editDate" : null,
-                "editor" : null
+                
+                "noticeTitle" : noticeTitle,
+                "noticeContent" : noticeContent,
+             
                 
             }, {headers : {
                 "Content-Type" : "application/json",
@@ -52,8 +37,7 @@ export default function RegisterQAAModal({id, onClose, setUpdateCountQa}) {
 
             if (response.data.status === "OK") {
                 alert(response.data.message);
-                setUpdateCount(updateCount+1);
-                setUpdateCountQa();
+                setUpdateCountNotice();
                 onClose();
                 
             } else if(response.data.status === "NOT_FOUND") {
@@ -63,6 +47,7 @@ export default function RegisterQAAModal({id, onClose, setUpdateCountQa}) {
             }
 
         } catch(err) {
+            console.log(err);
             alert("서버와의 연결이 불안정합니다.");
 
         }
@@ -75,31 +60,18 @@ export default function RegisterQAAModal({id, onClose, setUpdateCountQa}) {
 
     return(
         <div>
-            <h3>Q&A 등록</h3>
+            <h3>공지사항 등록</h3>
             <hr/>
             <table className="table table-bordered">
                 <tbody>
-                    <tr>
-                        <LeftTd>구분</LeftTd>
-                        <RightTd><select 
-                                    onChange={(e)=>{setQaGroup(e.target.value)}}
-                                    value={qaGroup} defaultValue="1">
-                                <option value="템플릿 관련" selected>템플릿 관련</option>
-                                <option value="시스템 문의" selected>시스템 문의</option>
-                                <option value="회원 정보" selected>회원 정보</option>
-                                <option value="기타" selected>기타</option>
-                            </select>
-                            
-                            </RightTd>
-                    </tr>
                     <tr>
                         <LeftTd>제목</LeftTd>
                         <RightTd>
                             <input
                                 type="text"
                                 className="form-control"
-                                onChange={(e)=>{setQaTitle(e.target.value)}}
-                                value={qaTitle}
+                                onChange={(e)=>{setNoticeTitle(e.target.value)}}
+                                value={noticeTitle}
                             />
                         </RightTd>
                     </tr>
@@ -109,8 +81,8 @@ export default function RegisterQAAModal({id, onClose, setUpdateCountQa}) {
                             <input
                                 type="text"
                                 className="form-control"
-                                onChange={(e)=>{setQaContent(e.target.value)}}
-                                value={qaContent}
+                                onChange={(e)=>{setNoticeContent(e.target.value)}}
+                                value={noticeContent}
                             />
                         </RightTd>
                     </tr>
@@ -121,7 +93,7 @@ export default function RegisterQAAModal({id, onClose, setUpdateCountQa}) {
             <button className="btn btn-secondary mr-3" onClick={onClose}>취소</button>
                 <button className="btn btn-secondary" 
                         onClick={()=>{
-                            saveQaInsert();
+                            saveNoticeInsert();
                         }}
                         
                         >저장</button>

@@ -30,7 +30,7 @@ export default function NotificationDetailModal({id, onClose, onChangeId}) {
 
     const selectOneNotice = async () => {
         console.log("noticeNo: " + noticeNo);
-        const url = "http://localhost:8080/notice/selectOneNotice";
+        const url = "/user/notice/selectOneNotice";
         try {
           const response =
           await axios.post(url, 

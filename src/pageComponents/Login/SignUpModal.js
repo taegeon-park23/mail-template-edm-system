@@ -71,7 +71,7 @@ export default function SignUpModal({onClose, setUpdateCountLogin}) {
     const save = async (e) => {
         e.preventDefault();
 
-        const url = "/user/join";
+        const url = "http://localhost:8080/join";
 
         try {
             const response = await axios.post(url, {

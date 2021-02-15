@@ -308,7 +308,7 @@ export default function ManageGroup({ history, location }) {
               type="radio"
               name="options"
               id="option2"
-              autocomplete="off"
+              autoComplete="off"
               onClick={() => {
                 setClassification("whole");
                 history.push(
@@ -327,7 +327,7 @@ export default function ManageGroup({ history, location }) {
               type="radio"
               name="options"
               id="option3"
-              autocomplete="off"
+              autoComplete="off"
               onClick={() => {
                 selectGroupDetailByGroupOwner();
                 setClassification("group");

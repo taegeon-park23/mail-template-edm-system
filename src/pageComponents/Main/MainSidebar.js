@@ -101,6 +101,11 @@ class MainSidebar extends React.Component {
             <span>&nbsp;Q&A</span>
           </Link>
         </li>
+        <li className="nav-item">
+          <Link className="nav-link" to="/manageUsers">
+            <span>&nbsp;사용자 관리</span>
+          </Link>
+        </li>
       </ul>
     );
   }

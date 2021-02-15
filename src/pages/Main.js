@@ -20,6 +20,8 @@ import SendItems from "./SendItems";
 import Notification from "./Notification";
 import QuestionAndAnser from "./QuestionAndAnswer";
 import SendItemDetail from "./SendItemDetail";
+import ManageUsers from "./ManageUsers";
+
 export default function Main({history}) {
   const _globalStateStore = useContext(globalStateStore);
   const globalState = _globalStateStore.state;
@@ -49,6 +51,7 @@ export default function Main({history}) {
               <Route path="/notification" component={Notification}/>
               <Route path="/questionandanswer" component={QuestionAndAnser}/>
               <Route path="/senditemdetail/:number" component={SendItemDetail}/>
+              <Route path="/manageUsers" component={ManageUsers}/>
               <Route
                 // path 를 따로 정의하지 않으면 모든 상황에 렌더링됨
                 render={({ history, location }) => (

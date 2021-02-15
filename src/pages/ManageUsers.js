@@ -6,9 +6,9 @@ import Modal from "@material-ui/core/Dialog";
 import qs from "qs";
 import NotificationDetailModal from "../pageComponents/Notification/NotificationDetailModal";
 import dateForm from "../../src/dateFormat";
-import RegNotiModal from "../pageComponents/Notification/RegNotiModal";
 
-export default function Notification({ history, location }) {
+
+export default function ManageUsers({ history, location }) {
 
   // query
   const query = qs.parse(location.search, {
@@ -26,15 +26,13 @@ export default function Notification({ history, location }) {
     const [modalStatus, setModalStatus] = useState(false);
     const [notices, setNotices] = useState([]);
     const [updateCount, setUpdateCount] = useState(0);
+    const [notificationDetailModalStatus, setNotificationDetailModalStatus] = useState(false);
     const [id, setId] = useState(0);
-    const [role, setRole] = useState(localStorage.getItem('role'));
     
     const [searchInput, setSearchInput] = useState(_searchInput);
     const [startDate, setStartDate] = useState(_searchStartDate);
     const [endDate, setEndDate] = useState(_searchEndDate);
     const [pageCount, setPageCount] = useState(notices.length>0?notices[0].pageCount:10);
-    const [registerModalStatus, setRegisterModalStatus] = useState(false);
-
 
     //call all notice list
     const selectNoticeAll = async (noticeInfo={}) => {
@@ -151,57 +149,21 @@ export default function Notification({ history, location }) {
       setId(no)
     });
 
-    const onClickregisterModalCallback = useCallback((no)=>{
-      setRegisterModalStatus(true);
-      setId(no)
-    });
-
-    const RegBTN = (role) => {
-      if (role === "ADMIN") {
-        return (<div className="w-100 mb-2 d-flex flex-row-reverse">
-                  <button className="btn btn-primary" onClick={()=>{onClickregisterModalCallback(0)}}>공지사항 등록</button>
-                </div>
-              );
-      } else {
-        return ;
-      }
-    }
-
     return(
         <div className="container-fluid">
-          {modalStatus === true ? (
-          <Modal
-            open={modalStatus}
-            onClose={() => {
-              setModalStatus(false);
-            }}
-            children={
-              <NotificationDetailModal
-                id = {id}
-                onClose={() => {
-                  setModalStatus(false);
-                }}
-                onChangeId={() => {}}
-              />
-            }
-          />
-        ) : null}
-        
-        {registerModalStatus === true ? (
-        <Modal1
-          visible={registerModalStatus}
+        {modalStatus === true ? (
+        <Modal
+          open={modalStatus}
           onClose={() => {
-            setRegisterModalStatus(false);
+            setModalStatus(false);
           }}
           children={
-            <RegNotiModal
+            <NotificationDetailModal
+              id = {id}
               onClose={() => {
-                setRegisterModalStatus(false);
+                setModalStatus(false);
               }}
-              setUpdateCountNotice={() => {
-                setUpdateCount(updateCount+1);
-              }}
-
+              onChangeId={() => {}}
             />
           }
         />
@@ -213,12 +175,6 @@ export default function Notification({ history, location }) {
             <h3>공지 사항</h3>
           </p>
         </div>
-
-        {/* <div className="w-100 mb-2 d-flex flex-row-reverse">
-          <button className="btn btn-primary" onClick={()=>{onClickregisterModalCallback(0)}}>Q&A 등록</button>
-        </div> */}
-        {RegBTN(role)}
-        
         <div className="container-fluid input-group shadow-sm py-10 mb-5 bg-white rounded">
           <form className="ml-5 mx-5 my-10">
             <div className="input-group w-100">

@@ -5,7 +5,7 @@ import RegisterQAAModal from "../pageComponents/QuestionAndAnswer/RegisterQAAMod
 import axios from 'axios';
 import qs from "qs";
 import dateFormat from "../../src/dateFormat";
-export default function QuestionAndAnser({ history, location }) {
+export default function QuestionAndAnswer({ history, location }) {
   // query
   const query = qs.parse(location.search, {
     ignoreQueryPrefix: true,
@@ -27,7 +27,7 @@ export default function QuestionAndAnser({ history, location }) {
   const [searchInput, setSearchInput] = useState(_searchInput);
   const [startDate, setStartDate] = useState(_searchStartDate);
   const [endDate, setEndDate] = useState(_searchEndDate);
-  const [pageCount, setPageCount] = useState(qaList.length>0?qaList[0].pageCount:10);
+  const [pageCount, setPageCount] = useState(qaList.length > 0 ? qaList[0].pageCount : 10);
 
 
   const onClickregisterModalCallback = useCallback((no)=>{
@@ -43,29 +43,39 @@ export default function QuestionAndAnser({ history, location }) {
 
    //call all qa List
    const selectQaAll = async (qaInfo = {}) => {
-    const url = "/user/selectQaAll";
+     console.log(qaInfo)
+    const url = "/user/qa/selectQaAll";
     try {
-      const response = await axios.post(url, {...qaInfo}, {headers: {
-        "Content-Type" : "application/json",
-        "x-auth-token" : localStorage.getItem('jwtToken')
+      const response = await axios.post(
+        url,
+         {...qaInfo},
+         {headers: {
+          "Content-Type" : "application/json",
+          "x-auth-token" : localStorage.getItem('jwtToken')
 
-      }});
+          }
+        }
+      );
 
       if (response.data.status === 'OK') {
         if(response.data.data === null) {
-          alert("조회되는 그룹이 없습니다."); return;
+          alert("조회되는 QNA가 없습니다.");
+          return;
         }
         setQaList(response.data.data);
-      } else if(response.data.status === "NOT_FOUND"){
+      } else if (response.data.status === "NOT_FOUND") {
         alert("인증되지 않은 접근입니다.");
-        localStorage.removeItem('jwtToken');
-    }
+      } else {
+        alert(response.data.message);
+      }
     } catch(err) {
-      alert("서버와의 접근이 불안정합니다.")
+      console.log(err);
+      alert("서버와의 접근이 불안정합니다.");
     }
 
   }
 
+  // call selectQaAll API
   useEffect(()=>{
     selectQaAll({
       "qaTitle": _searchInput,
@@ -73,7 +83,7 @@ export default function QuestionAndAnser({ history, location }) {
       "endDate": _searchEndDate,
       "pageStart": _searchIndex,
     });
-  },[updateCount,_searchInput, _searchStartDate, _searchEndDate, _searchIndex])
+  },[updateCount, _searchInput, _searchStartDate, _searchEndDate, _searchIndex])
 
   const getPageAnchors = (recordCount, pageCount) => {
     let pages = recordCount / pageCount;
@@ -97,7 +107,8 @@ export default function QuestionAndAnser({ history, location }) {
     const currentIdxClassName = "btn btn-primary btn-sm mr-1";
     const otherIdxClassName = "btn btn-secondary btn-sm mr-1";
     const anc = (i) => {
-      return <a
+      return (
+      <a
         key={i}
         className={i == _searchIndex ? currentIdxClassName : otherIdxClassName}
         onClick={(e) => {
@@ -107,6 +118,7 @@ export default function QuestionAndAnser({ history, location }) {
       >
         {i + 1}
       </a>
+      )
     };
 
     for (let i = 0; i < pages; i++) {
