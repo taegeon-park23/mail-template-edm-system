@@ -3,7 +3,7 @@ import axios from 'axios';
 import styled from "styled-components";
 import dateFormat from "../../dateFormat";
 
-export default function QAADetailModal({id, onClose, setUpdateCountQa, onChangeId, role, history}) {
+export default function ReplyQAAModal({id, onClose, onChangeId, setUpdateCountQa, history}) {
 
 
 
@@ -29,22 +29,6 @@ export default function QAADetailModal({id, onClose, setUpdateCountQa, onChangeI
         if(qaNo!==0) selectOneQa();
 
     }, [updateCount]);
-
-    // 유저용 삭제버튼
-    const deleteBtn = (role) => {
-        if ( role === "USER" ) {
-            return (
-                <button className="btn btn-secondary mr-3" onClick={()=>{
-                    if(window.confirm('삭제하시겠습니까?')) {
-                        onClose();
-                        deleteQa();
-                    } 
-                }}>삭제</button>
-            )
-        } else {
-            return ;
-        }
-    }
 
 
     const selectOneQa = async () => {
@@ -82,13 +66,12 @@ export default function QAADetailModal({id, onClose, setUpdateCountQa, onChangeI
           }
       }
 
-
-      const deleteQa = async () => {
-        const url = "/admin/qa/deleteQa";
+      const updateQaReply = async () => {
+        const url = "/admin/qa/updateQaReply";
         try {
           const response = await axios.post(
             url,
-            {"qaNo": qaNo},
+            { qaNo : qaNo, qaReplyContent : qaReplyContent },
             {
               headers: {
                 "Content-Type": "application/json",
@@ -104,9 +87,15 @@ export default function QAADetailModal({id, onClose, setUpdateCountQa, onChangeI
           });
     
           if (response.data.status === "OK") {
+            if (response.data.data === null) {
+              alert("조회되는 그룹이 없습니다.");
+              return;
+            }
+            alert(response.data.message);
+            const editDate = response.data.data;
+            setUpdateCount(updateCount + 1);
             setUpdateCountQa();
             onClose();
-            history.push("/questionandanswer");
           } else if (response.data.status === "NOT_FOUND") {
             alert("인증되지 않은 접근입니다.");
             localStorage.removeItem("jwtToken");
@@ -118,6 +107,8 @@ export default function QAADetailModal({id, onClose, setUpdateCountQa, onChangeI
           alert("서버와의 접근이 불안정합니다.");
         }
       };
+
+
 
 
     return(
@@ -143,8 +134,8 @@ export default function QAADetailModal({id, onClose, setUpdateCountQa, onChangeI
                         <RightTd><input
                                     type="text"
                                     className="form-control"
-                                    onChange={(e)=>{setQaTitle(e.target.value)}}
-                                    value={qaTitle}>
+                                    value={qaTitle}
+                                    readOnly>
                                 </input>
                         </RightTd>
                     </tr>
@@ -153,8 +144,8 @@ export default function QAADetailModal({id, onClose, setUpdateCountQa, onChangeI
                         <RightTd><textarea
                                     type="text"
                                     className="form-control"
-                                    onChange={(e)=>{setQaContent(e.target.value)}}
-                                    value={qaContent}>
+                                    value={qaContent}
+                                    readOnly>
                                 </textarea>
                         </RightTd>
                     </tr>
@@ -163,8 +154,8 @@ export default function QAADetailModal({id, onClose, setUpdateCountQa, onChangeI
                         <RightTd><textarea
                                     type="text"
                                     className="form-control"
-                                    value={qaReplyContent}
-                                    readOnly>
+                                    onChange={(e)=>{setQaReplyContent(e.target.value)}}
+                                    value={qaReplyContent}>
                                 </textarea>
                         </RightTd>
                     </tr>
@@ -180,8 +171,19 @@ export default function QAADetailModal({id, onClose, setUpdateCountQa, onChangeI
             </table>
             <hr/>
             <div className="d-flex justify-content-center">
-                {deleteBtn(role)}
-                <button className="btn btn-secondary" onClick={onClose}>확인</button>
+                <button className="btn btn-secondary mr-3" 
+                    onClick={onClose}>닫기
+                </button>
+                <button className="btn btn-secondary" 
+                    onClick={()=>{
+                        //빈칸이나 공백을 둘 수 없다.
+                        if ( qaReplyContent.length > 0 ? qaReplyContent[0] !== " " : false ) {
+                            updateQaReply();
+                        } else {
+                            alert("저장하려면 답변을 입력해주세요!");
+                        }
+                        }}>저장
+                </button>
             </div>
         </div>
     )

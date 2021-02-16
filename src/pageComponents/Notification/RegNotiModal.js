@@ -78,7 +78,7 @@ export default function RegNotiModal({id, onClose, setUpdateCountNotice}) {
                     <tr>
                         <LeftTd>내용</LeftTd>
                         <RightTd>
-                            <input
+                            <textarea
                                 type="text"
                                 className="form-control"
                                 onChange={(e)=>{setNoticeContent(e.target.value)}}

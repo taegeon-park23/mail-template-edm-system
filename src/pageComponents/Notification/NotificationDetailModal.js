@@ -1,9 +1,9 @@
 import React, {useState, useEffect, useRef} from 'react';
 import axios from 'axios';
 import styled from "styled-components";
+import dateFormat from "../../dateFormat";
 
-
-export default function NotificationDetailModal({id, onClose, onChangeId}) {
+export default function NotificationDetailModal({id, onClose, setUpdateCountNoti, onChangeId, history}) {
 
 
     const [noticeNo, setNoticeNo] = useState(id);
@@ -15,6 +15,8 @@ export default function NotificationDetailModal({id, onClose, onChangeId}) {
     const [regId, setRegId] = useState(0);
     const [editDate, setEditDate] = useState("");
     const [editor, setEditor] = useState(0);
+    const [role, setRole] = useState(localStorage.getItem('role'));
+
 
     const [updateCount, setUpdateCount] = useState(0);
 
@@ -25,6 +27,17 @@ export default function NotificationDetailModal({id, onClose, onChangeId}) {
         if(noticeNo!==0) selectOneNotice();
 
     }, [updateCount]);
+
+
+    const deleteBtn = (role) => {
+        if ( role === "ADMIN" ) {
+            return (
+                <button className="btn btn-secondary mr-3" onClick={()=>{deleteNotice()}}>삭제</button>
+            )
+        } else {
+            return ;
+        }
+    }
 
 
 
@@ -61,6 +74,43 @@ export default function NotificationDetailModal({id, onClose, onChangeId}) {
           }
       }
 
+      const deleteNotice = async () => {
+        const url = "/admin/notice/deleteNotice";
+        try {
+          const response = await axios.post(
+            url,
+            {"noticeNo": noticeNo},
+            {
+              headers: {
+                "Content-Type": "application/json",
+                "x-auth-token": localStorage.getItem("jwtToken"),
+              },
+            }
+          ).catch(function(error) {
+            
+            if(error.response.status===403) {
+              localStorage.removeItem("jwtToken");
+              history.push("/login");
+            }
+          });
+    
+          if (response.data.status === "OK") {
+            alert(response.data.message);
+            setUpdateCountNoti();
+            onClose();
+            history.push("/notification");
+          } else if (response.data.status === "NOT_FOUND") {
+            alert("인증되지 않은 접근입니다.");
+            localStorage.removeItem("jwtToken");
+            history.push("/login");
+          } else {
+            alert(response.data.message);
+          }
+        } catch (err) {
+          alert("서버와의 접근이 불안정합니다.");
+        }
+      };
+
 
 
 
@@ -77,7 +127,12 @@ export default function NotificationDetailModal({id, onClose, onChangeId}) {
                     </tr>
                     <tr>
                         <LeftTd>내용</LeftTd>
-                        <RightTd>{noticeContent}</RightTd>
+                        <RightTd><textarea
+                                    type="text"
+                                    className="form-control"
+                                    value={noticeContent}>
+                                </textarea>
+                        </RightTd>
                     </tr>
                     <tr>
                         <LeftTd>파일</LeftTd>
@@ -85,7 +140,7 @@ export default function NotificationDetailModal({id, onClose, onChangeId}) {
                     </tr>
                     <tr>
                         <LeftTd>등록 일시</LeftTd>
-                        <RightTd>{regDate}</RightTd>
+                        <RightTd>{dateFormat(new Date(regDate))}</RightTd>
                     </tr>
                 </tbody>
             </table>
@@ -95,6 +150,7 @@ export default function NotificationDetailModal({id, onClose, onChangeId}) {
                 <div><strong>다음 글 :</strong> 공지사항입니다.</div>
             </div> */}
             <div className="d-flex justify-content-center">
+                {deleteBtn(role)}
                 <button className="btn btn-secondary" onClick={onClose}>확인</button>
             </div>
         </div>

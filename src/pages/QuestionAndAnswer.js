@@ -5,7 +5,10 @@ import RegisterQAAModal from "../pageComponents/QuestionAndAnswer/RegisterQAAMod
 import axios from 'axios';
 import qs from "qs";
 import dateFormat from "../../src/dateFormat";
+import ReplyQAAModal from "../pageComponents/QuestionAndAnswer/ReplyQAAModal";
+import { RotateLeft } from "@material-ui/icons";
 
+import MuiModal from "@material-ui/core/Dialog";
 export default function QuestionAndAnswer({ history, location }) {
   // ============================================================================================================
   // ==================  query =====================================================================================
@@ -36,8 +39,8 @@ export default function QuestionAndAnswer({ history, location }) {
   const [startDate, setStartDate] = useState(_searchStartDate);                       // string, 날짜 검색(시작 날짜)을 위한 state
   const [endDate, setEndDate] = useState(_searchEndDate);                             // string, 날짜 검색(마지막 날짜)을 위한 state
   const [pageCount, setPageCount] = useState(qaList.length>0?qaList[0].pageCount:10); // number, 페이지에서 한번에 보여줄 레코드를 설정하는 state
-
-
+  const [role, setRole] = useState(localStorage.getItem('role'));
+  const [replyQAAModalStatus ,setReplyQAAModalStatus] = useState(false);
 
 
 
@@ -53,6 +56,7 @@ export default function QuestionAndAnswer({ history, location }) {
       "startDate": _searchStartDate,
       "endDate": _searchEndDate,
       "pageStart": _searchIndex,
+      "role" : role
     });
   },[updateCount, _searchInput, _searchStartDate, _searchEndDate, _searchIndex])
 
@@ -164,9 +168,16 @@ export default function QuestionAndAnswer({ history, location }) {
   // Q&A 상세 모달을 on시키고, id를 할당시키기 위한 callback
   // args = no(number)
   // return = undefined
-  const onClickQAADetailModalCallback = useCallback((no)=>{
-    setDetailModalStatus(true);
-    setId(no)
+  const onClickQAADetailModalCallback = useCallback((no, role)=>{
+    if ( role === "ADMIN") {
+      setReplyQAAModalStatus(true);
+      setId(no)
+
+    } else {
+      setDetailModalStatus(true);
+      setId(no)
+    }
+    
   });
 
 
@@ -231,6 +242,10 @@ export default function QuestionAndAnswer({ history, location }) {
               }}
               onChangeId={() => {}}
               history={history}
+              role={role}
+              setUpdateCountQa={()=>{
+                setUpdateCount(updateCount+1);
+              }}
             />
           }
         />
@@ -249,6 +264,28 @@ export default function QuestionAndAnswer({ history, location }) {
               setUpdateCountQa={() => {
                 setUpdateCount(updateCount+1);
               }}
+              history={history}
+            />
+          }
+        />
+      ) : null}
+
+      {replyQAAModalStatus === true ? (
+        <Modal
+          visible={replyQAAModalStatus}
+          onClose={() => {
+            setReplyQAAModalStatus(false);
+          }}
+          children={
+            <ReplyQAAModal
+              id = {id}
+              onClose={() => {
+                setReplyQAAModalStatus(false);
+              }}
+              setUpdateCountQa={() => {
+                        setUpdateCount(updateCount+1);
+                      }}
+              onChangeId={() => {}}
               history={history}
             />
           }
@@ -355,16 +392,16 @@ export default function QuestionAndAnswer({ history, location }) {
               <tr
                 key={i}
               >
-                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo, role)}}>
                 {i + 1 === 10
                   ? `${parseInt(_searchIndex) + 1}${0}`
                   : `${_searchIndex}${i + 1}`}  
                 </td>
-                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.qaGroup}</td>
-                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.qaTitle}</td>
-                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.replyYn}</td>
-                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{list.qaUserNm}</td>
-                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo)}}>{dateFormat(new Date(list.regDate))}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo, role)}}>{list.qaGroup}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo, role)}}>{list.qaTitle}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo, role)}}>{list.replyYn}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo, role)}}>{list.qaUserNm}</td>
+                <td onClick={()=>{onClickQAADetailModalCallback(list.qaNo, role)}}>{dateFormat(new Date(list.regDate))}</td>
               </tr>
             ))}
             {

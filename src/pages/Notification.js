@@ -225,6 +225,9 @@ export default function Notification({ history, location }) {
               onClose={()=>{setModalStatus(false)}} 
               onChangeId={()=>{}}
               history={history}
+              setUpdateCountNoti={()=>{
+                setUpdateCount(updateCount+1);
+              }}
               />}
         />:null}
 
