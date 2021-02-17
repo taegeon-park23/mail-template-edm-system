@@ -5,118 +5,173 @@ import styled, { css } from "styled-components";
 import { ReactComponent as scrollImageSVG } from "../../../assets/icons/scroll.svg";
 import TdClass from "./RowTable/TdClass";
 
+
 import { globalStateStore } from "../../../stores/globalStateStore";
 import { mailTemplateStore } from "../../../stores/mailTemplateStore";
 const RowTable = ({ tdClasses, rowTableIndex, deleteRowTable }) => {
-  const globalState = useContext(globalStateStore);
-  const { state } = globalState;
-  const mailGlobalState = useContext(mailTemplateStore);
-  const mailState = mailGlobalState.state;
+// ===========================================================================================================
+// ================== contexts =====================================================================================
+// ============================================================================================================
+  const globalState = useContext(globalStateStore);            // backState의 baxShadow(boolean) 사용
+  const { state } = globalState;  
+  const mailGlobalState = useContext(mailTemplateStore);       // mailState의 contents(Object[Map]),
+  const mailState = mailGlobalState.state;                     // version(number) <-rerendeing을 위한 state->
   const mailDispatch = mailGlobalState.dispatch;
-  const [editableTdClasses, setEditableTdClasses] = useState(tdClasses);
-  const [draggableStatus, setDraggbleStatus] = useState(false);
-  const TableRowRef = useRef(null);
 
+
+
+
+// ===========================================================================================================
+// ================== states =====================================================================================
+// ============================================================================================================
+  const [editableTdClasses, setEditableTdClasses] = useState(tdClasses);  // Array, 리렌더링할 tdClasses array[tdClass, tdClass], tdClass = {Map}
+  const [draggableStatus, setDraggbleStatus] = useState(false);
+  
+  
+  
+  
+
+// ===========================================================================================================
+// ================== function =====================================================================================
+// ============================================================================================================
+// td 추가
+// args = undefined
   const onClickAddTdButton = () => {
     const newTdClasses = [].concat(editableTdClasses);
+    // 새로 추가할 td
     const newTdClass = {
       align: "center",
-      width: "10",
-      height: `10`,
+      width: "30",
+      height: `100`,
       content: `<b></b>`,
+      paddingLeft: 10,
+      paddingRight: 10,
+      paddingTop: 10,
+      paddingBottom: 10,
+      borderRadius: 0,
     };
 
     newTdClasses.push(newTdClass);
+    // 추가한 td를 포함하여 리렌더링
     setEditableTdClasses(newTdClasses);
     const newContents = { ...mailState.contents };
     newContents.body.contentRowTables[rowTableIndex].tdClasses = newTdClasses;
+    // context에 dispatch
     mailDispatch({
       type: "UPDATE_CONTENTS",
       value: { contents: newContents },
     });
   };
 
+  //tr에서 해당 index의 td 제거
   const onClickDeleteTdButton = (index) => {
     // if (index === 0) return;
     const tempTdClasses = [].concat(editableTdClasses);
 
     const newContents = { ...mailState.contents };
-    if (index === editableTdClasses.length - 1) {
+    if (index === editableTdClasses.length - 1) { 
       tempTdClasses.pop();
       setEditableTdClasses(tempTdClasses);
       newContents.body.contentRowTables[
         rowTableIndex
-      ].tdClasses = tempTdClasses;
-    } else {
+      ].tdClasses = tempTdClasses; 
+     } else {
       const newTdClasses = tempTdClasses
         .slice(0, index)
         .concat(tempTdClasses.slice(index + 1, tempTdClasses.length));
       setEditableTdClasses(newTdClasses);
       newContents.body.contentRowTables[rowTableIndex].tdClasses = newTdClasses;
     }
+    // tr에서 td제거 후, 가지고 있는 td가 0개라면 해당 tr을 제거
+    if(tempTdClasses.length === 0) {
+      const tempRowTable = newContents.body.contentRowTables;
+      const rowTableLength = tempRowTable.length;
+      
+      if(rowTableIndex === rowTableLength-1) {
+          tempRowTable.pop();
+          newContents.body.contentRowTables = tempRowTable;
+      } else {
+        const newRowTables = tempRowTable.slice(0, rowTableIndex)
+          .concat(tempRowTable.slice(rowTableIndex+1, rowTableLength));
+          newContents.body.contentRowTables = newRowTables;
+      } 
+    }
     mailDispatch({
       type: "UPDATE_CONTENTS",
       value: { contents: newContents, version: mailState.version + 1 },
     });
   };
+
+
+
+
+// ===========================================================================================================
+// ================== Hanlder =====================================================================================
+// ============================================================================================================
+
+// 테이블 dragStart(dragged가 target)
+const tableOnDragStartHandler = (event) => {
+  // event.currentTarget.style.position = "absolute";
+  // event.currentTarget.style.zIndex="10000";
+  event.currentTarget.style.opacity ="0.5";
+  // event.currentTarget.style.transform ="translateX(-9999px)";
+  event.dataTransfer.effectAllowed = "move";
+  event.dataTransfer.setData("movingRowIndex", rowTableIndex);
+}
+
+// 테이블 dragEnd(dragged가 target)
+const tableOnDragEndHandler = (event) => {
+  event.currentTarget.style.position = "static";
+  event.currentTarget.style.zIndex="";
+  event.currentTarget.style.transition ="";
+  event.currentTarget.style.transform ="";
+  setDraggbleStatus(false);
+}
+
+// 테이블 dragOver(hovered가 target)
+const tableOnDragOverEndHandler = (event) => {
+  event.preventDefault();
+  event.stopPropagation();
+  event.currentTarget.style.border="3px dashed #20c997";
+}
+
+// 테이블 dragEnter
+const tableOnDragEnterEndHandler = (event) => {
+  const movingRowIndex = event.dataTransfer.getData("movingRowIndex");
+  if(movingRowIndex) {
+    event.currentTarget.style.border="3px dashed #20c997";
+    setTimeout(()=>{
+      event.currentTarget.style.border="none";
+    }, 1000);
+  }
+}
+
+// 테이블 dragLeave
+const tableOnDragLeaveHandler = (event) => {
+  event.preventDefault();
+  event.currentTarget.style.border="none";
+}
+
+// Drop시 swap
+const tableOnDropHandler = (event) => {
+  const newContents = {...mailState.contents};
+  const movingRowIndex = `${event.dataTransfer.getData("movingRowIndex")}`;
+  const tempRowTable = newContents.body.contentRowTables[movingRowIndex];
+  newContents.body.contentRowTables[movingRowIndex] = newContents.body.contentRowTables[rowTableIndex];
+  newContents.body.contentRowTables[rowTableIndex] = tempRowTable;
+  mailDispatch({type:"UPDATE_CONTENTS", value:{contents:newContents, version: mailState.version +1}});
+}
+
+
+
+
+
+// ============================================================================================================
+// ============================ HTML ====================================================================================
+// ============================================================================================================
   return (
     <Fragment>
-      <table width={"100%"} border={0} cellPadding={0} cellSpacing={0}>
-        <tbody>
-          <tr ref={TableRowRef} 
-          draggable={draggableStatus}
-          onDragStart={(e) => {
-            e.currentTarget.style.position = "absolute";
-            e.currentTarget.style.zIndex="10000";
-            e.currentTarget.style.transition ="0.01s";
-            e.currentTarget.style.transform ="translateX(-9999px)";
-            e.currentTarget.style.border="3px dashed #20c997";
-            e.dataTransfer.effectAllowed = "move";
-            e.dataTransfer.setData("movingRowIndex", rowTableIndex);
-          }}
-          onDragEnd={(e)=>{
-            e.currentTarget.style.position = "static";
-            e.currentTarget.style.zIndex="";
-            e.currentTarget.style.transition ="";
-            e.currentTarget.style.transform ="";
-            e.target.style.border="none";
-            setDraggbleStatus(false);
-          }}
-          onDragOver ={(e)=>{
-            e.preventDefault();
-            e.stopPropagation();
-          }}
-          onDragEnter = {
-            (e) => {
-              e.preventDefault();
-                const movingRowIndex = e.dataTransfer.getData("movingRowIndex");
-                if(movingRowIndex) {
-                  e.currentTarget.style.border="3px dashed #20c997";
-                  setTimeout(()=>{
-                    e.currentTarget.style.border="none";
-                  }, 1000);
-                }
-            }
-          }
-          onDragLeave = {
-            (e) => {
-              e.preventDefault();
-              // const movingRowIndex = e.dataTransfer.getData("movingRowIndex");
-                e.currentTarget.style.border="none";
-            }
-          }
-          // swap
-          onDrop = {(e)=>{
-            const newContents = {...mailState.contents};
-            const movingRowIndex = `${e.dataTransfer.getData("movingRowIndex")}`;
-            const tempRowTable = newContents.body.contentRowTables[movingRowIndex];
-            newContents.body.contentRowTables[movingRowIndex] = newContents.body.contentRowTables[rowTableIndex];
-            newContents.body.contentRowTables[rowTableIndex] = tempRowTable;
-            mailDispatch({type:"UPDATE_CONTENTS", value:{contents:newContents, version: mailState.version +1}});
-            
-          }}
-          >
-            {state.boxShadow === true ? (
+      {state.boxShadow === true ? (
               <MenusWrapper>
                 <Menus rowTableIndex={rowTableIndex}>
                   <EditButton
@@ -136,11 +191,25 @@ const RowTable = ({ tdClasses, rowTableIndex, deleteRowTable }) => {
                 </Menus>
               </MenusWrapper>
             ) : null}
+      <table
+        role="presentation" 
+        style={{width:"100%", maxWidth:"600px", border:"none", borderSpacing:0, fontFamily:"Arial, sans-serif"}}
+        draggable={draggableStatus}
+          onDragStart={tableOnDragStartHandler}
+          onDragEnd={tableOnDragEndHandler}
+          onDragOver ={tableOnDragOverEndHandler}
+          onDragEnter = {tableOnDragEnterEndHandler}
+          onDragLeave = {tableOnDragLeaveHandler}
+          // swap
+          onDrop = {tableOnDropHandler}
+      >
+        {/* tdClass가 분할시 */}
+          <tr> 
             {editableTdClasses.map((tdClass, i) => {
               if (Array.isArray(tdClass) === true) {
                 return (
-                  <td>
-                    <table cellPadding={0} cellSpacing={0}>
+                  <td style={{width:`${tdClass[0].width}%`,padding:"0px"}}>
+                    <table border={0} cellPadding={0} cellSpacing={0} style={{width:"100%"}} >
                       <tbody>
                         {tdClass.map((td, j) => (
                           <tr>
@@ -170,11 +239,18 @@ const RowTable = ({ tdClasses, rowTableIndex, deleteRowTable }) => {
                 );
             })}
           </tr>
-        </tbody>
-      </table>
+          </table>
     </Fragment>
   );
 };
+
+
+
+
+
+// ============================================================================================================
+// ============================ CSS ====================================================================================
+// ============================================================================================================
 const MenusWrapper = styled.div`
   position: relative;
   /* top: 0px; */
@@ -189,11 +265,11 @@ const Menus = styled.div`
     if (props.rowTableIndex % 2 === 0)
       return css`
         top: -10px;
-        right: -60px;
+        right: -200px;
       `;
     else
       return css`
-        right: -60px;
+        right: -200px;
       `;
   }}
 `;

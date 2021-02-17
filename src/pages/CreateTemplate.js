@@ -327,7 +327,7 @@ function CreateTemplate({history, match}) {
       <hr/>
       <TemplateActionsContext.Provider value={{saveTemplateInsert, history}}>
           <TemplateBackground />
-          <TemplateMailContents tplNo={tplNo}/>
+          <TemplateMailContents tplNo={tplNo} tableWidth={800}/>
       </TemplateActionsContext.Provider>
       <EmptyDiv><hr/></EmptyDiv>
     </CreateTemplateDiv>
@@ -343,7 +343,7 @@ function CreateTemplate({history, match}) {
 const CreateTemplateDiv = styled.div``;
 const EmptyDiv = styled.div`
   width: 100%;
-  height: 100px;
+  height: 200px;
 `;
 
 CreateTemplate.TemplateActionsContext = TemplateActionsContext;

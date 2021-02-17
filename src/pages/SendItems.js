@@ -32,7 +32,7 @@ export default function SendItems({ history, location }) {
   const [searchInput, setSearchInput] = useState(_searchInput);   // string, 제목/받는사람 검색을 위한 state
   const [startDate, setStartDate] = useState(_searchStartDate);   // string, 날짜 검색을 위한 state
   const [endDate, setEndDate] = useState(_searchEndtDate);        // string, 날짜 검색을 위한 state
-  const [sendItemList, setSendItemList] = useState([]);           // [{}], select로 받은 메일전송기록 리스트 state
+  const [sendItemList, setSendItemList] = useState([]);           // Array, [{}], select로 받은 메일전송기록 리스트 state
   const [pageCount, setPageCount] = useState(                     // string, 페이지에서 한번에 보여줄 레코드를 설정하는 state
     sendItemList.length > 0 ? sendItemList[0].pageCount : 10
   );
@@ -146,7 +146,7 @@ export default function SendItems({ history, location }) {
     
     emptyTds.push(<TdIndex>&nbsp;</TdIndex>);
     emptyTds.push(<TdTitle>&nbsp;</TdTitle>);
-    emptyTds.push(<TdContent>&nbsp;</TdContent>);
+    emptyTds.push(<TdReceiver>&nbsp;</TdReceiver>);
     emptyTds.push(<TdDate>&nbsp;</TdDate>);
     for (let j = 0; j < length; j++) {
       emptyTrs.push(<tr>{emptyTds}</tr>);

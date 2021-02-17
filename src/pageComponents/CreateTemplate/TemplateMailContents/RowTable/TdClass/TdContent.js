@@ -4,7 +4,7 @@ import styled from "styled-components";
 import ReactDOM from "react-dom";
 import ReactHtmlParser from "react-html-parser";
 
-export default function TdContent({width, height, content, borderRadius, image}) {
+export default function TdContent({width, height, content, borderRadius, image, backgroundColor}) {
     const articleRef = useRef(null);
     
     const textEditorSyncToTdContentFunc = () => {
@@ -16,14 +16,42 @@ export default function TdContent({width, height, content, borderRadius, image})
             const defaultSpanArr = articleDom.querySelectorAll('span.text-default');
             const smallSpanArr = articleDom.querySelectorAll('span.text-small');
             const tinySpanArr = articleDom.querySelectorAll('span.text-tiny');
+            const pArr = articleDom.querySelectorAll('p');
+            const h2Arr = articleDom.querySelectorAll('h2');
+            const h3Arr = articleDom.querySelectorAll('h3');
+            const h4Arr = articleDom.querySelectorAll('h4');
             const ckContentHrArr = articleDom.querySelectorAll('hr');
             const firgureTableArr =articleDom.querySelectorAll('figure');
             const imageArr = articleDom.querySelectorAll('img');
             if(imageArr) {
               imageArr.forEach(img=>{
-                img.style.width = `${width}px`;
+                img.style.width = `100%`;
                 img.style.height = `${height}px`;
                 img.style.borderRadius = `${borderRadius}px`
+              })
+            }
+            if(pArr) {
+                pArr.forEach(p=>{
+                  p.style.marginTop = "0px";
+                  p.style.marginBottom = "0px";
+                })
+            }
+            if(h2Arr) {
+              h2Arr.forEach(h=>{
+                h.style.marginTop = "0px";
+                h.style.marginBottom = "0px";
+              })
+            }
+            if(h3Arr) {
+              h3Arr.forEach(h=>{
+                h.style.marginTop = "0px";
+                h.style.marginBottom = "0px";
+              })
+            }
+            if(h4Arr) {
+              h4Arr.forEach(h=>{
+                h.style.marginTop = "0px";
+                h.style.marginBottom = "0px";
               })
             }
             if(hugeSpanArr) {
@@ -77,21 +105,27 @@ export default function TdContent({width, height, content, borderRadius, image})
     })
 
     return(
-        <TdContentDiv width={width} height={height} ref={articleRef} onClick={(e)=>{
+        <TdContentDiv ref={articleRef} onClick={(e)=>{
             if(image) {e.preventDefault(); e.stopPropagation();}
         }}
-        style={{width:`${width}px`, height:`${height}px`}}>
+        style={{
+          width:`100%`, height:`100%`, 
+          borderRadius:`${borderRadius}px`, backgroundColor:`${backgroundColor}`}}>
         {ReactHtmlParser(content)}
         </TdContentDiv>
     )
 }
 
-const TdContentDiv = styled.span `
+const TdContentDiv = styled.div `
    position: relative;
     p {margin: 0px; margin-bottom: 0px;}
     ul, ol,li {
    margin: 0px;
+   padding:0px;
    width: 100%;
    height: 100%;
+  }
+  h1,h2,h3,h4,h5,h6 {
+    margin: 0px;
   }
 `;

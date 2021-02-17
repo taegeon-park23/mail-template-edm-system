@@ -82,7 +82,7 @@ export default function AddImageModal({ synkEditorToResult, onlySrc, image }) {
   // ============================================================================================================
   return (
     <div
-      className="card bg-dark text-white"
+      className="container-fluid card bg-white px-2 py-2 rounded"
       onPaste={onPasteOnCard}
       onDragOver={onDragOverOnCard}
       onDrop={onDropOnCard}

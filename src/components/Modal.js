@@ -32,7 +32,9 @@ class Modal extends React.Component {
                 <span role="img" aria-label="close">✖️</span>
               </CloseButton>
             )}
-            {this.props.children}
+            <ModalChildren>
+               {this.props.children}
+            </ModalChildren>
           </ModalInner>
         </ModalWrapper>
       </>
@@ -69,10 +71,11 @@ const ModalInner = styled.div`
   border-radius: 10px;
   min-width: 360px;
   min-height: 360px;
-  width: 600px;
-  height: 600px;
+  width: 800px;
+  /* height: 600px; */
+  max-width: 1000px;
   min-height: 600px;
-  max-height: 600px;
+  max-height: 800px;
   overflow-y: auto;
   /* width: 360px; */
   /* max-height: 40vw; */
@@ -82,6 +85,12 @@ const ModalInner = styled.div`
   /* margin: 0 auto; */
   padding: 15px 15px;
   z-index: 1001;
+`;
+
+const ModalChildren = styled.div`
+  display: flex;
+  justify-content: center;
+  align-items: center;
 `;
 
 const CloseButton = styled.button`

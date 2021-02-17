@@ -12,6 +12,7 @@ import ReactDOM from "react-dom";
 import GroupAndAddressbookList from "../pageComponents/SendMail/GroupAndAddressbookList";
 import Modal from "../components/Modal";
 import MailTemplateList from "../pageComponents/SendMail/MailTemplateList";
+import getHtmlString from "../getHtmlString";
 
 export default function SendMail({ history, match }) {
   // ============================================================================================================
@@ -98,28 +99,13 @@ export default function SendMail({ history, match }) {
 
   const convertToHTML = () => {
     const mailResultDoc = document.getElementById("mailResult");
-    const resultDoc = document.getElementById("TemplateMailContentsTable");
+    const resultDoc = document.getElementById("TemplateMailContentsDiv");
     if (resultDoc === undefined) {
       alert("템플릿을 설정해주세요");
       return;
     }
     
-    const downloadHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Email Design</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <!--[if (mso 16)]><style type="text/css">a {text-decoration: none;}</style><![endif]--><!--[if gte mso 9]><style>sup { font-size: 100% !important; }</style><![endif]--><!--[if gte mso 9]>
-      <v:rect xmlns_v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;">
-        <v:fill type="tile" src="${backState.convertedImage}" color="#7bceeb" />
-        <v:textbox style="mso-fit-shape-to-text:true" inset="0,0,0,0">
-      <![endif]--><!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG></o:AllowPNG><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
-    </head><body style="background-repeat:no-repeat"><!--[if gte mso 9]><v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t"><v:fill type="tile" color="#fff1e6"></v:fill></v:background><![endif]-->
-    <table border="0" cellspadding="0" cesllspacing="0"><tbody><tr><td style="width: ${
-      mailState.tableWidth
-    }px;">${
-      mailResultDoc ? mailResultDoc.innerHTML : ""
-    }</td></tr></tbody></table>
-    <table border="0" cellspadding="0" cesllspacing="0" style="background-image:url('${backgrundSrc}'); background-repeat:no-repeat">
-     ${resultDoc ? resultDoc.children[0].innerHTML : ""}
-     </table>
-    </body></html>`;
+    const downloadHtml = getHtmlString(resultDoc, mailState.tableWidth, mailResultDoc);
 
     const blob = new Blob([downloadHtml], {
       type: "text/html",
@@ -160,26 +146,12 @@ export default function SendMail({ history, match }) {
   // sendMail 메일 보내기, html 파일을 생성하여 multipart 형식으로 전송
   const sendMail = async () => {
     const mailResultDoc = document.getElementById("mailResult");
-    const resultDoc = document.getElementById("TemplateMailContentsTable");
+    const resultDoc = document.getElementById("TemplateMailContentsDiv");
     let blob = null;
 
     // 템플릿이 존재할 때, HTML 파일 생성
     if (resultDoc !== null) {
-      const downloadHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Email Design</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <!--[if (mso 16)]><style type="text/css">a {text-decoration: none;}</style><![endif]--><!--[if gte mso 9]><style>sup { font-size: 100% !important; }</style><![endif]--><!--[if gte mso 9]>
-      <v:rect xmlns_v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;">
-        <v:fill type="tile" src="${backState.convertedImage}" color="#7bceeb" />
-        <v:textbox style="mso-fit-shape-to-text:true" inset="0,0,0,0">
-      <![endif]--><!--[if gte mso 9]><xml><o:OfficeDocumentSettings><o:AllowPNG></o:AllowPNG><o:PixelsPerInch>96</o:PixelsPerInch></o:OfficeDocumentSettings></xml><![endif]-->
-    </head><body style="background-repeat:no-repeat"><!--[if gte mso 9]><v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t"><v:fill type="tile" color="#fff1e6"></v:fill></v:background><![endif]-->
-    <table border="0" cellspadding="0" cesllspacing="0"><tbody><tr><td id="mailResult" style="width: ${
-      mailState.tableWidth
-    }px;">${
-        mailResultDoc ? mailResultDoc.innerHTML : ""
-      }</td></tr></tobdy></table style="background-image: url('${backgrundSrc}');
-      background-repeat: no-repeat;">
-     ${resultDoc ? resultDoc.innerHTML : ""}
-    </body></html>`;
+      const downloadHtml = getHtmlString(resultDoc, mailState.tableWidth, mailResultDoc);
       blob = new Blob([downloadHtml], {
         type: "text/html",
         endings: "native",

@@ -6,12 +6,23 @@ import React, {
   useEffect,
 } from "react";
 import styled from "styled-components";
+import Modal from "../../components/Modal";
+import TdStyle from "../../components/TdStyle";
 import { globalStateStore } from "../../stores/globalStateStore";
 import { mailTemplateStore } from "../../stores/mailTemplateStore";
-
+import ReactComment from "../../components/ReactComment";
 //components
 import RowTable from "./TemplateMailContents/RowTable";
-export default function TemplateMailContents({ tableWidth, result, tplNo }) {
+import getHtmlString from "../../getHtmlString";
+
+export default function TemplateMailContents({result, tplNo }) {
+ // 저장한 테이블 백그라운드 이미지
+ let backgrundSrc = `https://firebasestorage.googleapis.com/v0/b/bizdem-c4931.appspot.com/o/images%2F${tplNo?tplNo:"nope"}%2Fbackground.png?alt=media&time=${(new Date()).getTime()}`;
+  
+  
+// ===========================================================================================================
+// ================== contexts =====================================================================================
+// ============================================================================================================
   // 백그라운드 이미지, boxShadow 관련 상태 저장 store
   const globalState = useContext(globalStateStore);
   const backState = globalState.state;
@@ -22,49 +33,39 @@ export default function TemplateMailContents({ tableWidth, result, tplNo }) {
   const mailState = mailGlobalState.state;
   const mailDispatch = mailGlobalState.dispatch;
 
-  // const [result, setResult] = useState(result);
 
-  const [contents, setContents] = useState(mailState.contents);
-  const [bgcolor, setBgcolor] = useState(mailState.bgcolor);
-  let backgrundSrc = `https://firebasestorage.googleapis.com/v0/b/bizdem-c4931.appspot.com/o/images%2F${tplNo?tplNo:"nope"}%2Fbackground.png?alt=media&time=${(new Date()).getTime()}`;
+  // ============================================================================================================
+  // ==================  states =====================================================================================
+  // ============================================================================================================
+  const [bgcolor, setBgcolor] = useState(mailState.bgcolor);              // string, div의 background color state
+  const [tdStyleModalStatus, setTdStyleModalStatus] = useState(false);    // boolean, TdStyleModal on&off state
 
+
+  
+
+  // ============================================================================================================
+  // ===================== useEffect ===================================================================================
+  // ============================================================================================================
+  // backgroundColor 변환시 mailState 동기화
   useEffect(() => {
     mailDispatch({ type: "UPDATE_BGCOLOR", value: { bgcolor: bgcolor, version: mailState.version+1 } });
   }, [bgcolor]);
+
+
+
+
+
+
+// ===========================================================================================================
+// ==================  functions =====================================================================================
+// ============================================================================================================
+  // HTML파일로 변환하여 다운로드
   const convertToHTML = () => {
-    const resultDoc = document.getElementById("TemplateMailContentsTable");
+    const resultDoc = document.getElementById("TemplateMailContentsDiv");
     resultDoc.style.background = `${backState.convertedImage}`;
     resultDoc.style.backgroundImage = `${backState.convertedImage}`;
-    const downloadHtml = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Email Design</title><meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <!--[if (mso 16)]>
-    <style type="text/css">
-    a {text-decoration: none;}
-    </style>
-    <![endif]-->
-    <!--[if gte mso 9]><style>sup { font-size: 100% !important; }</style><![endif]-->
-    <!--[if gte mso 9]>
-      <v:rect xmlns_v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="mso-width-percent:1000;">
-        <v:fill type="tile" src="${backState.convertedImage}" color="#7bceeb" />
-        <v:textbox style="mso-fit-shape-to-text:true" inset="0,0,0,0">
-      <![endif]-->
-    <!--[if gte mso 9]>
-<xml>
-    <o:OfficeDocumentSettings>
-    <o:AllowPNG></o:AllowPNG>
-    <o:PixelsPerInch>96</o:PixelsPerInch>
-    </o:OfficeDocumentSettings>
-</xml>
-<![endif]-->
-    </head><body>
-    <!--[if gte mso 9]>
-               <v:background xmlns:v="urn:schemas-microsoft-com:vml" fill="t">
-				<v:fill type="tile" color="#fff1e6"></v:fill>
-			</v:background>
-    <![endif]-->
-    <table border="0" cellspadding="0" cesllspacing="0" style="background-image:url('${backgrundSrc}'); background-repeat:no-repeat">
-    ${resultDoc ? resultDoc.children[0].innerHTML : ""}
-    </table>
-    </body></html>`;
+    // 다운로드
+    const downloadHtml = getHtmlString(resultDoc);
     const element = document.createElement("a");
     element.setAttribute(
       "href",
@@ -77,50 +78,68 @@ export default function TemplateMailContents({ tableWidth, result, tplNo }) {
     document.body.removeChild(element);
   };
 
-  //   결과 생성 버튼
+// Row(tr) 추가 함수
+const addContentRow = (number) => {
+  const tdClass = {
+    align: "center",
+    width: "100",
+    height: "100",
+    content: `<b>td</b>`,
+    paddingLeft: 10,
+    paddingRight: 10,
+    paddingTop: 10,
+    paddingBottom: 10,
+  };
+
+  const tdClasses = [];
+  switch(number) {
+    case 3:
+      for(let i=0; i<number; i++) tdClasses.push({...tdClass, width:"33.3"});
+      break;
+    case 2:
+      for(let i=0; i<number; i++) tdClasses.push({...tdClass, width:50});
+      break;
+    case 1:
+      tdClasses.push(tdClass);
+      break;
+    default:
+      break; 
+  }
+  
+  const newContents = { ...mailState.contents };
+  const newBody = newContents.body;
+  const newContentRowTables = newBody.contentRowTables;
+  newContentRowTables.push({
+    tdClasses: tdClasses,
+  });
+  mailDispatch({
+    type: "UPDATE_CONTENTS",
+    value: { version: mailState.version + 1, contents: newContents },
+  });
+};
+
+
+// boxShadow 변환 함수
+const convertBoxShadow = (status) => {
+  backDispatch({
+    type: "CONVERT_BOX_SHADOW",
+    value: {
+      boxShadow: status,
+    },
+  });
+};
+
+
+// ===========================================================================================================
+// ================== callback =====================================================================================
+// ============================================================================================================
+  // 결과 생성 버튼 Callback
   const converToHTMLCallback = useCallback(() => {
     backDispatch({ type: "CONVERT_BOX_SHADOW", value: { boxShadow: false } });
     setTimeout(convertToHTML, 250);
   });
 
-  const onClickConvertHtmlButton = (e) => {
-    converToHTMLCallback();
-  };
-
-  const onClickAddContentRow = () => {
-    const tdClass = {
-      align: "center",
-      width: "30",
-      height: "200",
-      content: `<b>td</b>`,
-    };
-    const tdClasses = [tdClass];
-    const newContents = { ...mailState.contents };
-    const newBody = newContents.body;
-    const newContentRowTables = newBody.contentRowTables;
-    const tempContentRowTable = newContentRowTables.pop();
-    newContentRowTables.push({
-      tdClasses: tdClasses,
-    });
-    newContentRowTables.push({
-      tdClasses: tempContentRowTable.tdClasses,
-    });
-    setContents(newContents);
-    mailDispatch({
-      type: "UPDATE_CONTENTS",
-      value: { version: mailState.version + 1, contents: newContents },
-    });
-  };
-
-  const onClickConvertBoxShadow = (status) => {
-    backDispatch({
-      type: "CONVERT_BOX_SHADOW",
-      value: {
-        boxShadow: status,
-      },
-    });
-  };
-
+  // 임시저장 callback
   const temporaryDownloadCallback = useCallback(() => {
     if (localStorage.length > 0) {
       backDispatch({
@@ -136,6 +155,7 @@ export default function TemplateMailContents({ tableWidth, result, tplNo }) {
     }
   });
 
+  // 임시저장 불러오기 callback
   const temporarySaveCallback = useCallback(() => {
     backDispatch({
       type: "ADD_POPUP_MESSAGE",
@@ -161,15 +181,82 @@ export default function TemplateMailContents({ tableWidth, result, tplNo }) {
     }, 1500);
   });
 
-  const onClickTemprarySave = () => {
+
+
+
+
+
+
+// ===========================================================================================================
+// ================== handler =====================================================================================
+// ============================================================================================================
+  // 모달 종료 버튼 핸들러
+  const modalCloseButtonOnClickHandler = () => {
+    setTdStyleModalStatus(false);
+  }
+
+  // 테두리 ON버튼 핸들러
+  const onBoxShadowOnClickHandler = () => {
+    convertBoxShadow(true);
+  };
+
+  // 테두리 OFF버튼 핸들러
+  const offBoxShadowOnClickHandler = () => {
+    convertBoxShadow(false);
+  };
+
+  
+  // content추가 버튼 핸들러
+  const addContentButtonOnClickHandler = () => {
+    setTdStyleModalStatus(true);
+  }
+
+  // 임시저장 버튼 핸들러
+  const temporarySaveButtonOnClickHandler = () => {
     temporarySaveCallback();
   };
 
-  const onClickTempraryDownload = () => {
+  // 임시저장 불러오기 버튼 핸들러
+  const temporaryDownloadButtonOnClickHandler = () => {
     temporaryDownloadCallback();
   };
+
+  // HTML 버튼 핸들러
+  const convertHtmlButtonOnClickHandler = () => {
+    converToHTMLCallback();
+  };
+
+  // 배경색 변환 버튼 핸들러
+  const bgColorButtonOnChangeHandler = (event) => {
+    setBgcolor(event.target.value);
+  }
+
+  // 배경색 지우기 버튼 핸들러
+  const bgColorDeleteButtonOnChangeHandler = () => {
+    setBgcolor("");
+  } 
+
+
+
+
+// ============================================================================================================
+// ============================ HTML ====================================================================================
+// ============================================================================================================
   return (
     <div id="TemplateMailContents" className="container-fluid">
+      {tdStyleModalStatus === true ? 
+       <Modal
+       visible={tdStyleModalStatus}
+       onClose={modalCloseButtonOnClickHandler}
+       children={
+         <TdStyle
+         addContentRow={addContentRow}
+           onClose={modalCloseButtonOnClickHandler}
+         />
+       }
+     />
+      : null}
+
       {result !== true ? (
         <Fragment>
           <p
@@ -188,50 +275,40 @@ export default function TemplateMailContents({ tableWidth, result, tplNo }) {
             {backState.boxShadow === false ? (
               <Button
                 className="btn btn-outline-dark"
-                onClick={() => {
-                  onClickConvertBoxShadow(true);
-                }}
+                onClick={onBoxShadowOnClickHandler}
               >
                 {`테두리 ON`}
               </Button>
             ) : (
               <Button
                 className="btn btn-outline-dark"
-                onClick={() => {
-                  onClickConvertBoxShadow(false);
-                }}
+                onClick={offBoxShadowOnClickHandler}
               >
                 {`테두리 OFF`}
               </Button>
             )}
             <Button
               className="btn btn-outline-dark"
-              onClick={() => {
-                onClickAddContentRow();
-              }}
+              onClick={addContentButtonOnClickHandler}
             >
               Content 추가
             </Button>
             <Button
               className="btn btn-outline-dark"
-              onClick={() => {
-                onClickTemprarySave();
-              }}
+              onClick={temporarySaveButtonOnClickHandler}
             >
               임시저장
             </Button>
             <Button
               className="btn btn-outline-dark"
-              onClick={() => {
-                onClickTempraryDownload();
-              }}
+              onClick={temporaryDownloadButtonOnClickHandler}
             >
               임시저장 불러오기
             </Button>
 
             <ConvertButton
               className="btn btn-outline-dark"
-              onClick={onClickConvertHtmlButton}
+              onClick={convertHtmlButtonOnClickHandler}
             >
               HTML 변환
             </ConvertButton>
@@ -246,21 +323,16 @@ export default function TemplateMailContents({ tableWidth, result, tplNo }) {
                 배경색
               </span>
               <div
-                id="cp4"
                 className="input-group mr-3"
                 title="Using color option"
               >
                 <ColorPickerInput
                   type="color"
                   className="form-control input-lg"
-                  onChange={(e) => {
-                    setBgcolor(e.target.value);
-                  }}
+                  onChange={bgColorButtonOnChangeHandler}
                 />
               </div>
-              <button className="input-group-text" onClick={()=>{
-                  setBgcolor("");
-              }}>
+              <button style={{height:"30px"}} className="input-group-text" onClick={bgColorDeleteButtonOnChangeHandler}>
                   배경색지우기
               </button>
             </div>
@@ -269,54 +341,64 @@ export default function TemplateMailContents({ tableWidth, result, tplNo }) {
       ) : null}
 
       <TemplateFormWrapper>
-        <div id="TemplateMailContentsDiv">
-          <BackImageDiv id="backImageDiv">
-              <img
-                alt=""
-                src={backgrundSrc}
-                style={{ width: "auto", height: "auto" }}
-              />
-          </BackImageDiv>
-          <div id="TemplateMailContentsTable">
+        <div id="TemplateMailContentsDiv" className="container-fluid">
+            <div role="article" aria-roledescription="email" 
+              style={{width:`100%`, textSizeAdjust:"100%", WebkitTextSizeAdjust:"100%", msTextSizeAdjust:"100%", backgroundColor:`${mailState.bgcolor}`}}
+            >
             <table
+              role="prsentation"
+              style={{width:"100%", border:"none", borderSpacing:"0"}}
               border={0}
               cellPadding={0}
               cellSpacing={0}
-              width={tableWidth}
             >
               <tbody>
                 <tr>
-                  <td
-                    bgcolor={mailState.bgcolor}
-                    style={{
-                      backgroundRepeat: "no-repeat",
-                      backgroundPosition: "center",
-                      backgroundColor: `${mailState.bgcolor}`,
-                    }}
-                  >
-                    {mailState.contents.body.contentRowTables.map(
-                      (contentRowTale, i) => {
-                        return (
-                          <RowTable
-                            key={`${mailState.version}-${i}`}
-                            rowTableIndex={i}
-                            height={300}
-                            tdClasses={contentRowTale.tdClasses}
-                          />
-                        );
-                      }
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+                    <td align="center" style={{padding:0}}>
+                      <ReactComment content={`<!--[if mso] <table role="presentation" align="center" style="width:600px;"> <tr> <td> <![endif]-->`}/>
+                      <table role="presentation"
+                        id="TemplateMailContentsTable"
+                        border={0}
+                        cellPadding={0}
+                        cellSpacing={0}
+                        style={{width:"94%", maxWidth:"600px", border:"none", borderSpacing:0, fontFamily:"Arial, sans-serif", backgroundImage:`url(${backgrundSrc})`}}>
+                      {mailState.contents.body.contentRowTables.map(
+                        (contentRowTale, i) => {
+                          return (
+                            <tr>
+                            <td>
+                            <RowTable
+                              key={`${mailState.version}-${i}`}
+                              rowTableIndex={i}
+                              height={300}
+                              tdClasses={contentRowTale.tdClasses}
+                            />
+                            </td>
+                            </tr>
+                          );
+                        }
+                      )}
+                      </table>
+                      <ReactComment content={`<!--[if mso]></td></tr></table><![endif]-->`}/>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
         </div>
       </TemplateFormWrapper>
     </div>
   );
 }
 
+
+
+
+
+
+// ============================================================================================================
+// ============================ HTML ====================================================================================
+// ============================================================================================================
 const MenuDiv = styled.div`
   margin-bottom: 40px;
   padding: 5px;
@@ -324,7 +406,6 @@ const MenuDiv = styled.div`
   width: 100%;
   display: flex;
   justify-content: center;
-
   button {
     margin-right: 10px;
   }
@@ -335,10 +416,9 @@ const ColorPickerDiv = styled.div`
     height: 30px;
   }
 `;
-
 const ColorPickerInput = styled.input`
   width: 30px;
-  height: 100%;
+  height: 30px;
 `;
 const Button = styled.button``;
 const ConvertButton = styled.button``;
@@ -346,9 +426,4 @@ const TemplateFormWrapper = styled.div`
   display: flex;
   justify-content: center;
   margin-top: 30px;
-`;
-const BackImageDiv = styled.div`
-  position: absolute;
-  width: ${(props) => props.width}px;
-  height: ${(props) => props.height}px;
 `;

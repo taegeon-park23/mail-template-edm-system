@@ -15,8 +15,8 @@ export default function AddButtonModal({setButton, setContent,button, tdWidth, t
     };
     const [buttonConfig, setButtonConfig] = useState(button?button:IntitialButtonConfig);
     return(
-    <AddButtonMoal className="bg-dark" style={{width: "300px"}}>
-        <div className="d-flex justify-content-center align-items-center">
+    <AddButtonMoal className="bg-white px-2 py-2 rounded" style={{width: "100%"}}>
+        <div className="d-flex justify-content-center align-items-center overflow-hidden">
           <div className="d-flex justify-content-center align-items-center border rounded" style={{border: "dashed", width:200, height: 200, fontWeight: 700}}>
            {ReactHtmlParser(`<p style="width: ${buttonConfig.width}px; line-height: ${buttonConfig.height}px; background-color: ${buttonConfig.bgcolor}; border-radius: ${buttonConfig.borderRadius}px; text-align:center; margin:0px; padding: 0px;">
             <font color="${buttonConfig.color}">${buttonConfig.content}</font>

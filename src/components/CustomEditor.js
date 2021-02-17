@@ -57,19 +57,19 @@ const installedPlugins = [
   FontSize,
   Heading,
   HorizontalLine,
-  Image,
-  ImageCaption,
-  ImageResize,
-  ImageStyle,
-  ImageToolbar,
-  ImageUpload,
-  ImageInsert,
+  // Image,
+  // ImageCaption,
+  // ImageResize,
+  // ImageStyle,
+  // ImageToolbar,
+  // ImageUpload,
+  // ImageInsert,
   Indent,
   IndentBlock,
   Italic,
   Link,
-  List,
-  MediaEmbed,
+  // List,
+  // MediaEmbed,
   Paragraph,
   PasteFromOffice,
   SpecialCharacters,
@@ -82,10 +82,11 @@ const installedPlugins = [
 ];
 
 // import './index.css'
-export default function CustomEditor({classic, data,onChangeHandler, onBlurHandler, onFocusHnadler}) {
+export default function CustomEditor({classic, data,onChangeHandler, onBlurHandler, onFocusHnadler, tdBgcolor, tdBorderRadius}) {
   const editor = classic === true ? ClassicEditor :InlineEditor;
   return (
-    <CustomEditorWrapperDiv>
+    <CustomEditorWrapperDiv tdBorderRadius={tdBorderRadius} tdBgcolor={tdBgcolor} id="editor" style={{display: "inline-block",
+    width:`100%`, height:`100%`}} classic={classic}>
       <CKEditor
         editor={editor}
         config={{
@@ -107,12 +108,12 @@ export default function CustomEditor({classic, data,onChangeHandler, onBlurHandl
             "indent",
             "outdent",
             "|",
-            "bulletedList",
-            "numberedList",
+            // "bulletedList",
+            // "numberedList",
             "|",
             "link",
-            "CKFinder",
-            "imageInsert",
+            // "CKFinder",
+            // "imageInsert",
             "insertTable",
             "|",
             "undo",
@@ -129,11 +130,25 @@ export default function CustomEditor({classic, data,onChangeHandler, onBlurHandl
 }
 
 const CustomEditorWrapperDiv = styled.div`
-  .ck-editor__editable_inline {
+  height: 100%;
+  background-color: ${props=>props.tdBgcolor};
+  border-radius: ${props=>props.tdBorderRadius}px;
+
+  .ck.ck-editor__editable_inline>:last-child, .ck.ck-editor__editable_inline>:first-child {
+    margin-top: 0px; margin-bottom: 0px;
+  }
+  .ck, .ck-content, .ck-editor__editable, .ck-rounded-corners, .ck-editor__editable_inline, .ck-blurred {
     padding: 0px;
-    margin: 0px;
+    border: none;
+    height: ${props=>{
+      if(props.classic === true) return null;
+      else return "100%";
+    }}
   }
 
+  .ck.ck-editor__editable_inline  {
+    overflow: unset;
+  }
   span.text-huge {
     font-size: 48px;
   }
@@ -150,7 +165,7 @@ const CustomEditorWrapperDiv = styled.div`
     font-size: 6px;
   }
 
-  p, div { margin: 0px; padding:0px;}
+  p, div { margin: 0px; margin-top:0px; margin-bottom:0px;}
   .ck-horizontal-line {
     max-height: 4px;
   }
@@ -159,6 +174,9 @@ const CustomEditorWrapperDiv = styled.div`
     /* height :16px; */
     /* border-color :#dedede; */
     border-width :4px;
+  }
+  h1,h2,h3,h4,h5,h6 {
+    margin: 0px;
   }
   .ck-widget_selected {
    height: 0px;
