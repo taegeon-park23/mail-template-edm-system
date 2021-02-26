@@ -84,7 +84,7 @@ export default function QAADetailModal({id, onClose, setUpdateCountQa, onChangeI
 
 
       const deleteQa = async () => {
-        const url = "/admin/qa/deleteQa";
+        const url = "/user/qa/deleteQa";
         try {
           const response = await axios.post(
             url,

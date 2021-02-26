@@ -32,7 +32,16 @@ export default function NotificationDetailModal({id, onClose, setUpdateCountNoti
     const deleteBtn = (role) => {
         if ( role === "ADMIN" ) {
             return (
-                <button className="btn btn-secondary mr-3" onClick={()=>{deleteNotice()}}>삭제</button>
+                <button 
+                  className="btn btn-secondary mr-3" 
+                  onClick={
+                    ()=>{
+                      if(window.confirm('정말 삭제하시겠습니까?')) {
+                        onClose();
+                        deleteNotice()}
+                      }
+                    }>삭제
+                  </button>
             )
         } else {
             return ;
@@ -42,7 +51,6 @@ export default function NotificationDetailModal({id, onClose, setUpdateCountNoti
 
 
     const selectOneNotice = async () => {
-        console.log("noticeNo: " + noticeNo);
         const url = "/user/notice/selectOneNotice";
         try {
           const response =
@@ -95,10 +103,9 @@ export default function NotificationDetailModal({id, onClose, setUpdateCountNoti
           });
     
           if (response.data.status === "OK") {
-            alert(response.data.message);
             setUpdateCountNoti();
-            onClose();
             history.push("/notification");
+            
           } else if (response.data.status === "NOT_FOUND") {
             alert("인증되지 않은 접근입니다.");
             localStorage.removeItem("jwtToken");

@@ -59,10 +59,7 @@ export default function RegisterQAAModal({id, onClose, setUpdateCountQa, history
               });
 
             if (response.data.status === "OK") {
-                alert(response.data.message);
-                setUpdateCount(updateCount+1);
                 setUpdateCountQa();
-                onClose();
                 
             } else if(response.data.status === "NOT_FOUND") {
                 localStorage.removeItem('jwtToken');
@@ -130,9 +127,11 @@ export default function RegisterQAAModal({id, onClose, setUpdateCountQa, history
             <button className="btn btn-secondary mr-3" onClick={onClose}>취소</button>
                 <button className="btn btn-secondary" 
                         onClick={()=>{
-                            saveQaInsert();
+                            if(window.confirm('등록하시겠습니까?')) {
+                                onClose();
+                                saveQaInsert();
+                            }
                         }}
-                        
                         >저장</button>
             </div>
         </div>

@@ -177,7 +177,7 @@ export default function ReplyQAAModal({id, onClose, onChangeId, setUpdateCountQa
                 <button className="btn btn-secondary" 
                     onClick={()=>{
                         //빈칸이나 공백을 둘 수 없다.
-                        if ( qaReplyContent.length > 0 ? qaReplyContent[0] !== " " : false ) {
+                        if ( qaReplyContent && qaReplyContent.length > 0 ? qaReplyContent[0] !== " " : false ) {
                             updateQaReply();
                         } else {
                             alert("저장하려면 답변을 입력해주세요!");

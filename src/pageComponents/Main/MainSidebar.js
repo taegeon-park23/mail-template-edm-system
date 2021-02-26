@@ -8,6 +8,32 @@ class MainSidebar extends React.Component {
     if (scale === false) return "sidebar-scale-down";
   };
 
+  constructor(props) {
+    super(props); {
+      this.state = {
+        role : localStorage.getItem('role')
+      }
+    }
+  }
+
+  handleManageUserBtn = () => {
+    
+
+    console.log("role : " + this.state.role);
+    
+    if(this.state.role === "ADMIN") {
+      return (
+        <li className="nav-item">
+          <Link className="nav-link" to="/manageUsers">
+            <span>&nbsp;사용자 관리</span>
+          </Link>
+        </li>
+      );
+    } else {
+      return ;
+    }
+  }
+
   render() {
     //Sidebar
     return (
@@ -102,11 +128,7 @@ class MainSidebar extends React.Component {
             <span>&nbsp;Q&A</span>
           </Link>
         </li>
-        {/* <li className="nav-item">
-          <Link className="nav-link" to="/manageUsers">
-            <span>&nbsp;사용자 관리</span>
-          </Link>
-        </li> */}
+        {this.handleManageUserBtn()}
       </ul>
     );
   }

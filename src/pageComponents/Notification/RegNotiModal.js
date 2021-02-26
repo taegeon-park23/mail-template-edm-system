@@ -36,9 +36,8 @@ export default function RegNotiModal({id, onClose, setUpdateCountNotice}) {
             }});
 
             if (response.data.status === "OK") {
-                alert(response.data.message);
                 setUpdateCountNotice();
-                onClose();
+                
                 
             } else if(response.data.status === "NOT_FOUND") {
                 localStorage.removeItem('jwtToken');
@@ -93,7 +92,11 @@ export default function RegNotiModal({id, onClose, setUpdateCountNotice}) {
             <button className="btn btn-secondary mr-3" onClick={onClose}>취소</button>
                 <button className="btn btn-secondary" 
                         onClick={()=>{
-                            saveNoticeInsert();
+                            if(window.confirm('등록하시겠습니까?')) {
+                                onClose();
+                                saveNoticeInsert();
+                            }
+                            
                         }}
                         
                         >저장</button>
